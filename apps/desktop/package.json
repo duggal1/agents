@@ -6,14 +6,15 @@
   "type": "module",
   "main": "dist/main.js",
   "scripts": {
-    "dev": "bun build && electron .",
+    "dev": "bun run build && electron .",
     "build": "tsc -p tsconfig.json && node scripts/copy-static.mjs",
-    "pack": "bun --filter @rakazo/web build && bun build && electron-builder --mac --win --linux",
-    "pack:dir": "bun --filter @rakazo/web build && bun build && electron-builder --dir",
+    "pack": "bun --filter @rakazo/web build && bun run build && electron-builder --mac --win --linux",
+    "pack:dir": "bun --filter @rakazo/web build && bun run build && electron-builder --dir",
+    "pack:run": "rm -rf out && bun --filter @rakazo/web build && bun run build && electron-builder --dir && open out/mac-arm64/Sapphire.app",
     "check": "tsc --noEmit -p tsconfig.json",
     "test": "vitest run --root ../.. apps/desktop/src",
-    "test:e2e": "bun build && playwright test --config e2e/playwright.config.ts",
-    "release": "bun --filter @rakazo/web build && bun build && electron-builder --publish never"
+    "test:e2e": "bun run build && playwright test --config e2e/playwright.config.ts",
+    "release": "bun --filter @rakazo/web build && bun run build && electron-builder --publish never"
   },
   "dependencies": {
     "@rakazo/contracts": "workspace:*",
