@@ -1,20 +1,16 @@
 # SAPPHIRE/AGENTS
 
-AI teammates with their own computers.
+AI teammates you can give real work to.
 
+Sapphire lets you work with AI teammates that have their own virtual computers.
 
-Sapphire lets you build a company of AI teammates.
+Give a teammate a goal and it can break the work down, spawn sub-agents, and have them work in parallel on their own virtual computers.
 
-Start with a **CEO Bot**. Give it a goal, and it can spawn the teammates needed to get the work done: Marketing, Sales, Research, Operations, Recruiting, Finance, and more.
+Each sub-agent can browse the web, use software, work in a terminal, handle files, research, and operate a computer like a human would.
 
-Each teammate can then spawn its own **sub-agents** for specific jobs. Those sub-agents get their own virtual computers and can actually use them to do the work.
+You can run multiple teammates at the same time, each with their own sub-agents and virtual computers.
 
-They can browse the web, sign into software, use terminals, work with files, operate desktop apps, research companies, update systems, run workflows, and execute tasks from start to finish.
-
-You talk to the CEO. The CEO runs the team.
-
-The result is not one chatbot answering prompts. It is a hierarchy of AI teammates and sub-agents working together on real tasks.
-
+They're agents under the hood. To you, they're teammates.
 ## How it works
 
 ```text
