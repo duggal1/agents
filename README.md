@@ -316,4 +316,4 @@ bun test:e2e
 
 ## License
 
-Sapphire/Agents is licensed under the Apache License 2.0.
+Sapphire/Agents is licensed under MIT 
