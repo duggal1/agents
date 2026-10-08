@@ -2,8 +2,16 @@ import { describe, expect, it } from "vitest";
 import { resolveSandboxProvider, sandboxProviderOptionsFromEnv } from "./sandbox-provider-env.js";
 
 describe("resolveSandboxProvider", () => {
-  it("defaults to docker", () => {
+  it("defaults to e2b when its key is set, docker otherwise", () => {
     expect(resolveSandboxProvider({})).toBe("docker");
+    expect(resolveSandboxProvider({ E2B_API_KEY: "test-e2b-key" })).toBe("e2b");
+  });
+
+  it("falls back to docker when e2b is requested without a key", () => {
+    expect(resolveSandboxProvider({ SANDBOX_PROVIDER: "e2b" })).toBe("docker");
+    expect(resolveSandboxProvider({ SANDBOX_PROVIDER: "e2b", E2B_API_KEY: "test-e2b-key" })).toBe(
+      "e2b",
+    );
   });
 
   it("keeps explicit none", () => {
@@ -12,7 +20,6 @@ describe("resolveSandboxProvider", () => {
   });
 
   it("falls back to none when a remote provider key is missing", () => {
-    expect(resolveSandboxProvider({ SANDBOX_PROVIDER: "e2b" })).toBe("none");
     expect(resolveSandboxProvider({ SANDBOX_PROVIDER: "daytona" })).toBe("none");
     expect(resolveSandboxProvider({ SANDBOX_PROVIDER: "createos" })).toBe("none");
     expect(resolveSandboxProvider({ SANDBOX_PROVIDER: "box" })).toBe("none");

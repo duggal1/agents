@@ -127,7 +127,25 @@ New additive `scripts/mac.ts` + `bun mac` entry: ensures the data dir and
 opens the Electron window. First run asks one question: E2B key or local
 Docker. Ctrl-C stops everything.
 
-### 5.6 Verification before "done"
+### 5.6 Agent runtime: opencode replaces Pi ( retaining Pi behind a flag )
+- New `OpencodeRuntime implements AgentRuntime` in `packages/adapters`,
+  backed by `@opencode-ai/sdk` (verified: SDK 1.18.35 exposes sessions,
+  prompt/abort, permissions, global event SSE, MCP management, provider auth).
+- Mapping: bot run → `session.create` + `session.promptAsync`; streaming →
+  `event.subscribe`; stop → `session.abort`; approvals → permission-respond
+  endpoints; Rakazo tools (computer, teach, memory, skills, scratchpad) →
+  exposed to opencode over MCP (opencode has first-class MCP support).
+- Selection via runtime flag (`RUNTIME_KIND=opencode|pi`, default opencode in
+  local mode). Pi stays intact until the opencode path passes the existing
+  conformance/eval suites — no Pi code deleted in this plan.
+- Model credentials: opencode needs its own provider auth (`auth.set` /
+  provider OAuth); local `$0` models keep working through opencode's
+  OpenAI-compatible provider pointing at Ollama/LM Studio.
+- Note: repo mentions of "opencode"/"opencode-go" in `pi-runtime.ts` refer to
+  opencode-as-a-model-provider (hosted inference gateway), not the agent.
+  Unrelated; untouched.
+
+### 5.7 Verification before "done"
 `tsc` clean on all surfaces → full unit suite green (787 tests at plan time) →
 fresh-Mac simulation: delete the data dir, run `bun mac`, confirm the agents
 screen with zero login → E2B computer provisions with Docker absent →
@@ -136,7 +154,10 @@ kill -9 mid-job, reboot, reconciler recovers.
 ## 6. Order, risks, fallback
 
 Order: 5.1 → 5.5 skeleton (against current Postgres, so the Mac window shows
-fast) → 5.2 → 5.3 → 5.4/5.6.
+fast) → 5.6 runtime behind flag → 5.2 → 5.3 → 5.4/5.7.
+
+Phase 2 (not this plan): Tauri/Rust shell replacing Electron (screens stay
+identical), full pnpm purge from CI/Dockerfiles.
 
 Biggest risk is 5.3 — SQLite datetime/enum/cascade differences hiding behind
 92 migrations' worth of assumptions. Fallback if SQLite fights back:

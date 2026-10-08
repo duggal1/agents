@@ -1,12 +1,20 @@
 import type { SandboxProviderOptions } from "./sandbox-factory.js";
 
-/** Empty or remote provider without a key becomes none so services can boot for signup. */
+/**
+ * E2B first, Docker fallback. Empty or remote provider without a key becomes
+ * none so services can boot for signup. An explicit `e2b` without a key falls
+ * back to Docker (then through Docker's own gates) instead of failing closed.
+ */
 export function resolveSandboxProvider(source: NodeJS.ProcessEnv = process.env): string {
   const configured = source.SANDBOX_PROVIDER;
   if (configured !== undefined && !configured.trim()) return "none";
-  const requested = configured?.trim() || "docker";
+  let requested = configured?.trim();
   if (requested === "none") return "none";
-  if (requested === "e2b" && !optional(source.E2B_API_KEY)) return "none";
+  if (requested === undefined) {
+    requested = optional(source.E2B_API_KEY) ? "e2b" : "docker";
+  } else if (requested === "e2b" && !optional(source.E2B_API_KEY)) {
+    requested = "docker";
+  }
   if (requested === "daytona" && !optional(source.DAYTONA_API_KEY)) return "none";
   if (requested === "createos" && !optional(source.CREATEOS_SANDBOX_API_KEY)) return "none";
   if (requested === "box" && !optional(source.BOX_API_KEY)) return "none";

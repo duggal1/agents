@@ -33,6 +33,7 @@ import {
   McpOAuthBroker,
   messagingEnvFromProcess,
   messagingPlatformsFromEnv,
+  OpencodeRuntime,
   PiAgentRuntime,
   PipedreamConnector,
   PostgresRealtimeFanout,
@@ -83,7 +84,11 @@ async function main() {
   const runtime =
     process.env.AGENT_RUNTIME === "scripted"
       ? new ScriptedAgentRuntime()
-      : new PiAgentRuntime({ sessionRoot: resolvePiSessionRoot(dataDir) });
+      : process.env.AGENT_RUNTIME === "opencode"
+        ? new OpencodeRuntime({
+            baseUrl: process.env.OPENCODE_SERVER_URL?.trim() || "http://127.0.0.1:4096",
+          })
+        : new PiAgentRuntime({ sessionRoot: resolvePiSessionRoot(dataDir) });
   // Same resolver the API uses, so both processes agree on provider, model and key.
   const { key: deploymentModelKey } = resolveDeploymentModel();
   const sandboxProvider = resolveSandboxProvider(process.env);
