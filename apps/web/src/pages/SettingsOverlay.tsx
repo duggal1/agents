@@ -1,7 +1,17 @@
 import { useLingui } from "@lingui/react/macro";
 import type { AvatarStyle, SpaceMemoryConfig } from "@rakazo/contracts";
 import { Button, Dialog, DialogClose, DialogContent, DialogTitle } from "@rakazo/ui-web";
-import { Brain, CloudDownload, Cpu, Gauge, Monitor, Settings, Volume2, XIcon } from "lucide-react";
+import { HugeiconsIcon, type IconSvgElement } from "@hugeicons/react";
+import {
+  BrainIcon,
+  CloudDownloadIcon,
+  CpuIcon,
+  GaugeIcon,
+  MonitorIcon,
+  SettingsIcon,
+  Volume02Icon,
+  XIcon,
+} from "@hugeicons/core-free-icons";
 import type { ComponentType } from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { computersAreUnavailable } from "../components/ComputersUnavailableHint";
