@@ -1,3 +1,10 @@
+import {
+  CheckIcon as Check,
+  ChevronDownIcon as ChevronDown,
+  CopyIcon as Copy,
+  XIcon as X,
+} from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import { i18n } from "@lingui/core";
 import { Plural, Trans, useLingui } from "@lingui/react/macro";
 import type { Me, ThinkingLevel } from "@rakazo/contracts";
@@ -44,7 +51,6 @@ import {
   NativeSelect,
   NativeSelectOption,
 } from "@rakazo/ui-web";
-import { Check, ChevronDown, Copy, X } from "lucide-react";
 import {
   type KeyboardEvent as ReactKeyboardEvent,
   type RefObject,
@@ -789,9 +795,14 @@ export function ModelSettingsOverlay({
                       onClick={() => copyOAuthCode(oauth.userCode)}
                     >
                       {codeCopied ? (
-                        <Check size={14} strokeWidth={1.8} aria-hidden="true" />
+                        <HugeiconsIcon
+                          icon={Check}
+                          size={14}
+                          strokeWidth={1.8}
+                          aria-hidden="true"
+                        />
                       ) : (
-                        <Copy size={14} strokeWidth={1.8} aria-hidden="true" />
+                        <HugeiconsIcon icon={Copy} size={14} strokeWidth={1.8} aria-hidden="true" />
                       )}
                       {codeCopied ? <Trans>Copied</Trans> : <Trans>Copy</Trans>}
                     </Button>
@@ -918,8 +929,8 @@ export function ModelSettingsOverlay({
       {selected?.auth === "oauth" && !subscriptionSignIn ? (
         <p className="mt-5 text-sm leading-[1.5] text-muted-foreground first:mt-0">
           <Trans>
-            This subscription sign-in is not available in Sapphire yet. Use a deployment credential or
-            choose another provider.
+            This subscription sign-in is not available in Sapphire yet. Use a deployment credential
+            or choose another provider.
           </Trans>
         </p>
       ) : null}
@@ -1001,7 +1012,7 @@ export function ModelSettingsOverlay({
           <DialogClose
             render={<Button variant="ghost" size="icon-sm" aria-label={t`Close model settings`} />}
           >
-            <X />
+            <HugeiconsIcon icon={X} />
           </DialogClose>
         </DialogHeader>
       ) : (
@@ -1524,7 +1535,7 @@ function ModelPicker({
       >
         <span className="min-w-0 truncate">{options[selectedIndex]?.label}</span>
         <span className="ml-3 shrink-0 text-muted-foreground" aria-hidden="true">
-          <ChevronDown size={16} strokeWidth={1.8} />
+          <HugeiconsIcon icon={ChevronDown} size={16} strokeWidth={1.8} />
         </span>
       </button>
       {open ? (
@@ -1630,7 +1641,13 @@ function ModelOption({
       <span className="flex shrink-0 items-center gap-2 text-[12px] text-muted-foreground">
         {option.billing.toLowerCase().includes("free") ? t`Free` : null}
         {option.id === value ? (
-          <Check size={14} strokeWidth={2} className="text-foreground" aria-hidden="true" />
+          <HugeiconsIcon
+            icon={Check}
+            size={14}
+            strokeWidth={2}
+            className="text-foreground"
+            aria-hidden="true"
+          />
         ) : null}
       </span>
     </button>

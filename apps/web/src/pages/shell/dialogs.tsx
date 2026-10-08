@@ -1,3 +1,5 @@
+import { LockIcon as Lock, UsersIcon as Users } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import { Trans, useLingui } from "@lingui/react/macro";
 import type { Bot, BotSection } from "@rakazo/contracts";
 import {
@@ -18,7 +20,6 @@ import {
   DialogTitle,
   Input,
 } from "@rakazo/ui-web";
-import { Lock, Users } from "lucide-react";
 import { useId, useState } from "react";
 
 /** Each dialog is mounted only while open, so `open` is always true and the
@@ -59,7 +60,8 @@ export function NewSpaceDialog({
       <DialogContent showCloseButton={false}>
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2.5">
-            <Lock
+            <HugeiconsIcon
+              icon={Lock}
               size={17}
               strokeWidth={1.8}
               className="text-muted-foreground"
@@ -114,14 +116,16 @@ export function PickerInfoDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2.5">
             {topic === "group" ? (
-              <Users
+              <HugeiconsIcon
+                icon={Users}
                 size={17}
                 strokeWidth={1.8}
                 className="text-muted-foreground"
                 aria-hidden="true"
               />
             ) : (
-              <Lock
+              <HugeiconsIcon
+                icon={Lock}
                 size={17}
                 strokeWidth={1.8}
                 className="text-muted-foreground"

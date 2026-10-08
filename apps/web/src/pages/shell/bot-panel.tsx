@@ -1,3 +1,5 @@
+import { XIcon as X } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import { Trans, useLingui } from "@lingui/react/macro";
 import type {
   AgentSkillCatalogEntry,
@@ -29,7 +31,6 @@ import {
   Textarea,
   Toggle,
 } from "@rakazo/ui-web";
-import { X } from "lucide-react";
 import { lazy, Suspense, useEffect, useId, useRef, useState } from "react";
 import { botProfilePatch } from "../../lib/bot-profile-patch";
 import { thinkingLevelLabel } from "../../lib/model-catalog";
@@ -129,7 +130,7 @@ export function CreateBotForm({
           <Trans>New bot</Trans>
         </span>
         <Button variant="ghost" size="icon-sm" aria-label={t`Cancel new bot`} onClick={onCancel}>
-          <X size={16} strokeWidth={1.8} />
+          <HugeiconsIcon icon={X} size={16} strokeWidth={1.8} />
         </Button>
       </div>
       {error ? (

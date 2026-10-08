@@ -1,7 +1,13 @@
+import {
+  Folder01Icon as Folder,
+  GlobeIcon as Globe,
+  SquareTerminalIcon as SquareTerminal,
+  XIcon as X,
+} from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import { useLingui } from "@lingui/react/macro";
 import type { ComputerStatus } from "@rakazo/contracts";
 import { Button, cn } from "@rakazo/ui-web";
-import { Folder, Globe, SquareTerminal, X } from "lucide-react";
 import type { PointerEvent, ReactNode, RefObject } from "react";
 import { lazy, Suspense, useCallback, useRef, useState } from "react";
 import { FilesApp } from "./FilesApp";
@@ -44,8 +50,8 @@ export function ComputerWorkspace({
   const hasScreen = computer?.kind !== "desktop";
   const screenVisible = collapsed || open.length === 0;
   const apps: Array<{ id: App; label: string; icon: ReactNode }> = [
-    { id: "terminal", label: t`Terminal`, icon: <SquareTerminal /> },
-    { id: "files", label: t`Files`, icon: <Folder /> },
+    { id: "terminal", label: t`Terminal`, icon: <HugeiconsIcon icon={SquareTerminal} /> },
+    { id: "files", label: t`Files`, icon: <HugeiconsIcon icon={Folder} /> },
   ];
 
   const toggle = (app: App) => {
@@ -114,7 +120,7 @@ export function ComputerWorkspace({
             className={cn("rounded-xl", screenVisible && "bg-accent")}
             onClick={() => setCollapsed((current) => (open.length ? !current : false))}
           >
-            <Globe />
+            <HugeiconsIcon icon={Globe} />
           </Button>
         ) : null}
         {apps.map((app) => (
@@ -214,7 +220,7 @@ function WorkspaceWindow({
           aria-label={t`Close ${title}`}
           onClick={onClose}
         >
-          <X />
+          <HugeiconsIcon icon={X} />
         </Button>
       </div>
       <div className="min-h-0 flex-1">{children}</div>

@@ -1,8 +1,9 @@
+import { XIcon as X } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import { Trans, useLingui } from "@lingui/react/macro";
 import type { MessageBlock } from "@rakazo/contracts";
 import { abortableDelay } from "@rakazo/core";
 import { Button, Dialog, DialogClose, DialogContent, DialogTitle } from "@rakazo/ui-web";
-import { X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { BuiCard, SuccessPop } from "../../components/ai/primitives";
 import { type ArtifactTarget, decodeArtifactBase64 } from "../../lib/artifact-open";
@@ -64,7 +65,7 @@ export function ChoiceCard({
             onClick={() => void dismiss()}
             className="absolute end-2 top-2 text-muted-foreground"
           >
-            <X size={16} strokeWidth={1.8} />
+            <HugeiconsIcon icon={X} size={16} strokeWidth={1.8} />
           </Button>
         ) : null}
         <div className="pe-8 text-[15.5px] text-foreground/90">
@@ -500,7 +501,7 @@ export function ChartBlockView({
               aria-label={t`Close chart`}
               render={<Button variant="ghost" size="icon-sm" />}
             >
-              <X />
+              <HugeiconsIcon icon={X} />
             </DialogClose>
           </div>
           <ChartCanvas
@@ -603,7 +604,7 @@ export function ArtifactImage({
               aria-label={t`Close image preview`}
               render={<Button variant="ghost" size="icon-sm" className="absolute end-2 top-2" />}
             >
-              <X />
+              <HugeiconsIcon icon={X} />
             </DialogClose>
             <img
               src={src}

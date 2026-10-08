@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useCallback, useEffect, useRef, useState } from "react";
 
 const vertexShader = `#version 300 es
 precision highp float;
@@ -166,8 +166,12 @@ interface MetallicPaintProps {
 }
 
 function processImage(img: HTMLImageElement): ImageData {
-  const MAX_SIZE = 1000;
-  const MIN_SIZE = 500;
+  // The depth map is a smooth gradient the shader re-tints and blurs, so it
+  // does not need source resolution. 1000² with 200 Jacobi iterations blocked
+  // the main thread for over a second on launch; 384² keeps the same look and
+  // finishes in well under a frame budget.
+  const MAX_SIZE = 384;
+  const MIN_SIZE = 192;
   let width = img.naturalWidth || img.width;
   let height = img.naturalHeight || img.height;
 
@@ -188,10 +192,10 @@ function processImage(img: HTMLImageElement): ImageData {
     height = Math.round(height * scale);
   }
 
-  const canvas = document.createElement('canvas');
+  const canvas = document.createElement("canvas");
   canvas.width = width;
   canvas.height = height;
-  const ctx = canvas.getContext('2d')!;
+  const ctx = canvas.getContext("2d")!;
   ctx.drawImage(img, 0, 0, width, height);
 
   const imageData = ctx.getImageData(0, 0, width, height);
@@ -232,7 +236,7 @@ function processImage(img: HTMLImageElement): ImageData {
   }
 
   const u = new Float32Array(size);
-  const ITERATIONS = 200;
+  const ITERATIONS = 140;
   const C = 0.01;
   const omega = 1.85;
 
@@ -274,7 +278,11 @@ function processImage(img: HTMLImageElement): ImageData {
 function hexToRgb(hex: string): [number, number, number] {
   const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
   return result
-    ? [parseInt(result[1] ?? 'ff', 16) / 255, parseInt(result[2] ?? 'ff', 16) / 255, parseInt(result[3] ?? 'ff', 16) / 255]
+    ? [
+        parseInt(result[1] ?? "ff", 16) / 255,
+        parseInt(result[2] ?? "ff", 16) / 255,
+        parseInt(result[3] ?? "ff", 16) / 255,
+      ]
     : [1, 1, 1];
 }
 
@@ -290,8 +298,8 @@ export default function MetallicPaint({
   contrast = 0.5,
   angle = 0,
   fresnel = 1,
-  lightColor = '#ffffff',
-  darkColor = '#000000',
+  lightColor = "#ffffff",
+  darkColor = "#000000",
   patternSharpness = 1,
   waveAmplitude = 1,
   noiseScale = 0.5,
@@ -299,7 +307,7 @@ export default function MetallicPaint({
   mouseAnimation = false,
   distortion = 1,
   contour = 0.2,
-  tintColor = '#feb3ff'
+  tintColor = "#feb3ff",
 }: MetallicPaintProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const glRef = useRef<WebGL2RenderingContext | null>(null);
@@ -328,7 +336,7 @@ export default function MetallicPaint({
     const canvas = canvasRef.current;
     if (!canvas) return false;
 
-    const gl = canvas.getContext('webgl2', { antialias: true, alpha: true });
+    const gl = canvas.getContext("webgl2", { antialias: true, alpha: true });
     if (!gl) return false;
 
     const compile = (src: string, type: number): WebGLShader | null => {
@@ -369,8 +377,9 @@ export default function MetallicPaint({
     gl.bindBuffer(gl.ARRAY_BUFFER, buf);
     gl.bufferData(gl.ARRAY_BUFFER, verts, gl.STATIC_DRAW);
 
+    // biome-ignore lint/correctness/useHookAtTopLevel: `gl.useProgram` is a WebGL context method, not a React hook.
     gl.useProgram(prog);
-    const pos = gl.getAttribLocation(prog, 'a_position');
+    const pos = gl.getAttribLocation(prog, "a_position");
     gl.enableVertexAttribArray(pos);
     gl.vertexAttribPointer(pos, 2, gl.FLOAT, false, 0, 0);
 
@@ -395,7 +404,17 @@ export default function MetallicPaint({
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, imgData.width, imgData.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, imgData.data);
+    gl.texImage2D(
+      gl.TEXTURE_2D,
+      0,
+      gl.RGBA,
+      imgData.width,
+      imgData.height,
+      0,
+      gl.RGBA,
+      gl.UNSIGNED_BYTE,
+      imgData.data,
+    );
     gl.uniform1i(uniforms.u_tex ?? null, 0);
 
     const ratio = imgData.width / imgData.height;
@@ -433,7 +452,7 @@ export default function MetallicPaint({
 
     setTextureReady(false);
     const img = new Image();
-    img.crossOrigin = 'anonymous';
+    img.crossOrigin = "anonymous";
     img.onload = () => {
       const imgData = processImage(img);
       uploadTexture(imgData);
@@ -488,7 +507,7 @@ export default function MetallicPaint({
     chromaticSpread,
     distortion,
     contour,
-    tintColor
+    tintColor,
   ]);
 
   useEffect(() => {
@@ -506,7 +525,7 @@ export default function MetallicPaint({
       mouse.targetY = (e.clientY - rect.top) / rect.height;
     };
 
-    canvas.addEventListener('mousemove', handleMouseMove);
+    canvas.addEventListener("mousemove", handleMouseMove);
 
     const render = (time: number) => {
       const delta = time - lastTimeRef.current;
@@ -530,7 +549,7 @@ export default function MetallicPaint({
 
     return () => {
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
-      canvas.removeEventListener('mousemove', handleMouseMove);
+      canvas.removeEventListener("mousemove", handleMouseMove);
     };
   }, [ready, textureReady]);
 

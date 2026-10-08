@@ -1,7 +1,8 @@
+import { CornerDownLeftIcon as CornerDownLeft } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import { Trans, useLingui } from "@lingui/react/macro";
 import type { TaughtSkill } from "@rakazo/contracts";
 import { Button, Input } from "@rakazo/ui-web";
-import { CornerDownLeft } from "lucide-react";
 import type { FormEvent } from "react";
 import { useEffect, useRef, useState } from "react";
 import { rpc } from "../../lib/rpc";
@@ -159,7 +160,7 @@ function ProtectedTeachInput({ botId, skillId }: { botId: string; skillId: strin
         aria-label={t`Type without recording`}
         disabled={!protectedText || pending}
       >
-        <CornerDownLeft size={16} strokeWidth={1.8} />
+        <HugeiconsIcon icon={CornerDownLeft} size={16} strokeWidth={1.8} />
       </Button>
     </form>
   );

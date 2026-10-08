@@ -1,3 +1,5 @@
+import { RotateLeft01Icon as RotateCcw } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import { Trans, useLingui } from "@lingui/react/macro";
 import type {
   AutomatedSenderPolicies,
@@ -7,7 +9,6 @@ import type {
   ExternalConversationPolicy,
 } from "@rakazo/contracts";
 import { Button } from "@rakazo/ui-web";
-import { RotateCcw } from "lucide-react";
 import { useMemo, useState } from "react";
 import { SuccessPop } from "../components/ai/primitives";
 
@@ -134,7 +135,7 @@ export function ExternalConversationSettings({
               }}
               className="grid h-7 w-7 shrink-0 place-items-center rounded-md text-muted-foreground hover:bg-muted/40 hover:text-foreground"
             >
-              <RotateCcw size={14} strokeWidth={1.8} />
+              <HugeiconsIcon icon={RotateCcw} size={14} strokeWidth={1.8} />
             </button>
           ) : (
             <span className="text-[11.5px] text-muted-foreground/70">

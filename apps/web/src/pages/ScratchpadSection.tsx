@@ -1,7 +1,8 @@
+import { XIcon as X } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import { Trans, useLingui } from "@lingui/react/macro";
 import type { ScratchpadItem } from "@rakazo/contracts";
 import { Button, Checkbox, Input } from "@rakazo/ui-web";
-import { X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 import { rpc } from "../lib/rpc";
@@ -167,7 +168,7 @@ export function ScratchpadSection({ botId }: { botId: string }) {
               onClick={() => void removeItem(item)}
               className="shrink-0 text-muted-foreground/70"
             >
-              <X />
+              <HugeiconsIcon icon={X} />
             </Button>
           </div>
         ))

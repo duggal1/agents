@@ -1,7 +1,14 @@
+import {
+  ArrowLeft01Icon as ArrowLeft,
+  Download01Icon as Download,
+  File01Icon as File,
+  Folder01Icon as Folder,
+  Upload01Icon as Upload,
+} from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import { useLingui } from "@lingui/react/macro";
 import { ATTACHMENT_MAX_BYTES } from "@rakazo/contracts";
 import { Button } from "@rakazo/ui-web";
-import { ArrowLeft, Download, File, Folder, Upload } from "lucide-react";
 import { type DragEvent, useCallback, useEffect, useRef, useState } from "react";
 import { decodeArtifactBase64, downloadArtifactBytes } from "../../lib/artifact-open";
 import {
@@ -183,7 +190,7 @@ export function FilesApp({
           disabled={!preview && !path}
           onClick={() => (preview ? setPreview(null) : void load(parentPath(path)))}
         >
-          <ArrowLeft />
+          <HugeiconsIcon icon={ArrowLeft} />
         </Button>
         <span className="min-w-0 flex-1 truncate text-muted-foreground" dir="auto">
           ~/{location}
@@ -195,7 +202,7 @@ export function FilesApp({
             aria-label={t`Download`}
             onClick={() => void download(preview.path)}
           >
-            <Download />
+            <HugeiconsIcon icon={Download} />
           </Button>
         ) : null}
         {!preview && canUpload ? (
@@ -207,7 +214,7 @@ export function FilesApp({
               disabled={busy}
               onClick={() => input.current?.click()}
             >
-              <Upload />
+              <HugeiconsIcon icon={Upload} />
             </Button>
             <input
               ref={input}
@@ -240,9 +247,12 @@ export function FilesApp({
                   onClick={() => void open(entry)}
                 >
                   {entry.kind === "dir" ? (
-                    <Folder className="size-4 shrink-0 text-muted-foreground" />
+                    <HugeiconsIcon
+                      icon={Folder}
+                      className="size-4 shrink-0 text-muted-foreground"
+                    />
                   ) : (
-                    <File className="size-4 shrink-0 text-muted-foreground" />
+                    <HugeiconsIcon icon={File} className="size-4 shrink-0 text-muted-foreground" />
                   )}
                   <span className="truncate" dir="auto">
                     {basename(entry.path)}
@@ -261,7 +271,7 @@ export function FilesApp({
                     aria-label={t`Download ${basename(entry.path)}`}
                     onClick={() => void download(entry.path)}
                   >
-                    <Download />
+                    <HugeiconsIcon icon={Download} />
                   </Button>
                 ) : null}
               </li>

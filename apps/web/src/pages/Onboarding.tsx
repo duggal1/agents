@@ -1,3 +1,5 @@
+import { CheckIcon as Check, CopyIcon as Copy } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import { Plural, Trans, useLingui } from "@lingui/react/macro";
 import {
   CLOUDFLARE_AI_GATEWAY_PROVIDER_ID,
@@ -33,7 +35,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@rakazo/ui-web";
-import { Check, Copy } from "lucide-react";
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { IntegrationSetup } from "../components/integrations/IntegrationSetup";
@@ -770,9 +771,19 @@ export function OnboardingPage() {
                             onClick={() => copyOAuthCode(oauth.userCode)}
                           >
                             {codeCopied ? (
-                              <Check size={14} strokeWidth={1.8} aria-hidden="true" />
+                              <HugeiconsIcon
+                                icon={Check}
+                                size={14}
+                                strokeWidth={1.8}
+                                aria-hidden="true"
+                              />
                             ) : (
-                              <Copy size={14} strokeWidth={1.8} aria-hidden="true" />
+                              <HugeiconsIcon
+                                icon={Copy}
+                                size={14}
+                                strokeWidth={1.8}
+                                aria-hidden="true"
+                              />
                             )}
                             {codeCopied ? <Trans>Copied</Trans> : <Trans>Copy</Trans>}
                           </Button>

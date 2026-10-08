@@ -1,3 +1,5 @@
+import { XIcon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import { Trans, useLingui } from "@lingui/react/macro";
 import type {
   Bot,
@@ -15,7 +17,6 @@ import {
   NativeSelect,
   NativeSelectOption,
 } from "@rakazo/ui-web";
-import { XIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { providerLabel } from "../lib/messaging";
@@ -101,7 +102,7 @@ export function MessagingSettingsOverlay({ onClose }: { onClose: () => void }) {
             aria-label={t`Close messaging settings`}
             render={<Button variant="ghost" size="icon-sm" />}
           >
-            <XIcon />
+            <HugeiconsIcon icon={XIcon} />
           </DialogClose>
         </div>
 

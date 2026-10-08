@@ -1,7 +1,8 @@
+import { ChevronDownIcon as ChevronDown } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import { Trans, useLingui } from "@lingui/react/macro";
 import type { AvatarStyle } from "@rakazo/contracts";
 import { BotAvatar, Button, Field, FieldLabel, Input, Label, Switch, Toggle } from "@rakazo/ui-web";
-import { ChevronDown } from "lucide-react";
 import {
   type KeyboardEvent as ReactKeyboardEvent,
   type RefObject,
@@ -562,7 +563,7 @@ function UiLocalePicker({
       >
         <span className="min-w-0 truncate">{UI_LOCALE_LABELS[value]}</span>
         <span className="ml-3 shrink-0 text-muted-foreground" aria-hidden="true">
-          <ChevronDown size={16} strokeWidth={1.8} />
+          <HugeiconsIcon icon={ChevronDown} size={16} strokeWidth={1.8} />
         </span>
       </button>
       {open ? (

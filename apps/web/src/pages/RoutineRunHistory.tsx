@@ -1,7 +1,8 @@
+import { ChevronDownIcon as ChevronDown } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import { Trans, useLingui } from "@lingui/react/macro";
 import type { RoutineHistory } from "@rakazo/contracts";
 import { Button } from "@rakazo/ui-web";
-import { ChevronDown } from "lucide-react";
 import { useEffect, useId, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { rpc } from "../lib/rpc";
@@ -166,7 +167,12 @@ export function RoutineRunHistory({ routineId }: { routineId: string }) {
             className="flex items-center gap-2 hover:text-foreground"
           >
             <Trans>Run history</Trans>
-            <ChevronDown size={14} aria-hidden className={expanded ? "rotate-180" : undefined} />
+            <HugeiconsIcon
+              icon={ChevronDown}
+              size={14}
+              aria-hidden
+              className={expanded ? "rotate-180" : undefined}
+            />
           </button>
         </h3>
         {expanded ? (

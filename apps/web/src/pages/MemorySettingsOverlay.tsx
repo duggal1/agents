@@ -1,3 +1,5 @@
+import { XIcon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import { Trans, useLingui } from "@lingui/react/macro";
 import type { SpaceMemoryConfig } from "@rakazo/contracts";
 import {
@@ -13,7 +15,6 @@ import {
   NativeSelectOption,
   Toggle,
 } from "@rakazo/ui-web";
-import { XIcon } from "lucide-react";
 import { useEffect, useId, useState } from "react";
 import { rpc } from "../lib/rpc";
 import { SpaceMemorySection } from "./KnowledgeSection";
@@ -169,7 +170,7 @@ export function MemorySettingsOverlay({
             disabled={busy}
             render={<Button variant="ghost" size="icon-sm" />}
           >
-            <XIcon />
+            <HugeiconsIcon icon={XIcon} />
           </DialogClose>
         </div>
       ) : (

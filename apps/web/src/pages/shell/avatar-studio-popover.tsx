@@ -1,3 +1,10 @@
+import {
+  CheckIcon as Check,
+  PencilIcon as Pencil,
+  Upload01Icon as Upload,
+  XIcon as X,
+} from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import { t } from "@lingui/core/macro";
 import { Trans } from "@lingui/react/macro";
 import {
@@ -14,7 +21,6 @@ import {
   GrokShapePreview,
   parseBotAvatar,
 } from "@rakazo/ui-web";
-import { Check, Pencil, Upload, X } from "lucide-react";
 import { type ClipboardEvent, type DragEvent, useRef, useState } from "react";
 
 export interface AvatarStudioPopoverProps {
@@ -125,7 +131,7 @@ export function AvatarStudioPopover({
       >
         <BotAvatar color={value} identity={identity} size={size} status={status} />
         <div className="absolute -right-1 -bottom-1 flex size-6 items-center justify-center rounded-full border-2 border-background bg-secondary text-foreground shadow-none transition-colors duration-150">
-          <Pencil size={12} strokeWidth={2.2} />
+          <HugeiconsIcon icon={Pencil} size={12} strokeWidth={2.2} />
         </div>
       </button>
 
@@ -148,7 +154,7 @@ export function AvatarStudioPopover({
               className="flex size-7 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
               aria-label={t`Close`}
             >
-              <X size={16} />
+              <HugeiconsIcon icon={X} size={16} />
             </button>
           </DialogHeader>
 
@@ -281,7 +287,7 @@ export function AvatarStudioPopover({
                 }}
               />
               <div className="mb-2 grid size-10 place-items-center rounded-full bg-secondary text-muted-foreground">
-                <Upload size={18} strokeWidth={1.8} />
+                <HugeiconsIcon icon={Upload} size={18} strokeWidth={1.8} />
               </div>
               <p className="text-[12.5px] font-normal text-muted-foreground">
                 <Trans>Drag, drop, or paste an image</Trans>
@@ -298,7 +304,7 @@ export function AvatarStudioPopover({
               onClick={() => setOpen(false)}
               className="flex items-center gap-1.5 rounded-xl bg-secondary px-4 py-1.5 text-[13px] font-normal text-foreground transition-colors hover:bg-accent"
             >
-              <Check size={14} />
+              <HugeiconsIcon icon={Check} size={14} />
               <Trans>Done</Trans>
             </button>
           </DialogFooter>

@@ -1,7 +1,3 @@
-import { useLingui } from "@lingui/react/macro";
-import type { AvatarStyle, SpaceMemoryConfig } from "@rakazo/contracts";
-import { Button, Dialog, DialogClose, DialogContent, DialogTitle } from "@rakazo/ui-web";
-import { HugeiconsIcon, type IconSvgElement } from "@hugeicons/react";
 import {
   BrainIcon,
   CloudDownloadIcon,
@@ -12,7 +8,11 @@ import {
   Volume02Icon,
   XIcon,
 } from "@hugeicons/core-free-icons";
-import type { ComponentType } from "react";
+import { HugeiconsIcon, type IconSvgElement } from "@hugeicons/react";
+import { useLingui } from "@lingui/react/macro";
+import type { AvatarStyle, SpaceMemoryConfig } from "@rakazo/contracts";
+import { Button, Dialog, DialogClose, DialogContent, DialogTitle } from "@rakazo/ui-web";
+
 import { useCallback, useEffect, useRef, useState } from "react";
 import { computersAreUnavailable } from "../components/ComputersUnavailableHint";
 import {
@@ -37,7 +37,7 @@ export type SettingsSection =
 type NavItem = {
   id: SettingsSection;
   label: string;
-  icon: ComponentType<{ className?: string; strokeWidth?: number }>;
+  icon: IconSvgElement;
 };
 
 export function SettingsOverlay({
@@ -118,13 +118,13 @@ export function SettingsOverlay({
   }, [section]);
 
   const navItems: NavItem[] = [
-    { id: "general", label: t`General`, icon: Settings },
-    { id: "models", label: t`Models`, icon: Cpu },
-    { id: "memory", label: t`Memory`, icon: Brain },
-    { id: "voice", label: t`Voice`, icon: Volume2 },
-    { id: "usage", label: t`Usage`, icon: Gauge },
-    ...(showComputer ? [{ id: "computer" as const, label: t`Computer`, icon: Monitor }] : []),
-    { id: "updates", label: t`Updates`, icon: CloudDownload },
+    { id: "general", label: t`General`, icon: SettingsIcon },
+    { id: "models", label: t`Models`, icon: CpuIcon },
+    { id: "memory", label: t`Memory`, icon: BrainIcon },
+    { id: "voice", label: t`Voice`, icon: Volume02Icon },
+    { id: "usage", label: t`Usage`, icon: GaugeIcon },
+    ...(showComputer ? [{ id: "computer" as const, label: t`Computer`, icon: MonitorIcon }] : []),
+    { id: "updates", label: t`Updates`, icon: CloudDownloadIcon },
   ];
 
   const sectionTitle =
@@ -204,7 +204,7 @@ export function SettingsOverlay({
                       : "text-muted-foreground hover:bg-accent hover:text-foreground"
                   }`}
                 >
-                  <Icon className="size-4 shrink-0" strokeWidth={1.75} />
+                  <HugeiconsIcon icon={Icon} className="size-4 shrink-0" strokeWidth={1.75} />
                   <span className="whitespace-nowrap">{item.label}</span>
                 </button>
               );
@@ -221,7 +221,7 @@ export function SettingsOverlay({
                 disabled={panelBusy}
                 render={<Button variant="ghost" size="icon-sm" />}
               >
-                <XIcon />
+                <HugeiconsIcon icon={XIcon} />
               </DialogClose>
             </div>
 

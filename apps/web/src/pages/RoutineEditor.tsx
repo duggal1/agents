@@ -1,3 +1,14 @@
+import {
+  ChevronLeftIcon as ChevronLeft,
+  Clock01Icon as Clock,
+  GitBranchIcon as GitBranch,
+  GlobeIcon as Globe,
+  MessageSquareIcon as MessageSquare,
+  PauseIcon as Pause,
+  PlusIcon as Plus,
+  XIcon as X,
+} from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import { t } from "@lingui/core/macro";
 import { Trans, useLingui } from "@lingui/react/macro";
 import type { Routine } from "@rakazo/contracts";
@@ -22,7 +33,6 @@ import {
   Input,
   Textarea,
 } from "@rakazo/ui-web";
-import { ChevronLeft, Clock, GitBranch, Globe, MessageSquare, Pause, Plus, X } from "lucide-react";
 import { useId } from "react";
 import { RoutineRunHistory } from "./RoutineRunHistory";
 import { RoutineSchedule } from "./RoutineSchedule";
@@ -124,7 +134,7 @@ export function RoutineListHeader({ onCreate }: { onCreate: () => void }) {
         title={t`Create Routine`}
         onClick={onCreate}
       >
-        <Plus strokeWidth={1.9} />
+        <HugeiconsIcon icon={Plus} strokeWidth={1.9} />
       </Button>
     </div>
   );
@@ -150,9 +160,15 @@ export function RoutineListRow({
       >
         <span className="grid h-5 w-5 place-items-center">
           {routine.active ? (
-            <Clock size={16} strokeWidth={1.6} className="text-success" aria-hidden />
+            <HugeiconsIcon
+              icon={Clock}
+              size={16}
+              strokeWidth={1.6}
+              className="text-success"
+              aria-hidden
+            />
           ) : (
-            <Pause size={14} className="text-muted-foreground" />
+            <HugeiconsIcon icon={Pause} size={14} className="text-muted-foreground" />
           )}
         </span>
         <span className="min-w-0 flex-1">
@@ -260,7 +276,7 @@ export function RoutineEditor({
           className="text-muted-foreground"
           aria-label={t`Back`}
         >
-          <ChevronLeft />
+          <HugeiconsIcon icon={ChevronLeft} />
         </Button>
         <div className="text-[15.5px] font-normal text-foreground">
           <Trans>Routine</Trans>
@@ -272,7 +288,7 @@ export function RoutineEditor({
           className="text-muted-foreground"
           aria-label={t`Close`}
         >
-          <X />
+          <HugeiconsIcon icon={X} />
         </Button>
       </div>
 
@@ -360,7 +376,7 @@ export function RoutineEditor({
                 }
                 className="absolute top-2 right-2 text-muted-foreground"
               >
-                <X />
+                <HugeiconsIcon icon={X} />
               </Button>
             </div>
           ))}
@@ -415,13 +431,13 @@ export function RoutineEditor({
           <DropdownMenuTrigger
             render={<Button variant="outline" className="mt-2 h-auto w-full rounded-xl py-3" />}
           >
-            <Plus />
+            <HugeiconsIcon icon={Plus} />
             <Trans>Add trigger</Trans>
           </DropdownMenuTrigger>
           <DropdownMenuContent side="top">
             <DropdownMenuSub>
               <DropdownMenuSubTrigger>
-                <Clock />
+                <HugeiconsIcon icon={Clock} />
                 <Trans>On a schedule</Trans>
               </DropdownMenuSubTrigger>
               <DropdownMenuSubContent className="min-w-[170px]">
@@ -439,7 +455,7 @@ export function RoutineEditor({
                 aria-describedby={slackAvailable ? undefined : slackDisabledReasonId}
                 onClick={() => addMessageProvider("slack")}
               >
-                <MessageSquare />
+                <HugeiconsIcon icon={MessageSquare} />
                 <Trans>Slack message</Trans>
               </DropdownMenuItem>
               {!slackAvailable ? (
@@ -467,12 +483,12 @@ export function RoutineEditor({
             ))}
 
             <DropdownMenuItem disabled={draft.githubEnabled} onClick={() => void addGithub()}>
-              <GitBranch />
+              <HugeiconsIcon icon={GitBranch} />
               <Trans>Git event</Trans>
             </DropdownMenuItem>
 
             <DropdownMenuItem disabled={draft.webhookEnabled} onClick={() => void addWebhook()}>
-              <Globe />
+              <HugeiconsIcon icon={Globe} />
               <Trans>Webhook</Trans>
             </DropdownMenuItem>
           </DropdownMenuContent>
@@ -512,7 +528,13 @@ function MessageTriggerCard({ provider, onRemove }: { provider: string; onRemove
   return (
     <div className="rounded-xl border border-border p-3">
       <div className="flex items-center gap-2.5 px-0.5">
-        <MessageSquare size={16} strokeWidth={1.6} className="text-muted-foreground" aria-hidden />
+        <HugeiconsIcon
+          icon={MessageSquare}
+          size={16}
+          strokeWidth={1.6}
+          className="text-muted-foreground"
+          aria-hidden
+        />
         <span className="flex-1 text-[14.5px] text-foreground">{label}</span>
         <Button
           variant="ghost"
@@ -521,7 +543,7 @@ function MessageTriggerCard({ provider, onRemove }: { provider: string; onRemove
           onClick={onRemove}
           className="text-muted-foreground"
         >
-          <X />
+          <HugeiconsIcon icon={X} />
         </Button>
       </div>
       <p className="mt-2.5 text-[13.5px] text-muted-foreground/70">
@@ -574,9 +596,21 @@ function InboundTriggerCard({
     <div className="rounded-xl border border-border p-3">
       <div className="flex items-center gap-2.5 px-0.5">
         {kind === "github" ? (
-          <GitBranch size={16} strokeWidth={1.6} className="text-muted-foreground" aria-hidden />
+          <HugeiconsIcon
+            icon={GitBranch}
+            size={16}
+            strokeWidth={1.6}
+            className="text-muted-foreground"
+            aria-hidden
+          />
         ) : (
-          <Globe size={16} strokeWidth={1.6} className="text-muted-foreground" aria-hidden />
+          <HugeiconsIcon
+            icon={Globe}
+            size={16}
+            strokeWidth={1.6}
+            className="text-muted-foreground"
+            aria-hidden
+          />
         )}
         <span className="flex-1 text-[14.5px] text-foreground">
           {kind === "github" ? <Trans>Git event</Trans> : <Trans>When a webhook fires</Trans>}
@@ -588,7 +622,7 @@ function InboundTriggerCard({
           onClick={onRemove}
           className="text-muted-foreground"
         >
-          <X />
+          <HugeiconsIcon icon={X} />
         </Button>
       </div>
       <div className="mt-2.5 space-y-2.5 text-[13.5px]">

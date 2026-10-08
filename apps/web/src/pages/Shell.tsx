@@ -1,3 +1,37 @@
+import {
+  ArrowDown01Icon as ArrowDown,
+  ArrowUp01Icon as ArrowUp,
+  BellIcon as Bell,
+  BoxIcon as Box,
+  ChevronDownIcon as ChevronDown,
+  Clock01Icon as Clock,
+  CopyIcon as Copy,
+  FolderOpenIcon as FolderOpen,
+  GaugeIcon as Gauge,
+  LayoutGridIcon as LayoutGrid,
+  LockIcon as Lock,
+  LogOutIcon as LogOut,
+  Maximize01Icon as Maximize2,
+  MenuIcon as Menu,
+  Mic01Icon as Mic,
+  MonitorIcon as Monitor,
+  MoreHorizontalIcon as MoreHorizontal,
+  PanelLeftCloseIcon as PanelLeftClose,
+  PanelLeftOpenIcon as PanelLeftOpen,
+  PaperclipIcon as Paperclip,
+  PencilIcon as Pencil,
+  PlusIcon as Plus,
+  PuzzleIcon as Puzzle,
+  ReplyIcon as Reply,
+  Search01Icon as Search,
+  Settings01Icon as Settings,
+  SmileIcon as Smile,
+  SquareIcon as Square,
+  TextQuoteIcon as TextQuote,
+  Delete02Icon as Trash2,
+  XIcon as X,
+} from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import { i18n } from "@lingui/core";
 import { t } from "@lingui/core/macro";
 import { Trans, useLingui } from "@lingui/react/macro";
@@ -84,39 +118,6 @@ import {
   RakazoMark,
   resolvePersonaColorDef,
 } from "@rakazo/ui-web";
-import {
-  ArrowDown,
-  ArrowUp,
-  Bell,
-  Box,
-  ChevronDown,
-  Clock,
-  Copy,
-  FolderOpen,
-  Gauge,
-  LayoutGrid,
-  Lock,
-  LogOut,
-  Maximize2,
-  Menu,
-  Mic,
-  Monitor,
-  MoreHorizontal,
-  PanelLeftClose,
-  PanelLeftOpen,
-  Paperclip,
-  Pencil,
-  Plus,
-  Puzzle,
-  Reply,
-  Search,
-  Settings,
-  Smile,
-  Square,
-  TextQuote,
-  Trash2,
-  X,
-} from "lucide-react";
 import {
   type ClipboardEvent,
   type DragEvent,
@@ -2877,7 +2878,8 @@ export function ShellPage() {
                   : "text-muted-foreground/70 hover:text-foreground/75"
               }`}
             >
-              <Bell
+              <HugeiconsIcon
+                icon={Bell}
                 size={15}
                 strokeWidth={1.8}
                 fill={activityMode ? "currentColor" : "none"}
@@ -2892,7 +2894,7 @@ export function ShellPage() {
               data-testid="minimize-bots-sidebar"
               onClick={() => setBotsSidebarCollapsedPref(true)}
             >
-              <PanelLeftClose size={15} strokeWidth={1.8} aria-hidden="true" />
+              <HugeiconsIcon icon={PanelLeftClose} size={15} strokeWidth={1.8} aria-hidden="true" />
             </button>
             <Popover open={createMenuOpen} onOpenChange={setCreateMenuOpen}>
               <PopoverTrigger
@@ -2951,7 +2953,7 @@ export function ShellPage() {
           className="mx-2.5 mb-3 w-auto rounded-xl bg-card dark:bg-input border border-border text-muted-foreground focus-within:border-ring"
         >
           <InputGroupAddon>
-            <Search size={16} strokeWidth={1.8} aria-hidden="true" />
+            <HugeiconsIcon icon={Search} size={16} strokeWidth={1.8} aria-hidden="true" />
           </InputGroupAddon>
           <InputGroupInput
             value={query}
@@ -3052,12 +3054,18 @@ export function ShellPage() {
                         >
                           <span className="flex min-w-0 items-center gap-1.5 truncate">
                             {group.showLock ? (
-                              <Lock size={11} strokeWidth={2} aria-hidden="true" />
+                              <HugeiconsIcon
+                                icon={Lock}
+                                size={11}
+                                strokeWidth={2}
+                                aria-hidden="true"
+                              />
                             ) : null}
                             <span className="truncate">{group.title}</span>
                           </span>
                           {group.emptySpaceId ? null : (
-                            <ChevronDown
+                            <HugeiconsIcon
+                              icon={ChevronDown}
                               size={14}
                               strokeWidth={1.8}
                               className={
@@ -3083,7 +3091,7 @@ export function ShellPage() {
                               });
                             }}
                           >
-                            <MoreHorizontal size={14} aria-hidden="true" />
+                            <HugeiconsIcon icon={MoreHorizontal} size={14} aria-hidden="true" />
                           </Button>
                         ) : null}
                       </div>
@@ -3129,7 +3137,8 @@ export function ShellPage() {
                                   className="inline-flex size-3.5 items-center justify-center rounded-sm text-muted-foreground hover:text-foreground"
                                   onClick={() => toggleRosterParent(item.chat.id)}
                                 >
-                                  <ChevronDown
+                                  <HugeiconsIcon
+                                    icon={ChevronDown}
                                     size={12}
                                     strokeWidth={2}
                                     className={`transition-colors duration-150 ${
@@ -3387,7 +3396,7 @@ export function ShellPage() {
           className="mx-3 mb-1 flex items-center gap-3 rounded-xl px-2.5 py-2 hover:bg-sidebar-accent"
         >
           <span className="grid h-[30px] w-[30px] place-items-center rounded-lg bg-accent text-foreground/80">
-            <LayoutGrid size={15} strokeWidth={1.8} />
+            <HugeiconsIcon icon={LayoutGrid} size={15} strokeWidth={1.8} />
           </span>
           <span className="text-[14px] font-normal text-foreground/90">
             <Trans>Integrations</Trans>
@@ -3418,7 +3427,11 @@ export function ShellPage() {
                   navigate("/app/artifacts");
                 }}
               >
-                <FolderOpen className="text-muted-foreground" strokeWidth={1.75} />
+                <HugeiconsIcon
+                  icon={FolderOpen}
+                  className="text-muted-foreground"
+                  strokeWidth={1.75}
+                />
                 <Trans>Artifacts</Trans>
               </Button>
               <Button
@@ -3430,7 +3443,11 @@ export function ShellPage() {
                   openSettings("general");
                 }}
               >
-                <Settings className="text-muted-foreground" strokeWidth={1.75} />
+                <HugeiconsIcon
+                  icon={Settings}
+                  className="text-muted-foreground"
+                  strokeWidth={1.75}
+                />
                 <Trans>Settings</Trans>
               </Button>
               <Button
@@ -3446,7 +3463,7 @@ export function ShellPage() {
                   openSettings("usage");
                 }}
               >
-                <Gauge className="text-muted-foreground" strokeWidth={1.75} />
+                <HugeiconsIcon icon={Gauge} className="text-muted-foreground" strokeWidth={1.75} />
                 <Trans>Usage</Trans>
               </Button>
               <Button
@@ -3459,7 +3476,7 @@ export function ShellPage() {
                   })
                 }
               >
-                <LogOut className="text-muted-foreground" strokeWidth={1.75} />
+                <HugeiconsIcon icon={LogOut} className="text-muted-foreground" strokeWidth={1.75} />
                 <Trans>Log out</Trans>
               </Button>
             </PopoverContent>
@@ -3529,7 +3546,7 @@ export function ShellPage() {
               onClick={() => setMobileSidebarOpen(true)}
               className="app-no-drag grid h-8 w-8 shrink-0 place-items-center rounded-lg text-foreground/75 hover:bg-accent md:hidden"
             >
-              <Menu size={19} strokeWidth={1.7} />
+              <HugeiconsIcon icon={Menu} size={19} strokeWidth={1.7} />
             </button>
             {botsSidebarCollapsed ? (
               <button
@@ -3540,7 +3557,12 @@ export function ShellPage() {
                 onClick={() => setBotsSidebarCollapsedPref(false)}
                 className="app-no-drag hidden h-8 w-8 shrink-0 place-items-center rounded-lg text-foreground/75 hover:bg-accent md:grid"
               >
-                <PanelLeftOpen size={19} strokeWidth={1.7} aria-hidden="true" />
+                <HugeiconsIcon
+                  icon={PanelLeftOpen}
+                  size={19}
+                  strokeWidth={1.7}
+                  aria-hidden="true"
+                />
               </button>
             ) : null}
             <button
@@ -3587,7 +3609,12 @@ export function ShellPage() {
                 data-active={panel === "computer" ? "" : undefined}
                 className="app-no-drag grid h-[30px] w-[34px] place-items-center rounded-[9px] hover:bg-accent data-active:bg-accent"
               >
-                <Monitor size={18} strokeWidth={1.6} className="text-foreground/75" />
+                <HugeiconsIcon
+                  icon={Monitor}
+                  size={18}
+                  strokeWidth={1.6}
+                  className="text-foreground/75"
+                />
               </button>
             ) : null}
           </div>
@@ -3595,7 +3622,7 @@ export function ShellPage() {
         {!active && !activeGroup && initialBotsLoaded ? (
           <div className="grid flex-1 place-items-center">
             <Button onClick={() => setPanel("create")}>
-              <Plus size={16} aria-hidden="true" />
+              <HugeiconsIcon icon={Plus} size={16} aria-hidden="true" />
               <Trans>Create new Bot</Trans>
             </Button>
           </div>
@@ -3752,7 +3779,7 @@ export function ShellPage() {
                       onClick={() => setPanel(panel === "settings" ? "computer" : "settings")}
                       className={panel === "settings" ? "text-foreground" : "text-muted-foreground"}
                     >
-                      <Settings size={16} strokeWidth={1.7} />
+                      <HugeiconsIcon icon={Settings} size={16} strokeWidth={1.7} />
                     </Button>
                   ) : null}
                   <Button
@@ -3761,7 +3788,7 @@ export function ShellPage() {
                     aria-label={t`Close panel`}
                     onClick={() => setPanel(null)}
                   >
-                    <X size={16} strokeWidth={1.8} />
+                    <HugeiconsIcon icon={X} size={16} strokeWidth={1.8} />
                   </Button>
                 </div>
               </div>
@@ -3826,7 +3853,7 @@ export function ShellPage() {
                       onClick={() => void openComputer()}
                     >
                       <span className="inline-flex items-center gap-2 rounded-full bg-overlay px-3.5 py-2 text-[14px] font-normal text-foreground shadow-none">
-                        <Maximize2 size={15} strokeWidth={1.9} aria-hidden />
+                        <HugeiconsIcon icon={Maximize2} size={15} strokeWidth={1.9} aria-hidden />
                         <Trans>Open</Trans>
                       </span>
                     </button>
@@ -4239,7 +4266,7 @@ export function ShellPage() {
                   setSpaceMenu(null);
                 }}
               >
-                <Trash2 />
+                <HugeiconsIcon icon={Trash2} />
                 {t`Delete space`}
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -4366,7 +4393,7 @@ export function ShellPage() {
                   setSectionMenu(null);
                 }}
               >
-                <Pencil />
+                <HugeiconsIcon icon={Pencil} />
                 {t`Rename section`}
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -4622,7 +4649,7 @@ export function ShellPage() {
                   aria-label={t`Close computer`}
                   onClick={() => setComputerOpen(false)}
                 >
-                  <X size={16} strokeWidth={1.8} />
+                  <HugeiconsIcon icon={X} size={16} strokeWidth={1.8} />
                 </Button>
               </div>
             </div>
@@ -5167,7 +5194,7 @@ const Transcript = memo(function Transcript({
           atEnd ? "pointer-events-none translate-y-2 opacity-0" : "translate-y-0 opacity-100"
         }`}
       >
-        <ArrowDown size={17} strokeWidth={1.8} />
+        <HugeiconsIcon icon={ArrowDown} size={17} strokeWidth={1.8} />
       </button>
     </div>
   );
@@ -5240,7 +5267,7 @@ const QuoteSelectionButton = memo(function QuoteSelectionButton({
         placement?.above === false ? "translate-y-0" : "-translate-y-full",
       )}
     >
-      <TextQuote size={13} strokeWidth={2} />
+      <HugeiconsIcon icon={TextQuote} size={13} strokeWidth={2} />
       {t`Quote`}
     </button>,
     document.body,
@@ -5718,7 +5745,7 @@ const Composer = memo(function Composer({
             }}
             className="shrink-0 text-destructive hover:text-foreground"
           >
-            <X size={13} strokeWidth={2} />
+            <HugeiconsIcon icon={X} size={13} strokeWidth={2} />
           </button>
         </div>
       ) : null}
@@ -5748,7 +5775,7 @@ const Composer = memo(function Composer({
             }}
             className="shrink-0 text-muted-foreground hover:text-foreground"
           >
-            <X size={13} strokeWidth={2} />
+            <HugeiconsIcon icon={X} size={13} strokeWidth={2} />
           </button>
         </div>
       ) : null}
@@ -5771,7 +5798,7 @@ const Composer = memo(function Composer({
                   className="h-8 w-8 rounded object-cover"
                 />
               ) : (
-                <Paperclip size={14} strokeWidth={1.8} />
+                <HugeiconsIcon icon={Paperclip} size={14} strokeWidth={1.8} />
               )}
               <span className="max-w-[180px] truncate" dir="auto">
                 {attachment.file.name}
@@ -5782,7 +5809,7 @@ const Composer = memo(function Composer({
                 onClick={() => onRemoveAttachment(attachment)}
                 className="text-muted-foreground hover:text-foreground"
               >
-                <X size={13} strokeWidth={2} />
+                <HugeiconsIcon icon={X} size={13} strokeWidth={2} />
               </button>
             </div>
           ))}
@@ -5844,7 +5871,12 @@ const Composer = memo(function Composer({
               onClick={() => insertSkill(skill)}
               className="flex w-full items-start gap-3 px-4 py-2.5 text-start hover:bg-accent"
             >
-              <Box size={16} strokeWidth={1.7} className="mt-0.5 shrink-0 text-muted-foreground" />
+              <HugeiconsIcon
+                icon={Box}
+                size={16}
+                strokeWidth={1.7}
+                className="mt-0.5 shrink-0 text-muted-foreground"
+              />
               <span className="min-w-0">
                 <span dir="auto" className="block text-[14px] text-foreground">
                   {skill.name}
@@ -5865,7 +5897,12 @@ const Composer = memo(function Composer({
                 onClick={() => runSlashAction(action.id)}
                 className="flex w-full items-center gap-3 px-4 py-2.5 text-start hover:bg-accent"
               >
-                <Settings size={16} strokeWidth={1.7} className="shrink-0 text-muted-foreground" />
+                <HugeiconsIcon
+                  icon={Settings}
+                  size={16}
+                  strokeWidth={1.7}
+                  className="shrink-0 text-muted-foreground"
+                />
                 <span className="text-[14px] text-foreground">{label}</span>
               </button>
             );
@@ -5899,7 +5936,7 @@ const Composer = memo(function Composer({
             expanded ? "row-start-2" : ""
           }`}
         >
-          <Plus size={16} strokeWidth={2} />
+          <HugeiconsIcon icon={Plus} size={16} strokeWidth={2} />
         </Button>
         <div
           ref={composerFieldRef}
@@ -5912,7 +5949,12 @@ const Composer = memo(function Composer({
               data-testid="skill-chip"
               className="inline-flex max-w-full items-center gap-1.5 rounded-full bg-accent px-2.5 py-1 text-[13px] text-foreground"
             >
-              <Box size={13} strokeWidth={1.7} className="shrink-0 text-muted-foreground/70" />
+              <HugeiconsIcon
+                icon={Box}
+                size={13}
+                strokeWidth={1.7}
+                className="shrink-0 text-muted-foreground/70"
+              />
               <span dir="auto" className="truncate">
                 {selectedSkill.name}
               </span>
@@ -5922,7 +5964,7 @@ const Composer = memo(function Composer({
                 onClick={() => setSelectedSkill(null)}
                 className="text-muted-foreground hover:text-foreground"
               >
-                <X size={12} strokeWidth={2} />
+                <HugeiconsIcon icon={X} size={12} strokeWidth={2} />
               </button>
             </span>
           ) : null}
@@ -5949,7 +5991,7 @@ const Composer = memo(function Composer({
                 }
                 className="text-muted-foreground hover:text-foreground"
               >
-                <X size={12} strokeWidth={2} />
+                <HugeiconsIcon icon={X} size={12} strokeWidth={2} />
               </button>
             </span>
           ))}
@@ -6036,7 +6078,7 @@ const Composer = memo(function Composer({
               onClick={onVoice}
               className="size-8 shrink-0 rounded-full text-foreground/75"
             >
-              <Mic size={16} strokeWidth={1.8} />
+              <HugeiconsIcon icon={Mic} size={16} strokeWidth={1.8} />
             </Button>
           ) : null}
           {running ? (
@@ -6048,7 +6090,7 @@ const Composer = memo(function Composer({
                 onClick={send}
                 className="size-8 cursor-pointer rounded-full bg-white text-black shadow-none transition-colors duration-150 hover:bg-white/90 active:opacity-90"
               >
-                <ArrowUp size={16} strokeWidth={2.2} />
+                <HugeiconsIcon icon={ArrowUp} size={16} strokeWidth={2.2} />
               </Button>
               <Button
                 variant="outline"
@@ -6058,7 +6100,7 @@ const Composer = memo(function Composer({
                 onClick={() => void onStop()}
                 className="size-8 cursor-pointer rounded-full border border-border bg-muted text-foreground/80 shadow-none transition-colors duration-150 hover:bg-accent hover:text-foreground active:opacity-90"
               >
-                <Square size={11} strokeWidth={0} fill="currentColor" />
+                <HugeiconsIcon icon={Square} size={11} strokeWidth={0} fill="currentColor" />
               </Button>
             </>
           ) : (
@@ -6069,7 +6111,7 @@ const Composer = memo(function Composer({
               onClick={send}
               className="size-8 shrink-0 cursor-pointer rounded-full bg-white text-black shadow-none transition-colors duration-150 hover:bg-white/90 active:opacity-90 disabled:bg-white/10 disabled:text-muted-foreground/30"
             >
-              <ArrowUp size={16} strokeWidth={2.2} />
+              <HugeiconsIcon icon={ArrowUp} size={16} strokeWidth={2.2} />
             </Button>
           )}
         </div>
@@ -6123,10 +6165,24 @@ function slashActionLabel(id: SlashActionId) {
 
 function MentionOptionIcon({ mention }: { mention: ComposerMention }) {
   if (mention.kind === "routine") {
-    return <Clock size={16} strokeWidth={1.7} className="mt-0.5 shrink-0 text-muted-foreground" />;
+    return (
+      <HugeiconsIcon
+        icon={Clock}
+        size={16}
+        strokeWidth={1.7}
+        className="mt-0.5 shrink-0 text-muted-foreground"
+      />
+    );
   }
   if (mention.kind === "connector") {
-    return <Puzzle size={16} strokeWidth={1.7} className="mt-0.5 shrink-0 text-muted-foreground" />;
+    return (
+      <HugeiconsIcon
+        icon={Puzzle}
+        size={16}
+        strokeWidth={1.7}
+        className="mt-0.5 shrink-0 text-muted-foreground"
+      />
+    );
   }
   if (mention.kind === "group") {
     return (
@@ -6147,10 +6203,24 @@ function MentionOptionIcon({ mention }: { mention: ComposerMention }) {
 
 function MentionChipIcon({ mention }: { mention: ComposerMention }) {
   if (mention.kind === "routine") {
-    return <Clock size={13} strokeWidth={1.7} className="shrink-0 text-muted-foreground/70" />;
+    return (
+      <HugeiconsIcon
+        icon={Clock}
+        size={13}
+        strokeWidth={1.7}
+        className="shrink-0 text-muted-foreground/70"
+      />
+    );
   }
   if (mention.kind === "connector") {
-    return <Puzzle size={13} strokeWidth={1.7} className="shrink-0 text-muted-foreground/70" />;
+    return (
+      <HugeiconsIcon
+        icon={Puzzle}
+        size={13}
+        strokeWidth={1.7}
+        className="shrink-0 text-muted-foreground/70"
+      />
+    );
   }
   if (mention.kind === "group" || mention.kind === "everyone") {
     return (
@@ -6261,7 +6331,7 @@ function MessageHoverActions({
                 "h-11 w-11 [@media(hover:hover)_and_(pointer:fine)]:h-7 [@media(hover:hover)_and_(pointer:fine)]:w-7",
               )}
             >
-              <Smile size={15} strokeWidth={1.7} />
+              <HugeiconsIcon icon={Smile} size={15} strokeWidth={1.7} />
             </PopoverTrigger>
             <PopoverContent
               align={side === "end" ? "start" : "end"}
@@ -6294,7 +6364,7 @@ function MessageHoverActions({
             "h-11 w-11 [@media(hover:hover)_and_(pointer:fine)]:h-7 [@media(hover:hover)_and_(pointer:fine)]:w-7",
           )}
         >
-          <Reply size={15} strokeWidth={1.7} />
+          <HugeiconsIcon icon={Reply} size={15} strokeWidth={1.7} />
         </button>
         <DropdownMenu open={moreOpen} onOpenChange={setMoreOpen}>
           <DropdownMenuTrigger
@@ -6304,11 +6374,11 @@ function MessageHoverActions({
               "h-11 w-11 [@media(hover:hover)_and_(pointer:fine)]:h-7 [@media(hover:hover)_and_(pointer:fine)]:w-7",
             )}
           >
-            <MoreHorizontal size={15} strokeWidth={1.7} />
+            <HugeiconsIcon icon={MoreHorizontal} size={15} strokeWidth={1.7} />
           </DropdownMenuTrigger>
           <DropdownMenuContent align={side === "end" ? "start" : "end"}>
             <DropdownMenuItem onClick={copyMessage}>
-              <Copy size={14} strokeWidth={1.7} />
+              <HugeiconsIcon icon={Copy} size={14} strokeWidth={1.7} />
               <Trans>Copy</Trans>
             </DropdownMenuItem>
           </DropdownMenuContent>

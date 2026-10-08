@@ -1,3 +1,10 @@
+import {
+  ChevronDownIcon as ChevronDown,
+  ChevronLeftIcon as ChevronLeft,
+  ChevronUpIcon as ChevronUp,
+  XIcon as X,
+} from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import { Plural, Trans, useLingui } from "@lingui/react/macro";
 import type {
   CapabilityInstall,
@@ -28,7 +35,6 @@ import {
   NativeSelect,
   NativeSelectOption,
 } from "@rakazo/ui-web";
-import { ChevronDown, ChevronLeft, ChevronUp, X } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { IntegrationSetup } from "../components/integrations/IntegrationSetup";
 import { optionalCatalogFeedProbe } from "../lib/optional-catalog-feed";
@@ -539,7 +545,7 @@ export function PluginsOverlay({
               aria-label={t`Back`}
               onClick={closeDetail}
             >
-              <ChevronLeft />
+              <HugeiconsIcon icon={ChevronLeft} />
             </Button>
             {item.logo ? (
               <img
@@ -631,9 +637,9 @@ export function PluginsOverlay({
               )}
             </span>
             {toolsOpen ? (
-              <ChevronUp className="size-4 text-muted-foreground" />
+              <HugeiconsIcon icon={ChevronUp} className="size-4 text-muted-foreground" />
             ) : (
-              <ChevronDown className="size-4 text-muted-foreground" />
+              <HugeiconsIcon icon={ChevronDown} className="size-4 text-muted-foreground" />
             )}
           </button>
           {toolsOpen ? (
@@ -680,7 +686,7 @@ export function PluginsOverlay({
           <DialogClose
             render={<Button variant="ghost" size="icon-sm" aria-label={t`Close integrations`} />}
           >
-            <X />
+            <HugeiconsIcon icon={X} />
           </DialogClose>
         </DialogHeader>
 

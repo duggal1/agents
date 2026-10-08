@@ -1,9 +1,15 @@
+import {
+  CodeIcon as Code2,
+  Download01Icon as Download,
+  FileTextIcon as FileText,
+  XIcon as X,
+} from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import { i18n } from "@lingui/core";
 import { t } from "@lingui/core/macro";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { ChatMarkdown } from "@rakazo/chat-ui/web";
 import { Button, Dialog, DialogClose, DialogContent, DialogTitle } from "@rakazo/ui-web";
-import { Code2, Download, FileText, X } from "lucide-react";
 import type { RefObject } from "react";
 import { useEffect, useRef, useState } from "react";
 import type { ArtifactTarget } from "../lib/artifact-open";
@@ -70,9 +76,9 @@ export function ArtifactFileCard(props: ArtifactFileCardProps) {
           >
             <span className="grid h-10 w-10 shrink-0 place-items-center rounded-[10px] bg-muted text-foreground">
               {props.mimeType === "text/html" ? (
-                <Code2 size={21} strokeWidth={1.8} />
+                <HugeiconsIcon icon={Code2} size={21} strokeWidth={1.8} />
               ) : (
-                <FileText size={21} strokeWidth={1.8} />
+                <HugeiconsIcon icon={FileText} size={21} strokeWidth={1.8} />
               )}
             </span>
             <span className="min-w-0">
@@ -89,7 +95,7 @@ export function ArtifactFileCard(props: ArtifactFileCardProps) {
             onClick={() => void startDownload()}
             className="grid w-14 shrink-0 place-items-center border-l border-border text-muted-foreground hover:bg-accent hover:text-foreground"
           >
-            <Download size={19} strokeWidth={1.8} />
+            <HugeiconsIcon icon={Download} size={19} strokeWidth={1.8} />
           </button>
         </div>
         {downloadError ? <DownloadError message={downloadError} /> : null}
@@ -179,7 +185,7 @@ function FilePreview({
             })()
           }
         >
-          <Download />
+          <HugeiconsIcon icon={Download} />
         </Button>
         <DialogClose
           ref={closeButtonRef}
@@ -188,7 +194,7 @@ function FilePreview({
             <Button variant="ghost" size="icon-lg" className="rounded-full text-muted-foreground" />
           }
         >
-          <X />
+          <HugeiconsIcon icon={X} />
         </DialogClose>
       </header>
       {downloadError ? (

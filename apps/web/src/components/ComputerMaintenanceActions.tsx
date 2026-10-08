@@ -1,3 +1,5 @@
+import { MoreHorizontalIcon as MoreHorizontal } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import { Trans, useLingui } from "@lingui/react/macro";
 import type { ComputerStatus } from "@rakazo/contracts";
 import {
@@ -15,7 +17,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@rakazo/ui-web";
-import { MoreHorizontal } from "lucide-react";
 import { useState } from "react";
 import { computerUpdates } from "../lib/computer-updates";
 import { rpc } from "../lib/rpc";
@@ -119,7 +120,7 @@ export function ComputerMaintenanceActions({
           disabled={busy && pending === null}
           render={<Button variant="ghost" size="icon-sm" className="text-muted-foreground" />}
         >
-          <MoreHorizontal />
+          <HugeiconsIcon icon={MoreHorizontal} />
         </DropdownMenuTrigger>
         <DropdownMenuContent
           align="end"

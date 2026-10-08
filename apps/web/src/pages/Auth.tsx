@@ -1,7 +1,8 @@
+import { EyeIcon as Eye, EyeOffIcon as EyeOff } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { readBoundedJsonResponse, signupRequiresEmailVerification } from "@rakazo/core";
 import { Button, Input, Label, RakazoMark } from "@rakazo/ui-web";
-import { Eye, EyeOff } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { authClient } from "../lib/auth";
@@ -192,7 +193,7 @@ export function AuthPage({ mode }: { mode: AuthMode }) {
                   aria-pressed={showPassword}
                   className="absolute inset-y-0 right-2 my-auto text-muted-foreground"
                 >
-                  {showPassword ? <EyeOff /> : <Eye />}
+                  {showPassword ? <HugeiconsIcon icon={EyeOff} /> : <HugeiconsIcon icon={Eye} />}
                 </Button>
               </div>
               {mode === "in" && reset?.passwordReset ? (

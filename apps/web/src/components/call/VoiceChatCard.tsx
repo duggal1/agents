@@ -1,8 +1,12 @@
+import {
+  AudioLinesIcon as AudioLines,
+  ChevronDownIcon as ChevronDown,
+} from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import { useLingui } from "@lingui/react/macro";
 import type { VoiceChatGroup } from "@rakazo/core";
 import { speechFromBlocks, voiceChatDuration, voiceChatSummary } from "@rakazo/core";
 import { buttonVariants, cn } from "@rakazo/ui-web";
-import { AudioLines, ChevronDown } from "lucide-react";
 import { useState } from "react";
 
 function clock(seconds: number): string {
@@ -35,7 +39,11 @@ export function VoiceChatCard({
         onClick={() => setOpen((wasOpen) => !wasOpen)}
         className="flex w-full items-center gap-2 px-3 py-2 text-start"
       >
-        <AudioLines className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+        <HugeiconsIcon
+          icon={AudioLines}
+          className="size-4 shrink-0 text-muted-foreground"
+          aria-hidden="true"
+        />
         <span className="text-sm font-normal text-foreground">{t`Voice chat`}</span>
         <span className="text-xs tabular-nums text-muted-foreground">
           {clock(voiceChatDuration(group))}
@@ -47,7 +55,8 @@ export function VoiceChatCard({
           )}
         >
           <span className="sr-only">{open ? t`Hide transcript` : t`Show transcript`}</span>
-          <ChevronDown
+          <HugeiconsIcon
+            icon={ChevronDown}
             className={cn("size-4 transition-colors duration-150", open && "rotate-180")}
           />
         </span>

@@ -11,11 +11,27 @@ This is the light system converted 1:1: same layout, spacing, radii, typography,
   `packages/ui-web` — the source of truth for every primitive below
 - Design tokens: `@rakazo/ui-tokens` (single TypeScript source generating
   `tokens.css`); never hardcode a product hex
-- Icons: hugeicons + Phosphor (`@hugeicons/react`, `@phosphor-icons/react` in
-  `packages/ui-web`). Never pick from memory — the full catalog lives on disk;
-  see `.agents/skills/icons/SKILL.md` (this is the entire icon documentation —
-  it is referenced here, not copied here). Sizes: `size-3.5`–`size-4` inline,
-  `size-5` logo. Existing `lucide-react` usage stays where it is.
+- Icons: **hugeicons is the primary set** — `@hugeicons/react` renders
+  `@hugeicons/core-free-icons` data. Phosphor (`@phosphor-icons/react`) is the
+  fallback, used only when hugeicons has no clean match for the meaning. Both
+  live in `packages/ui-web`. Never pick from memory — the full catalog lives on
+  disk; see `.agents/skills/icons/SKILL.md` (this is the entire icon
+  documentation — it is referenced here, not copied here). Render through
+  `HugeiconsIcon`:
+
+  ```tsx
+  import { HugeiconsIcon } from "@hugeicons/react";
+  import { CheckIcon } from "@hugeicons/core-free-icons";
+
+  <HugeiconsIcon icon={CheckIcon} className="size-4" />;
+  ```
+
+  Sizes: `size-3.5`–`size-4` inline, `size-5` logo. Colour is always
+  `currentColor`; never a hex on an icon. One icon per control, no emoji.
+  `lucide-react` is retired — it is not a dependency of `apps/web` or
+  `packages/ui-web` any more, and no new import may be added. Icons that arrive
+  with a vendored `shadcn add` component are swapped to hugeicons in the same
+  change.
 - Motion: CSS `cubic-bezier(0.22, 1, 0.36, 1)` (`EASE_LUXE`) via Base UI
   `data-starting-style` / `data-ending-style` — never springs
 - Fonts: Geist Variable via fontsource; headings add `tracking-tight`,
@@ -36,15 +52,56 @@ Dark theme only. Surfaces, text and borders use the **neutral** ramp exclusively
 | Card | `neutral-850` (custom) | `#1f1f1f` | Cards, rows, dialogs, toasts, inputs |
 | Card hover / fill | `neutral-800` | `#262626` | Card hover, chip fills, icon slots |
 
-`neutral-850` is not in Tailwind's default ramp. Register it:
+### Custom hexes
+
+Tailwind's neutral ramp is a set of shelf heights, not a UI state machine. It
+jumps `neutral-900 #171717` → `neutral-800 #262626` in a single 15-unit step,
+which is too coarse for the states this product actually needs: the hover under
+a control that sits on a card, the recessed fill inside a card, the one-step
+lift of a close button on a dialog. Using the built-in steps there produces
+either no visible change (hovering `800` on a `800` card) or a jump so large it
+reads as a different surface.
+
+So we register the in-between steps and use them by name. **A custom step is not
+a new color — it is the missing rung between two ramp values.** They stay on the
+neutral axis; they never carry meaning and never substitute for a semantic
+accent.
 
 ```css
 @theme {
-  --color-neutral-850: #1f1f1f;
+  --color-neutral-850: #1f1f1f; /* card, dialog, popover, toast, input */
+  --color-neutral-820: #232323; /* hover on 850 — the one-step lift */
+  --color-neutral-780: #2b2b2b; /* hover on 800 */
+  --color-neutral-870: #1b1b1b; /* recessed inside a card */
 }
 ```
 
-Note: Tailwind's built-in `neutral-800` is already `#262626`. A card at `#262626` with a hover of `neutral-800` would not change color. So the card is `#1f1f1f` (the midpoint of 900 and 800) and hover is `neutral-800`. If cards must be `#262626`, hover has to move to `neutral-700`.
+| Step | Hex | Sits between | Use |
+|---|---|---|---|
+| `neutral-870` | `#1b1b1b` | 900 / 850 | Recessed field inside a card |
+| `neutral-850` | `#1f1f1f` | 900 / 800 | Card, dialog, popover, toast, input |
+| `neutral-820` | `#232323` | 850 / 800 | Hover of a control on an 850 surface |
+| `neutral-800` | `#262626` | — | Card hover and chip fill |
+| `neutral-780` | `#2b2b2b` | 800 / 700 | Hover of a control on an 800 surface |
+
+Rules:
+- Pick the step by the surface underneath, not by habit. A control on `850`
+lifts to `820`; the same control on `800` lifts to `780`. The hover must always
+be **one visible step**, never two.
+- Hover is a surface change, never a border or text change on its own. Pair it
+with at most one text step (`neutral-300` → `neutral-100`).
+- This is why the dialog close button is `text-neutral-300` on `bg-popover` and
+`hover:bg-neutral-820 hover:text-neutral-100`: the cross is a control on an 850
+surface, so it takes the 850 hover rung, and its label takes one text step.
+- The scrim is `bg-black/60`, never a neutral. A dialog backdrop is occlusion,
+not a surface, and a neutral scrim reads as a washed-out card.
+- A custom step is only added when a real state needs it. Do not invent
+`neutral-835` because a mockup looked nice.
+
+Note: Tailwind's built-in `neutral-800` is already `#262626`. A card at
+`#262626` with a hover of `neutral-800` would not change color. So the card is
+`#1f1f1f` and hover is `neutral-800`. If cards must be `#262626`, hover has to
+move to `neutral-780`.
 
 ### Tokens (`packages/ui-tokens`, generated `tokens.css`)
 
@@ -406,6 +463,30 @@ body hero slot.
   `cubic-bezier(0.22,1,0.36,1)` ease, same blur-in mount (`opacity 0 → 1`,
   `blur 6 → 0`, `y 6 → 0`, 350ms), same pointer-on-everything rule.
 
+### Launch mark (macOS)
+
+The Electron shell opens on the Sapphire mark rendered as liquid metal, centered
+on the `neutral-900` canvas at `min(46vmin, 340px)`, and it is the only thing on
+screen.
+
+- **Once per launch, never per navigation.** The renderer decides at module
+  evaluation (`showLaunchSplash`), so a route change never replays it and a warm
+  window reopen — which is a reopen, not a launch) never replays it either.
+- **macOS only.** It is gated on `desktopBridge()?.platform === "darwin"`. Web,
+  Windows, Linux and the setup wizard never see it.
+- **Motion.** `blurInLaunch` — `opacity 0 → 1`, `blur 12 → 0`, no drift, 900ms
+  `EASE_LUXE`; then the overlay exits with `opacity → 0`, `blur → 6px` in 150ms.
+  The mark holds for 2.6s total. It is the one place a blur larger than 8px is
+  allowed, because the surface behind it is empty — nothing is smearing.
+- **Reduced motion skips it entirely** (`useReducedMotion()`), rather than
+  showing a static logo.
+- **The depth map is deliberately small.** `processImage` samples at 384px with
+  140 Jacobi iterations, not source resolution — the shader re-tints and blurs
+  the gradient anyway, and 1000px/200 iterations blocked the main thread for
+  over a second on launch, which read as the app lagging before it appeared.
+- The mark is the shared `<StartMark />` (`packages/ui-web/src/components/start.tsx`),
+  square via `aspectRatio: 1 / 1`. Never restyle it locally.
+
 ### Job list rows
 `group rounded-lg border border-neutral-800 bg-neutral-850 px-6 py-4 hover:border-neutral-700 hover:bg-neutral-800`; title `text-[15px]`, meta line `text-[13px] text-neutral-400` with `&middot;` separators, flag inline, work-mode chip, right-aligned `timeAgo` in `text-neutral-500`; row CTA "Preview →" goes `neutral-400`→`neutral-200` on hover.
 
@@ -458,9 +539,9 @@ export function TerminalLoader({
 /* terminal-loader.css */
 .term-loader {
   --term-cycle: 800ms;             /* one full spinner rotation */
-  --term-fg: #a3a3a3;              /* resting label — neutral-400 */
-  --term-hi: #fafafa;              /* shimmer highlight — neutral-50 */
-  --term-accent: var(--agent-color, #fafafa);   /* spinner — agent color, default neutral-50 */
+  --term-fg: var(--muted-foreground);  /* resting label — neutral-400 */
+  --term-hi: var(--foreground);        /* shimmer highlight AND default spinner — neutral-50 */
+  --term-accent: var(--agent-color, var(--term-hi)); /* spinner — agent color, else --term-hi */
   --term-lh: 1.35em;
 
   display: inline-flex;
@@ -548,6 +629,13 @@ export function TerminalLoader({
 }
 ```
 
+**Spinner and shimmer share one color set.** The spinner's highlight, the
+shimmer's highlight and the resting label all read from `--term-hi` /
+`--term-fg`; nothing in the loader may hardcode a hex. The shimmer period is
+exactly two spinner cycles, so they never drift apart. Any label rendered with
+the shared `.term-shimmer` class inherits the same two variables, which is why a
+standalone `Shimmer` and the loader's own label can never disagree.
+
 Usage:
 - Label is a present-participle phrase, sentence case, no trailing ellipsis, no exclamation: "Running agent", "Researching accounts", "Generating job post".
 - Agent run: `<TerminalLoader label="Running agent" color={agent.color} />`. Everything else: omit `color`.
@@ -579,42 +667,50 @@ Hard rules:
 | List / section content | 350ms | 150ms |
 | Hero entrance | 800ms, staggerChildren 0.15, delayChildren 0.07 | — |
 
-### Presets (motion: `EASE_LUXE` + `blurIn`, shared by every surface)
+### Presets — one module, `packages/ui-web/src/motion.ts`
+
+Every value below is exported from `packages/ui-web/src/motion.ts`, re-exported
+from `@rakazo/ui-web` and available at the `@rakazo/ui-web/motion` subpath.
+Import the preset; **never re-declare an easing or a duration at the call site.**
+
+```tsx
+import { blurInFloat, DURATION, EASE_LUXE } from "@rakazo/ui-web";
+
+<motion.div {...blurInFloat} />;
+```
+
+Exports: `EASE_LUXE`, `EASE_LUXE_CSS`, `DURATION`, `luxe(duration, delay?)`,
+`luxeTransition`, `blurPreset(options)`, and the named presets `blurIn`
+(list/section), `blurInFloat` (dropdown, popover, tooltip, select, command),
+`blurInDialog`, `blurInToast`, `blurInLaunch` (the macOS launch mark),
+`heroContainer`/`heroItem`, `toastMotion`.
+
+`LuxeMotionProvider` (also from `@rakazo/ui-web`) wraps the app root in
+`MotionConfig transition={luxeTransition} reducedMotion="user"`, so a bare
+`animate` prop already tweens luxe and OS reduced-motion is honoured without any
+per-component branch.
 
 ```ts
-export const EASE_LUXE = [0.22, 1, 0.36, 1] as const;
+import type { Transition } from "motion/react";
 
-// Hero container + item (unchanged)
-export const container = {
-  hidden: {},
-  visible: { transition: { staggerChildren: 0.15, delayChildren: 0.07 } },
-};
-export const item = {
-  hidden: { opacity: 0, y: 6, filter: "blur(7px)" },
-  visible: {
-    opacity: 1,
-    y: 0,
-    filter: "blur(0px)",
-    transition: { type: "tween", duration: 0.8, ease: EASE_LUXE },
-  },
-};
+export const EASE_LUXE: [number, number, number, number] = [0.22, 1, 0.36, 1];
 
-// Default blur in / blur out for everything else
-export const blurIn = {
-  initial: { opacity: 0, y: 6, filter: "blur(6px)" },
-  animate: {
-    opacity: 1,
-    y: 0,
-    filter: "blur(0px)",
-    transition: { type: "tween", duration: 0.35, ease: EASE_LUXE },
-  },
-  exit: {
-    opacity: 0,
-    filter: "blur(4px)",
-    transition: { type: "tween", duration: 0.15, ease: EASE_LUXE },
-  },
-};
+export const DURATION = {
+  hover: 0.15, float: 0.2, dialog: 0.2, toast: 0.25,
+  list: 0.35, exit: 0.15, ending: 0.12, hero: 0.8, launch: 0.9,
+} as const;
+
+export function luxe(duration: number, delay = 0): Transition {
+  return delay > 0
+    ? { type: "tween", duration, delay, ease: EASE_LUXE }
+    : { type: "tween", duration, ease: EASE_LUXE };
+}
 ```
+
+Why this shape: every preset is the same animation at a different duration, so
+nothing in the product can invent a new motion shape. `blurPreset` is the only
+factory, and it caps blur at 6px in / 4px out and drift at 6px — a new surface
+picks a duration from the table, never a new curve.
 
 ### Dialogs and popovers (Base UI data attributes)
 
@@ -633,7 +729,11 @@ The old `scale-95` pop is replaced by blur plus a barely perceptible `scale-[0.9
 - Loading → success/error swap: content cross-fades with the same blur in/out (200ms); the toast itself does not re-enter.
 
 ### Reduced motion
-`prefers-reduced-motion: reduce`: drop blur and translate, keep a 100ms opacity fade. In `motion/react`, branch on `useReducedMotion()`.
+`prefers-reduced-motion: reduce`: drop blur and translate, keep a 100ms opacity
+fade. `LuxeMotionProvider` sets `reducedMotion="user"` on `MotionConfig`, so
+`motion/react` handles this without a per-component branch. Branch on
+`useReducedMotion()` only where a whole surface must not render at all — the
+macOS launch mark is the one place that does so.
 
 ### Hover / press
 Color-only transitions (`transition-colors duration-150`). No transform on hover. Press may use `active:opacity-90`, nothing else.

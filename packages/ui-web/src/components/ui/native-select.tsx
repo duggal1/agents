@@ -1,5 +1,6 @@
+import { ChevronDownIcon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import { cn } from "@rakazo/ui-web/lib/utils";
-import { ChevronDownIcon } from "lucide-react";
 import type * as React from "react";
 
 type NativeSelectProps = Omit<React.ComponentProps<"select">, "size"> & {
@@ -22,7 +23,8 @@ function NativeSelect({ className, size = "default", ...props }: NativeSelectPro
         className="h-8.5 w-full min-w-0 cursor-pointer appearance-none rounded-lg border border-neutral-700/50 bg-neutral-850/80 py-1 pr-8 pl-2.5 text-[14px] text-neutral-100 transition-colors outline-none select-none selection:bg-primary selection:text-primary-foreground placeholder:text-neutral-500 focus-visible:border-ring focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:cursor-default disabled:opacity-60 data-[size=sm]:h-7 data-[size=sm]:rounded-[min(var(--radius-md),10px)] data-[size=sm]:py-0.5"
         {...props}
       />
-      <ChevronDownIcon
+      <HugeiconsIcon
+        icon={ChevronDownIcon}
         className="pointer-events-none absolute top-1/2 right-2.5 size-4 -translate-y-1/2 text-muted-foreground select-none"
         aria-hidden="true"
         data-slot="native-select-icon"

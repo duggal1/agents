@@ -1,3 +1,5 @@
+import { CheckIcon as Check, XIcon as X } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import { t } from "@lingui/core/macro";
 import { Trans, useLingui } from "@lingui/react/macro";
 import type { Bot, BotMcpServer, McpServer, McpTransport } from "@rakazo/contracts";
@@ -23,7 +25,6 @@ import {
   TabsList,
   TabsTrigger,
 } from "@rakazo/ui-web";
-import { Check, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { connectMcpOauth, MCP_OAUTH_CHANNEL } from "../lib/mcp-connect";
 import { rpc } from "../lib/rpc";
@@ -257,7 +258,7 @@ export function McpServersOverlay({ onClose }: { onClose: () => void }) {
           <DialogClose
             render={<Button variant="ghost" size="icon-sm" aria-label={t`Close MCP servers`} />}
           >
-            <X />
+            <HugeiconsIcon icon={X} />
           </DialogClose>
         </DialogHeader>
         {error ? (
@@ -397,7 +398,7 @@ export function McpServersOverlay({ onClose }: { onClose: () => void }) {
                             aria-pressed={selected}
                             onClick={() => toggleBot(bot.id)}
                           >
-                            {selected ? <Check aria-hidden="true" /> : null}
+                            {selected ? <HugeiconsIcon icon={Check} aria-hidden="true" /> : null}
                             {bot.name}
                           </Button>
                         );
@@ -465,7 +466,9 @@ export function McpServersOverlay({ onClose }: { onClose: () => void }) {
                                 aria-pressed={assigned}
                                 onClick={() => void toggleAssignment(server, bot.id)}
                               >
-                                {assigned ? <Check aria-hidden="true" /> : null}
+                                {assigned ? (
+                                  <HugeiconsIcon icon={Check} aria-hidden="true" />
+                                ) : null}
                                 {bot.name}
                               </Button>
                             );

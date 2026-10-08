@@ -1,3 +1,17 @@
+import {
+  ArchiveIcon as Archive,
+  BellIcon as Bell,
+  BellDotIcon as BellDot,
+  CheckIcon as Check,
+  CopyIcon as Copy,
+  EraserIcon as Eraser,
+  Folder01Icon as Folder,
+  FolderPlusIcon as FolderPlus,
+  PencilIcon as Pencil,
+  PinIcon as Pin,
+  Delete02Icon as Trash2,
+} from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import { useLingui } from "@lingui/react/macro";
 import type { Bot, BotSection } from "@rakazo/contracts";
 import {
@@ -10,19 +24,6 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@rakazo/ui-web";
-import {
-  Archive,
-  Bell,
-  BellDot,
-  Check,
-  Copy,
-  Eraser,
-  Folder,
-  FolderPlus,
-  Pencil,
-  Pin,
-  Trash2,
-} from "lucide-react";
 
 export type ContextMenuPosition = { x: number; y: number };
 
@@ -87,64 +88,66 @@ export function BotContextMenu({
         className="max-h-[min(420px,calc(100vh-16px))] w-[264px] overflow-y-auto"
       >
         <DropdownMenuItem onClick={onTogglePinned}>
-          <Pin />
+          <HugeiconsIcon icon={Pin} />
           {bot.pinned ? t`Unpin` : t`Pin`}
         </DropdownMenuItem>
         <DropdownMenuSub>
           <DropdownMenuSubTrigger>
-            <Folder />
+            <HugeiconsIcon icon={Folder} />
             {t`Move to`}
           </DropdownMenuSubTrigger>
           <DropdownMenuSubContent className="max-h-[min(420px,calc(100vh-16px))] min-w-[180px] overflow-y-auto">
             {sections.map((section) => (
               <DropdownMenuItem key={section.id} onClick={() => onMoveToSection(section.id)}>
-                <Folder />
+                <HugeiconsIcon icon={Folder} />
                 <span dir="auto">{section.name}</span>
-                {bot.sectionId === section.id ? <Check className="ms-auto" /> : null}
+                {bot.sectionId === section.id ? (
+                  <HugeiconsIcon icon={Check} className="ms-auto" />
+                ) : null}
               </DropdownMenuItem>
             ))}
             <DropdownMenuItem onClick={() => onMoveToSection(null)}>
-              <Folder />
+              <HugeiconsIcon icon={Folder} />
               {t`Unassigned`}
-              {bot.sectionId === null ? <Check className="ms-auto" /> : null}
+              {bot.sectionId === null ? <HugeiconsIcon icon={Check} className="ms-auto" /> : null}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={onCreateSection}>
-              <FolderPlus />
+              <HugeiconsIcon icon={FolderPlus} />
               {t`New section`}
             </DropdownMenuItem>
             {bot.sectionId && onRenameSection ? (
               <DropdownMenuItem onClick={() => onRenameSection(bot.sectionId!)}>
-                <Pencil />
+                <HugeiconsIcon icon={Pencil} />
                 {t`Rename section`}
               </DropdownMenuItem>
             ) : null}
           </DropdownMenuSubContent>
         </DropdownMenuSub>
         <DropdownMenuItem onClick={onToggleUnread}>
-          {bot.unread ? <BellDot /> : <Bell />}
+          {bot.unread ? <HugeiconsIcon icon={BellDot} /> : <HugeiconsIcon icon={Bell} />}
           {bot.unread ? t`Mark as Read` : t`Mark as Unread`}
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={onEdit}>
-          <Pencil />
+          <HugeiconsIcon icon={Pencil} />
           {t`Edit Profile`}
         </DropdownMenuItem>
         <DropdownMenuItem onClick={onDuplicate}>
-          <Copy />
+          <HugeiconsIcon icon={Copy} />
           {t`Duplicate`}
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={onClear}>
-          <Eraser />
+          <HugeiconsIcon icon={Eraser} />
           {t`Clear conversation`}
         </DropdownMenuItem>
         <DropdownMenuItem onClick={onArchive}>
-          <Archive />
+          <HugeiconsIcon icon={Archive} />
           {t`Archive`}
         </DropdownMenuItem>
         <DropdownMenuItem variant="destructive" onClick={onDelete}>
-          <Trash2 />
+          <HugeiconsIcon icon={Trash2} />
           {t`Delete`}
         </DropdownMenuItem>
       </DropdownMenuContent>

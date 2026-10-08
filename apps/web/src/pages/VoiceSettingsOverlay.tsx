@@ -1,3 +1,5 @@
+import { XIcon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import { Trans, useLingui } from "@lingui/react/macro";
 import type { VoiceCatalogEntry, VoiceCredential, VoiceInfo, VoiceStatus } from "@rakazo/contracts";
 import {
@@ -12,7 +14,6 @@ import {
   NativeSelect,
   NativeSelectOption,
 } from "@rakazo/ui-web";
-import { XIcon } from "lucide-react";
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { rpc } from "../lib/rpc";
 
@@ -200,7 +201,7 @@ export function VoiceSettingsOverlay({
             disabled={busy}
             render={<Button variant="ghost" size="icon-sm" />}
           >
-            <XIcon />
+            <HugeiconsIcon icon={XIcon} />
           </DialogClose>
         </div>
       ) : null}

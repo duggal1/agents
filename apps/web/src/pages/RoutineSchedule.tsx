@@ -1,3 +1,5 @@
+import { Clock01Icon as Clock } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import { t } from "@lingui/core/macro";
 import { Trans, useLingui } from "@lingui/react/macro";
 import {
@@ -8,7 +10,6 @@ import {
   cronFromPreset,
 } from "@rakazo/core";
 import { Input, NativeSelect, NativeSelectOption } from "@rakazo/ui-web";
-import { Clock } from "lucide-react";
 
 const UNITS: CronUnit[] = ["minutes", "hours", "days"];
 const NUMBERS = [1, 2, 3, 5, 10, 15, 30, 45];
@@ -228,7 +229,13 @@ export function RoutineSchedule({
   return (
     <div className="mt-2 rounded-xl border border-border p-3">
       <div className="flex items-center gap-2.5 px-0.5">
-        <Clock size={17} strokeWidth={1.6} className="shrink-0 text-muted-foreground" aria-hidden />
+        <HugeiconsIcon
+          icon={Clock}
+          size={17}
+          strokeWidth={1.6}
+          className="shrink-0 text-muted-foreground"
+          aria-hidden
+        />
         <span className="text-[14.5px] text-foreground">{lead}</span>
         {detail ? (
           <span className="flex-1 text-[14.5px] text-muted-foreground">{detail}</span>

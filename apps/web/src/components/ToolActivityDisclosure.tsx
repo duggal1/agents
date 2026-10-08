@@ -1,6 +1,7 @@
+import { ChevronRightIcon as ChevronRight } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import { Plural } from "@lingui/react/macro";
 import type { ThreadMessage } from "@rakazo/contracts";
-import { ChevronRight } from "lucide-react";
 import type { ReactNode } from "react";
 import { formatToolActivityDuration, toolStepCount } from "../lib/tool-activity-view";
 
@@ -86,7 +87,8 @@ export function ToolActivityDisclosure({
           live ? "text-foreground/75" : "text-muted-foreground"
         }`}
       >
-        <ChevronRight
+        <HugeiconsIcon
+          icon={ChevronRight}
           aria-hidden
           size={14}
           strokeWidth={1.8}

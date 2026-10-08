@@ -1,7 +1,8 @@
+import { CheckIcon as Check } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import { Trans, useLingui } from "@lingui/react/macro";
 import type { IntegrationCatalogResult, IntegrationSetupState } from "@rakazo/contracts";
 import { Button, Input } from "@rakazo/ui-web";
-import { Check } from "lucide-react";
 import { useEffect, useId, useState } from "react";
 import { newClientId } from "../../lib/client-id";
 import { connectMcpOauth } from "../../lib/mcp-connect";
@@ -153,7 +154,9 @@ export function IntegrationSetup({
                 className={`flex min-h-11 w-full items-center justify-between border-b border-border px-3.5 py-2.5 text-left last:border-0 ${choice === id ? "bg-muted" : "hover:bg-accent"}`}
               >
                 <span>{label}</span>
-                {choice === id ? <Check className="size-4" aria-hidden /> : null}
+                {choice === id ? (
+                  <HugeiconsIcon icon={Check} className="size-4" aria-hidden />
+                ) : null}
               </button>
             ))}
         </fieldset>

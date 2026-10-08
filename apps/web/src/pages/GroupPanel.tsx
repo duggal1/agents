@@ -1,7 +1,8 @@
+import { CheckIcon as Check, XIcon as X } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { type Bot, GROUP_MEMBER_MAX, GROUP_MEMBER_MIN, type Group } from "@rakazo/contracts";
 import { BotAvatar, Button, Input } from "@rakazo/ui-web";
-import { Check, X } from "lucide-react";
 import { useId, useMemo, useState } from "react";
 
 function validSelection(name: string, selected: readonly string[]) {
@@ -57,7 +58,9 @@ function MemberPicker({
             <span className="flex-1 text-[15px] text-foreground" dir="auto">
               {bot.name}
             </span>
-            {checked ? <Check size={14} className="text-muted-foreground" aria-hidden /> : null}
+            {checked ? (
+              <HugeiconsIcon icon={Check} size={14} className="text-muted-foreground" aria-hidden />
+            ) : null}
           </button>
         );
       })}
@@ -107,7 +110,7 @@ export function CreateGroupForm({
           onClick={onCancel}
           className="text-muted-foreground"
         >
-          <X />
+          <HugeiconsIcon icon={X} />
         </Button>
       </div>
       {error ? (

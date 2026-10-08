@@ -1,3 +1,10 @@
+import {
+  AlertCircleIcon,
+  CheckmarkCircle02Icon,
+  CircleIcon,
+  LoaderCircleIcon,
+} from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { COMPUTER_UPDATE_STAGES, type ComputerUpdate } from "@rakazo/contracts";
 import { computerUpdateNeedsAttention, computerUpdateStages } from "@rakazo/core";
@@ -16,7 +23,6 @@ import {
   DialogContent,
   DialogTitle,
 } from "@rakazo/ui-web";
-import { CheckCircle2, Circle, CircleAlert, LoaderCircle } from "lucide-react";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { computerUpdates } from "../lib/computer-updates";
 import { LoadingState } from "./ai/primitives";
@@ -80,12 +86,15 @@ export function ComputerUpdateProgress({ onCompleted }: { onCompleted: () => voi
             }}
           >
             {computerUpdateNeedsAttention(update) ? (
-              <CircleAlert className="text-destructive" />
+              <HugeiconsIcon icon={AlertCircleIcon} className="text-destructive" />
             ) : (
               <LoadingState
                 label={title(update)}
                 indicator={
-                  <LoaderCircle className="size-5 animate-spin motion-reduce:animate-none" />
+                  <HugeiconsIcon
+                    icon={LoaderCircleIcon}
+                    className="size-5 animate-spin motion-reduce:animate-none"
+                  />
                 }
               />
             )}
@@ -120,12 +129,12 @@ export function ComputerUpdateProgress({ onCompleted }: { onCompleted: () => voi
                   const current = computerUpdateStages(selected.action).indexOf(selected.stage);
                   const Icon =
                     index < current
-                      ? CheckCircle2
+                      ? CheckmarkCircle02Icon
                       : index === current
                         ? selected.status === "failed"
-                          ? CircleAlert
-                          : LoaderCircle
-                        : Circle;
+                          ? AlertCircleIcon
+                          : LoaderCircleIcon
+                        : CircleIcon;
                   return (
                     <li
                       key={stage}
@@ -135,7 +144,8 @@ export function ComputerUpdateProgress({ onCompleted }: { onCompleted: () => voi
                         index === current ? "text-foreground" : "text-muted-foreground",
                       )}
                     >
-                      <Icon
+                      <HugeiconsIcon
+                        icon={Icon}
                         aria-hidden
                         className={cn(
                           "size-5 shrink-0",

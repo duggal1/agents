@@ -1,3 +1,16 @@
+import {
+  ChevronLeftIcon as ChevronLeft,
+  Download01Icon as Download,
+  FilterIcon as Filter,
+  LayoutGridIcon as LayoutGrid,
+  ListIcon as List,
+  LockIcon as Lock,
+  Maximize01Icon as Maximize2,
+  Minimize01Icon as Minimize2,
+  Search01Icon as Search,
+  Delete02Icon as Trash2,
+} from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { ChatMarkdown } from "@rakazo/chat-ui/web";
 import type { Artifact, ArtifactVersion, Bot } from "@rakazo/contracts";
@@ -19,18 +32,6 @@ import {
   RakazoMark,
   resolvePersonaColorDef,
 } from "@rakazo/ui-web";
-import {
-  ChevronLeft,
-  Download,
-  Filter,
-  LayoutGrid,
-  List,
-  Lock,
-  Maximize2,
-  Minimize2,
-  Search,
-  Trash2,
-} from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { PdfViewer } from "../components/PdfViewer";
@@ -224,7 +225,7 @@ export function ArtifactsPage() {
               to="/app"
               className="app-no-drag flex shrink-0 cursor-pointer items-center gap-0.5 rounded-lg py-1 pe-1.5 text-[13px] font-normal text-muted-foreground transition-colors duration-150 hover:bg-accent hover:text-accent-foreground"
             >
-              <ChevronLeft size={16} strokeWidth={1.9} aria-hidden="true" />
+              <HugeiconsIcon icon={ChevronLeft} size={16} strokeWidth={1.9} aria-hidden="true" />
               <Trans>Bots</Trans>
             </Link>
             <h1 className="truncate text-xl font-normal tracking-tight text-foreground antialiased">
@@ -242,7 +243,7 @@ export function ArtifactsPage() {
                   : "border-border text-muted-foreground hover:bg-accent hover:text-accent-foreground"
               }`}
             >
-              <Filter size={14} strokeWidth={1.9} />
+              <HugeiconsIcon icon={Filter} size={14} strokeWidth={1.9} />
               <Trans>Filters</Trans>
             </button>
             {!artifactId ? (
@@ -252,14 +253,14 @@ export function ArtifactsPage() {
                   label={t`Card view`}
                   onClick={() => setMode("grid")}
                 >
-                  <LayoutGrid size={15} strokeWidth={1.9} />
+                  <HugeiconsIcon icon={LayoutGrid} size={15} strokeWidth={1.9} />
                 </ViewModeButton>
                 <ViewModeButton
                   active={viewMode === "list"}
                   label={t`List view`}
                   onClick={() => setMode("list")}
                 >
-                  <List size={15} strokeWidth={1.9} />
+                  <HugeiconsIcon icon={List} size={15} strokeWidth={1.9} />
                 </ViewModeButton>
               </div>
             ) : null}
@@ -269,7 +270,8 @@ export function ArtifactsPage() {
         {filtersOpen ? (
           <div className="app-no-drag mt-3 flex flex-wrap items-center gap-2">
             <div className="relative w-full max-w-[260px]">
-              <Search
+              <HugeiconsIcon
+                icon={Search}
                 size={14}
                 strokeWidth={1.9}
                 className="pointer-events-none absolute start-3 top-1/2 -translate-y-1/2 text-muted-foreground"
@@ -699,7 +701,7 @@ function ArtifactCard({
         }}
         className="absolute bottom-3 end-3 grid h-7 w-7 place-items-center rounded-lg bg-card text-muted-foreground opacity-0 transition-opacity hover:bg-destructive/10 hover:text-destructive group-hover:opacity-100 group-focus-within:opacity-100"
       >
-        <Trash2 size={14} strokeWidth={1.9} />
+        <HugeiconsIcon icon={Trash2} size={14} strokeWidth={1.9} />
       </button>
     </div>
   );
@@ -758,7 +760,7 @@ function ArtifactRow({
         }}
         className="absolute end-2 top-1/2 grid h-7 w-7 -translate-y-1/2 place-items-center rounded-lg text-muted-foreground opacity-0 transition-opacity hover:bg-destructive/10 hover:text-destructive group-hover:opacity-100 group-focus-within:opacity-100"
       >
-        <Trash2 size={14} strokeWidth={1.9} />
+        <HugeiconsIcon icon={Trash2} size={14} strokeWidth={1.9} />
       </button>
     </div>
   );
@@ -901,7 +903,7 @@ function PreviewPane({
                 downloadArtifactBytes(state.artifact.name, state.artifact.mimeType, state.bytes)
               }
             >
-              <Download className="me-1.5" size={15} strokeWidth={1.9} />
+              <HugeiconsIcon icon={Download} className="me-1.5" size={15} strokeWidth={1.9} />
               <Trans>Download</Trans>
             </Button>
             <button
@@ -912,9 +914,9 @@ function PreviewPane({
               className="grid h-8 w-8 shrink-0 place-items-center rounded-lg border border-border text-muted-foreground hover:bg-accent"
             >
               {maximized ? (
-                <Minimize2 size={15} strokeWidth={1.9} />
+                <HugeiconsIcon icon={Minimize2} size={15} strokeWidth={1.9} />
               ) : (
-                <Maximize2 size={15} strokeWidth={1.9} />
+                <HugeiconsIcon icon={Maximize2} size={15} strokeWidth={1.9} />
               )}
             </button>
           </>
@@ -935,7 +937,7 @@ function PreviewPane({
             <ArtifactPreview artifact={state.artifact} bytes={state.bytes} />
             {state.artifact.mimeType === "text/html" ? (
               <div className="absolute bottom-3 end-3 flex items-center gap-1.5 rounded-full bg-black/70 px-2.5 py-1.5 text-[11px] text-white">
-                <Lock size={12} strokeWidth={2} />
+                <HugeiconsIcon icon={Lock} size={12} strokeWidth={2} />
                 <span>
                   <Trans>Isolated preview — no access to your account</Trans>
                 </span>

@@ -1,6 +1,14 @@
+import {
+  CaptionsIcon as Captions,
+  Mic01Icon as Mic,
+  MicOff01Icon as MicOff,
+  CallEnd01Icon as PhoneOff,
+  Settings01Icon as Settings,
+  UserIcon as User,
+} from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import { useLingui } from "@lingui/react/macro";
 import { BotAvatar, Button, cn } from "@rakazo/ui-web";
-import { Captions, Mic, MicOff, PhoneOff, Settings, User } from "lucide-react";
 import { useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { endCall, toggleMute, toggleTranscript, useCallSession } from "../../lib/call-session";
@@ -68,7 +76,7 @@ export function CallCard({ onSettings }: { onSettings: () => void }) {
           className="grid size-7 shrink-0 place-items-center rounded-full bg-muted text-muted-foreground"
           aria-hidden="true"
         >
-          <User className="size-3.5" />
+          <HugeiconsIcon icon={User} className="size-3.5" />
         </span>
       </div>
       <div className="mt-3 flex items-center justify-center gap-2">
@@ -79,7 +87,7 @@ export function CallCard({ onSettings }: { onSettings: () => void }) {
           aria-label={t`Settings`}
           onClick={onSettings}
         >
-          <Settings />
+          <HugeiconsIcon icon={Settings} />
         </Button>
         <Button
           variant="ghost"
@@ -89,7 +97,7 @@ export function CallCard({ onSettings }: { onSettings: () => void }) {
           aria-pressed={call.transcriptOpen}
           onClick={toggleTranscript}
         >
-          <Captions />
+          <HugeiconsIcon icon={Captions} />
         </Button>
         <Button
           variant="ghost"
@@ -99,7 +107,11 @@ export function CallCard({ onSettings }: { onSettings: () => void }) {
           aria-pressed={call.muted}
           onClick={toggleMute}
         >
-          {call.muted ? <MicOff className="text-muted-foreground" /> : <Mic />}
+          {call.muted ? (
+            <HugeiconsIcon icon={MicOff} className="text-muted-foreground" />
+          ) : (
+            <HugeiconsIcon icon={Mic} />
+          )}
         </Button>
         <Button
           variant="destructive"
@@ -108,7 +120,7 @@ export function CallCard({ onSettings }: { onSettings: () => void }) {
           aria-label={t`Hang up`}
           onClick={endCall}
         >
-          <PhoneOff />
+          <HugeiconsIcon icon={PhoneOff} />
         </Button>
       </div>
       {call.transcriptOpen ? (

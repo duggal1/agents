@@ -4,9 +4,16 @@ import { cn } from "@rakazo/ui-web/lib/utils";
 import { cva, type VariantProps } from "class-variance-authority";
 
 const badgeVariants = cva(
-  "group/badge inline-flex w-fit shrink-0 items-center justify-center gap-1 overflow-hidden rounded-sm border border-transparent px-2 py-0.5 text-[12px] leading-4 font-normal whitespace-nowrap outline-none transition-colors duration-150 has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5 [&>svg]:pointer-events-none [&>svg]:size-3!",
+  "group/badge inline-flex w-fit shrink-0 items-center justify-center gap-1 overflow-hidden border border-transparent font-normal whitespace-nowrap outline-none transition-colors duration-150 has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5 [&>svg]:pointer-events-none [&>svg]:size-3!",
   {
     variants: {
+      /* DESIGN.MD sizes. `sm` is the dense-row default the product already
+         ships (session chips, connection status); `md` is the roomier form for
+         standalone status lines. */
+      size: {
+        sm: "rounded-sm px-2 py-0.5 text-[12px] leading-4",
+        md: "rounded-[3px] px-2.5 py-1 text-[14px] leading-5 tracking-[-0.09px]",
+      },
       /* DESIGN.MD: a 12% tint with the -300 shade, never a solid fill, never a border.
          Color only ever carries meaning. */
       variant: {
@@ -30,6 +37,7 @@ const badgeVariants = cva(
     },
     defaultVariants: {
       variant: "default",
+      size: "sm",
     },
   },
 );
@@ -37,6 +45,7 @@ const badgeVariants = cva(
 function Badge({
   className,
   variant = "default",
+  size = "sm",
   render,
   ...props
 }: useRender.ComponentProps<"span"> & VariantProps<typeof badgeVariants>) {
@@ -44,7 +53,7 @@ function Badge({
     defaultTagName: "span",
     props: mergeProps<"span">(
       {
-        className: cn(badgeVariants({ variant }), className),
+        className: cn(badgeVariants({ variant, size }), className),
       },
       props,
     ),
@@ -52,6 +61,7 @@ function Badge({
     state: {
       slot: "badge",
       variant,
+      size,
     },
   });
 }

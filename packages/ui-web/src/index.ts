@@ -40,3 +40,21 @@ export * from "./components/ui/tooltip.js";
 export { GroupAvatar, type GroupAvatarMember, type GroupAvatarProps } from "./group-avatar.js";
 export { cn } from "./lib/utils.js";
 export { ModelThinkingOptions } from "./model-thinking-options.js";
+export type { BlurProps } from "./motion.js";
+export {
+  blurIn,
+  blurInDialog,
+  blurInFloat,
+  blurInLaunch,
+  blurInToast,
+  blurPreset,
+  DURATION,
+  EASE_LUXE,
+  EASE_LUXE_CSS,
+  heroContainer,
+  heroItem,
+  luxe,
+  luxeTransition,
+  toastMotion,
+} from "./motion.js";
+export { LuxeMotionProvider } from "./motion-provider.js";

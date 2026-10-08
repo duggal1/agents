@@ -1,3 +1,10 @@
+import {
+  InfoIcon as Info,
+  LockIcon as Lock,
+  PlusIcon as Plus,
+  UsersIcon as Users,
+} from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import { Trans, useLingui } from "@lingui/react/macro";
 import type { Bot } from "@rakazo/contracts";
 import {
@@ -9,7 +16,6 @@ import {
   CommandList,
   CommandSeparator,
 } from "@rakazo/ui-web";
-import { Info, Lock, Plus, Users } from "lucide-react";
 import { useMemo, useState } from "react";
 
 export function BotCreatePicker({
@@ -70,7 +76,7 @@ export function BotCreatePicker({
                 onSelect={() => onCreateBot()}
                 className="gap-2"
               >
-                <Plus size={16} strokeWidth={1.8} aria-hidden="true" />
+                <HugeiconsIcon icon={Plus} size={16} strokeWidth={1.8} aria-hidden="true" />
                 <Trans>Create new Bot</Trans>
               </CommandItem>
             ) : null}
@@ -95,7 +101,7 @@ export function BotCreatePicker({
               onSelect={() => onCreateGroup()}
               className="gap-2"
             >
-              <Users size={16} strokeWidth={1.8} aria-hidden="true" />
+              <HugeiconsIcon icon={Users} size={16} strokeWidth={1.8} aria-hidden="true" />
               <span className="min-w-0 flex-1 truncate">
                 <Trans>Create new Group</Trans>
               </span>
@@ -114,7 +120,7 @@ export function BotCreatePicker({
                 onKeyDown={(event) => event.stopPropagation()}
                 className="-mr-2 shrink-0 rounded p-1 text-muted-foreground/70 opacity-0 transition-opacity duration-150 group-focus-within/command-item:opacity-100 group-hover/command-item:opacity-100 hover:text-foreground focus-visible:opacity-100 focus-visible:outline-2 focus-visible:outline-ring"
               >
-                <Info size={14} strokeWidth={1.8} aria-hidden="true" />
+                <HugeiconsIcon icon={Info} size={14} strokeWidth={1.8} aria-hidden="true" />
               </button>
             </CommandItem>
             <CommandItem
@@ -123,7 +129,7 @@ export function BotCreatePicker({
               onSelect={() => onCreateSpace()}
               className="gap-2"
             >
-              <Lock size={14} strokeWidth={1.8} aria-hidden="true" />
+              <HugeiconsIcon icon={Lock} size={14} strokeWidth={1.8} aria-hidden="true" />
               <span className="min-w-0 flex-1 truncate">
                 <Trans>Create new Space</Trans>
               </span>
@@ -142,7 +148,7 @@ export function BotCreatePicker({
                 onKeyDown={(event) => event.stopPropagation()}
                 className="-mr-2 shrink-0 rounded p-1 text-muted-foreground/70 opacity-0 transition-opacity duration-150 group-focus-within/command-item:opacity-100 group-hover/command-item:opacity-100 hover:text-foreground focus-visible:opacity-100 focus-visible:outline-2 focus-visible:outline-ring"
               >
-                <Info size={14} strokeWidth={1.8} aria-hidden="true" />
+                <HugeiconsIcon icon={Info} size={14} strokeWidth={1.8} aria-hidden="true" />
               </button>
             </CommandItem>
           </CommandGroup>

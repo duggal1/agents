@@ -1,28 +1,58 @@
 import { cn } from "@rakazo/ui-web";
+import type { CSSProperties } from "react";
 import { useEffect, useState } from "react";
 import "./beautiful-ui.css";
 
 /* Beautiful UI primitives — hand-ported from beautifului.dev
    (github.com/TurboKach/ai-native-react-components, MIT © 2026 Turbo).
    The upstream components are demo showcases; these ports keep their visual
-   and motion language (pixel-grid loader, shimmer sweep, pop-in success) and
-   expose real props. */
+   language (shimmer sweep, pop-in success) and expose real props. The loading
+   pattern itself is the terminal loader, per DESIGN.MD. */
 
-/** A light sweep travelling across a text label. */
+/**
+ * A light sweep travelling across a text label. Shares the terminal loader's
+ * exact color variables, so a standalone shimmer never disagrees with the
+ * spinner it sits beside.
+ */
 export function Shimmer({ children }: { children: React.ReactNode }) {
+  return <span className="term-shimmer">{children}</span>;
+}
+
+const FRAMES = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];
+
+/**
+ * The one loading pattern: a braille spinner plus a shimmering label, driven
+ * off a single CSS timeline. Pass an agent avatar color to tint the spinner;
+ * omit it for neutral. The label stays neutral either way.
+ */
+export function TerminalLoader({
+  label,
+  color,
+  className,
+}: {
+  label: string;
+  /** Agent avatar color, any CSS color. Omit for neutral. */
+  color?: string;
+  className?: string;
+}) {
   return (
-    <span className="animate-[bui-shimmer-text_1.4s_linear_infinite] bg-linear-to-r from-muted-foreground from-35% via-foreground via-50% to-muted-foreground to-65% bg-size-[200%_100%] bg-clip-text text-transparent">
-      {children}
+    <span
+      className={cn("term-loader", className)}
+      role="status"
+      aria-live="polite"
+      style={color ? ({ "--agent-color": color } as CSSProperties) : undefined}
+    >
+      <span className="term-spinner" aria-hidden="true">
+        <span className="term-strip">
+          {FRAMES.map((frame) => (
+            <span key={frame}>{frame}</span>
+          ))}
+        </span>
+      </span>
+      <span className="term-label">{label}</span>
     </span>
   );
 }
-
-// Chevron wavefront: each 3×3 cell fires by column distance from the center row.
-const CHEVRON_DELAYS = Array.from({ length: 9 }, (_, i) => {
-  const row = Math.floor(i / 3);
-  const column = i % 3;
-  return (column + Math.abs(row - 1)) * 90;
-});
 
 /** Format wall-clock seconds since `startedAtMs` as `0.0s` / `1m 2.3s`. */
 export function formatElapsed(startedAtMs: number, nowMs: number): string {
@@ -43,23 +73,12 @@ function useElapsed(startedAtMs?: number): string {
   return formatElapsed(startedAtMs ?? mountedAt, now);
 }
 
-/** Pixel-grid loader with shimmering label and live elapsed timer. */
+/** Terminal loader with a live elapsed timer, aligned to the shimmer baseline. */
 function DefaultLoadingState({ label, startedAt }: { label: string; startedAt?: number }) {
   const elapsed = useElapsed(startedAt);
   return (
     <>
-      <span aria-hidden className="grid grid-cols-[repeat(3,4px)] gap-[1.5px]">
-        {CHEVRON_DELAYS.map((delay, i) => (
-          <span
-            key={i}
-            className="h-[4px] w-[4px] rounded-[1px] bg-foreground opacity-15"
-            style={{ animation: `bui-pixel-on 650ms ease-in-out ${delay}ms infinite` }}
-          />
-        ))}
-      </span>
-      <span className="text-[13.5px] font-normal">
-        <Shimmer>{label}</Shimmer>
-      </span>
+      <TerminalLoader label={label} />
       <span className="font-mono text-[12px] tabular-nums text-muted-foreground">{elapsed}</span>
     </>
   );
@@ -90,13 +109,13 @@ export function LoadingState({
   );
 }
 
-/** Pop-in green check with a fading-up label — the approval-card success beat. */
+/** Blur-in green check with a blur-in label — the approval-card success beat. */
 export function SuccessPop({ label }: { label: string }) {
   return (
     <span className="flex items-center gap-2">
       <span
         className="flex h-6 w-6 items-center justify-center rounded-full bg-success text-background"
-        style={{ animation: "bui-pop-in 300ms cubic-bezier(0.23,1,0.32,1) both" }}
+        style={{ animation: "bui-pop-in 350ms cubic-bezier(0.22,1,0.36,1) both" }}
       >
         <svg
           width="12"
@@ -114,7 +133,7 @@ export function SuccessPop({ label }: { label: string }) {
       </span>
       <span
         className="text-[13px] font-normal text-foreground"
-        style={{ animation: "bui-fade-up 350ms cubic-bezier(0.23,1,0.32,1) 100ms both" }}
+        style={{ animation: "bui-fade-up 350ms cubic-bezier(0.22,1,0.36,1) 100ms both" }}
       >
         {label}
       </span>

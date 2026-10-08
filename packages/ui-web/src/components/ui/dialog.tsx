@@ -1,10 +1,10 @@
 "use client";
 
 import { Dialog as DialogPrimitive } from "@base-ui/react/dialog";
+import { XIcon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import { Button } from "@rakazo/ui-web/components/ui/button";
-
 import { cn } from "@rakazo/ui-web/lib/utils";
-import { XIcon } from "lucide-react";
 import type * as React from "react";
 
 function Dialog({ ...props }: DialogPrimitive.Root.Props) {
@@ -28,7 +28,7 @@ function DialogOverlay({ className, ...props }: DialogPrimitive.Backdrop.Props) 
     <DialogPrimitive.Backdrop
       data-slot="dialog-overlay"
       className={cn(
-        "fixed inset-0 isolate z-50 bg-black/60 transition-opacity duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] data-ending-style:opacity-0 data-ending-style:duration-150 data-starting-style:opacity-0",
+        "fixed inset-0 isolate z-50 bg-black/60 transition-opacity duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] data-ending-style:opacity-0 data-ending-style:duration-150 data-starting-style:opacity-0 supports-[backdrop-filter]:backdrop-blur-[2px]",
         className,
       )}
       {...props}
@@ -59,9 +59,15 @@ function DialogContent({
         {showCloseButton && (
           <DialogPrimitive.Close
             data-slot="dialog-close"
-            render={<Button variant="ghost" className="absolute top-2 right-2" size="icon-sm" />}
+            render={
+              <Button
+                variant="ghost"
+                className="absolute top-2 right-2 text-neutral-300 hover:bg-neutral-820 hover:text-neutral-100"
+                size="icon-sm"
+              />
+            }
           >
-            <XIcon />
+            <HugeiconsIcon icon={XIcon} />
             <span className="sr-only">Close</span>
           </DialogPrimitive.Close>
         )}

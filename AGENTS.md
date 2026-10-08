@@ -201,7 +201,7 @@ Entry: `index.html` → `src/main.tsx` → `src/App.tsx`; routes `/`, `/sign-in|
 
 | File | Summary |
 |---|---|
-| `ai/primitives.tsx` | Shimmer loader, timer, success pop primitives |
+| `ai/primitives.tsx` | Terminal loader, shimmer, timer, success pop primitives |
 | `ai/beautiful-ui.css` | Keyframes for loader, shimmer, pop animations |
 | `ai/CollaborationMarker.tsx` | Peer-activity chip and active-bot loading glyph |
 | `ApprovalRulesSettings.tsx` | Email/purchase approval presets plus auto-review toggle |
@@ -224,6 +224,7 @@ Entry: `index.html` → `src/main.tsx` → `src/App.tsx`; routes `/`, `/sign-in|
 | `computer/FilesApp.tsx` | Bot workspace browser with preview/upload/download |
 | `computer/TerminalApp.tsx` | xterm activity feed plus interactive shell tabs |
 | `integrations/IntegrationSetup.tsx` | Composio and Pipedream plus direct-MCP connect form |
+| `LaunchSplash.tsx` | macOS launch mark overlay, once per launch |
 | `teach/SkillDraftCard.tsx` | Editable taught-skill playbook with save/test |
 | `teach/teach-computer-input-chain.ts` | Serializes per-bot teaching input request queue |
 | `teach/TeachCaptureOverlay.tsx` | Captures pointer/keyboard into computer input RPCs |
@@ -831,7 +832,11 @@ Public interfaces: `.` (`ColorTokens`, `darkTokens`, `lightTokens`, appearance r
 | `packages/ui-web/src/bot-avatar.tsx` | Bot avatars marks wordmark with motion |
 | `packages/ui-web/src/group-avatar.tsx` | Stacked group avatar with overflow count |
 | `packages/ui-web/src/avatar-style.tsx` | Robot organic avatar style context |
+| `packages/ui-web/src/components/logo-start.tsx` | WebGL liquid-metal renderer for the launch mark |
+| `packages/ui-web/src/components/start.tsx` | Launch mark SVG fed to the metal renderer |
 | `packages/ui-web/src/model-thinking-options.tsx` | Advanced model options disclosure form |
+| `packages/ui-web/src/motion-provider.tsx` | MotionConfig wrapper installing luxe defaults |
+| `packages/ui-web/src/motion.ts` | Blur-in motion presets, easings, durations |
 | `packages/ui-web/src/styles.css` | Tailwind theme mapping plus avatar animations |
 | `packages/ui-web/src/shadcn.css` | Vendored variants scroll-fade shimmer utilities |
 | `packages/ui-web/components.json` | Shadcn registry style path alias config |
