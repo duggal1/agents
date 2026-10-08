@@ -239,10 +239,8 @@ export const BotAvatar = memo(function BotAvatar({
         height={size}
         aria-hidden="true"
         className={cn(
-          "overflow-visible transition-transform duration-300",
-          isWorking
-            ? "animate-pulse scale-[1.04] motion-reduce:animate-none"
-            : "hover:scale-[1.03] motion-reduce:hover:scale-100",
+          "overflow-visible transition-colors duration-150",
+          isWorking ? "animate-pulse motion-reduce:animate-none" : "",
         )}
         style={{
           filter: isWorking
@@ -521,10 +519,8 @@ export function GrokShapePreview({
       aria-label={key}
       aria-pressed={selected ?? false}
       className={cn(
-        "relative flex size-11 items-center justify-center rounded-xl transition-transform hover:scale-105 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-popover",
-        selected
-          ? "ring-2 ring-primary ring-offset-2 ring-offset-popover bg-white/10"
-          : "hover:bg-white/5",
+        "relative flex size-11 cursor-pointer items-center justify-center rounded-xl transition-colors duration-150 active:opacity-90 focus:outline-none focus-visible:ring-1 focus-visible:ring-ring",
+        selected ? "bg-white/10 ring-1 ring-primary" : "hover:bg-white/5",
       )}
     >
       <svg viewBox={VIEWBOX} className="size-8 overflow-visible" aria-hidden="true">

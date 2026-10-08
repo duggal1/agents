@@ -485,13 +485,13 @@ export function PluginsOverlay({
         className="h-9 w-9 shrink-0 rounded-xl bg-accent object-contain"
       />
     ) : (
-      <div className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-accent text-sm font-semibold text-foreground">
+      <div className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-accent text-sm font-normal text-foreground">
         {label[0]}
       </div>
     );
     const title = (
       <div className="min-w-0 flex-1 text-start">
-        <div className="truncate text-[15px] font-medium text-foreground">{label}</div>
+        <div className="truncate text-[15px] font-normal text-foreground">{label}</div>
       </div>
     );
     return (
@@ -550,11 +550,11 @@ export function PluginsOverlay({
                 className="h-9 w-9 shrink-0 rounded-xl bg-accent object-contain"
               />
             ) : (
-              <div className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-accent text-sm font-semibold text-foreground">
+              <div className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-accent text-sm font-normal text-foreground">
                 {item.name[0]}
               </div>
             )}
-            <div className="truncate text-[17px] font-medium text-foreground">{item.name}</div>
+            <div className="truncate text-[17px] font-normal text-foreground">{item.name}</div>
           </div>
           <Button
             type="button"
@@ -623,7 +623,7 @@ export function PluginsOverlay({
             onClick={() => setToolsOpen((open) => !open)}
             aria-expanded={toolsOpen}
           >
-            <span className="text-base font-medium text-foreground">
+            <span className="text-base font-normal text-foreground">
               {toolsLoading ? (
                 <Trans>Tools</Trans>
               ) : (
@@ -759,11 +759,11 @@ export function PluginsOverlay({
                               disabled ? "opacity-70" : ""
                             }`}
                           >
-                            <div className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-accent text-sm font-semibold text-foreground">
+                            <div className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-accent text-sm font-normal text-foreground">
                               {tile.label[0]}
                             </div>
                             <div className="min-w-0 flex-1">
-                              <div className="truncate text-[15px] font-medium text-foreground">
+                              <div className="truncate text-[15px] font-normal text-foreground">
                                 {tile.label}
                               </div>
                               {disabled ? (
@@ -892,7 +892,7 @@ export function PluginsOverlay({
                             key={`${result.domain}:${result.name}:${result.pageUrl ?? ""}`}
                             className="rounded-xl border border-border/70 p-3"
                           >
-                            <div className="font-medium text-foreground">
+                            <div className="font-normal text-foreground">
                               {result.pageUrl ? (
                                 <a
                                   href={result.pageUrl}
@@ -1106,7 +1106,7 @@ export function PluginsOverlay({
                   ) : null}
 
                   <div>
-                    <div className="mb-3 text-sm font-medium text-foreground/75">
+                    <div className="mb-3 text-sm font-normal text-foreground/75">
                       <Trans>Tool sources</Trans>
                     </div>
                     {sources.length === 0 && !sourceKind ? (
@@ -1119,11 +1119,11 @@ export function PluginsOverlay({
                         key={source.id}
                         className="flex items-center gap-4 rounded-xl px-3 py-2.5"
                       >
-                        <div className="grid h-[42px] w-[42px] place-items-center rounded-xl bg-accent font-semibold uppercase text-foreground">
+                        <div className="grid h-[42px] w-[42px] place-items-center rounded-xl bg-accent font-normal uppercase text-foreground">
                           {source.kind === "mcp" ? "M" : source.kind === "graphql" ? "G" : "A"}
                         </div>
                         <div className="min-w-0 flex-1">
-                          <div className="text-[15.5px] font-medium text-foreground">
+                          <div className="text-[15.5px] font-normal text-foreground">
                             {source.name}
                           </div>
                           <div className="truncate text-[13.5px] text-muted-foreground/70">

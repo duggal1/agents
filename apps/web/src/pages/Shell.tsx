@@ -3062,8 +3062,8 @@ export function ShellPage() {
                               strokeWidth={1.8}
                               className={
                                 collapsed
-                                  ? "-rotate-90 transition-transform"
-                                  : "transition-transform"
+                                  ? "-rotate-90 transition-colors duration-150"
+                                  : "transition-colors duration-150"
                               }
                               aria-hidden="true"
                             />
@@ -3132,7 +3132,7 @@ export function ShellPage() {
                                   <ChevronDown
                                     size={12}
                                     strokeWidth={2}
-                                    className={`transition-transform ${
+                                    className={`transition-colors duration-150 ${
                                       parentCollapsed ? "-rotate-90" : ""
                                     }`}
                                     aria-hidden="true"
@@ -3246,7 +3246,7 @@ export function ShellPage() {
                                       dir="auto"
                                       data-roster-bot-name={item.kind === "bot" ? "" : undefined}
                                       className={`min-w-0 truncate text-[14px] text-foreground ${
-                                        item.chat.unread ? "font-semibold" : "font-medium"
+                                        item.chat.unread ? "font-normal" : "font-normal"
                                       }`}
                                     >
                                       {item.chat.name}
@@ -3280,7 +3280,7 @@ export function ShellPage() {
                                   dir="auto"
                                   className={`mt-1 line-clamp-2 text-[12.5px] break-words whitespace-normal ${
                                     workStatusLabel || item.chat.unread
-                                      ? "font-medium text-foreground/75"
+                                      ? "font-normal text-foreground/75"
                                       : "text-muted-foreground/60"
                                   }`}
                                 >
@@ -3389,7 +3389,7 @@ export function ShellPage() {
           <span className="grid h-[30px] w-[30px] place-items-center rounded-lg bg-accent text-foreground/80">
             <LayoutGrid size={15} strokeWidth={1.8} />
           </span>
-          <span className="text-[14px] font-medium text-foreground/90">
+          <span className="text-[14px] font-normal text-foreground/90">
             <Trans>Integrations</Trans>
           </span>
         </button>
@@ -3563,7 +3563,7 @@ export function ShellPage() {
                 />
               ) : null}
               <span className="min-w-0">
-                <span className="block truncate text-[16px] font-medium text-foreground" dir="auto">
+                <span className="block truncate text-[16px] font-normal text-foreground" dir="auto">
                   {inGroup
                     ? (activeGroup?.name ?? activeSnapshot?.groupName ?? t`Group`)
                     : (active?.name ?? t`Select a bot`)}
@@ -3825,7 +3825,7 @@ export function ShellPage() {
                       aria-label={t`Open`}
                       onClick={() => void openComputer()}
                     >
-                      <span className="inline-flex items-center gap-2 rounded-full bg-overlay px-3.5 py-2 text-[14px] text-foreground shadow-md">
+                      <span className="inline-flex items-center gap-2 rounded-full bg-overlay px-3.5 py-2 text-[14px] font-normal text-foreground shadow-none">
                         <Maximize2 size={15} strokeWidth={1.9} aria-hidden />
                         <Trans>Open</Trans>
                       </span>
@@ -4522,7 +4522,7 @@ export function ShellPage() {
 
       {booting ? (
         <div className="absolute inset-0 z-30 flex flex-col items-center justify-center gap-[22px] bg-background/95">
-          <div className="text-[19px] font-medium text-foreground">
+          <div className="text-[19px] font-normal text-foreground">
             <Trans>Booting up {computerBot?.name ?? active?.name}’s computer</Trans>
           </div>
           <div className="h-[5px] w-[min(420px,70%)] overflow-hidden rounded-full bg-accent">
@@ -4559,7 +4559,7 @@ export function ShellPage() {
                     variant="overlay"
                   />
                 ) : (
-                  <span className="truncate text-[15.5px] font-medium text-foreground" dir="auto">
+                  <span className="truncate text-[15.5px] font-normal text-foreground" dir="auto">
                     {computerLabel(computer?.mode, computerBot.name)}
                   </span>
                 )}
@@ -5163,7 +5163,7 @@ const Transcript = memo(function Transcript({
         aria-hidden={atEnd}
         tabIndex={atEnd ? -1 : 0}
         onClick={jumpToLatest}
-        className={`absolute bottom-4 left-1/2 z-20 grid h-9 w-9 -translate-x-1/2 place-items-center rounded-full border border-border bg-muted/95 text-foreground/75 shadow-md backdrop-blur transition-[opacity,transform,background-color] duration-200 ease-[cubic-bezier(.22,1,.36,1)] hover:bg-border motion-reduce:transition-none ${
+        className={`absolute bottom-4 left-1/2 z-20 grid h-9 w-9 -translate-x-1/2 cursor-pointer place-items-center rounded-full border border-border bg-muted/95 text-foreground/75 shadow-none backdrop-blur transition-[opacity,transform,background-color] duration-200 ease-[cubic-bezier(.22,1,.36,1)] hover:bg-border active:opacity-90 motion-reduce:transition-none ${
           atEnd ? "pointer-events-none translate-y-2 opacity-0" : "translate-y-0 opacity-100"
         }`}
       >
@@ -5694,7 +5694,7 @@ const Composer = memo(function Composer({
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
       className={`relative z-30 m-0 min-w-0 border-0 px-3 pb-4 pt-3 md:px-6 md:pb-6 ${
-        draggingFiles ? "rounded-[14px] ring-2 ring-inset ring-ring" : ""
+        draggingFiles ? "rounded-[14px] ring-1 ring-inset ring-ring" : ""
       }`}
     >
       <div role="status" data-testid="composer-announcement" className="sr-only">
@@ -6046,7 +6046,7 @@ const Composer = memo(function Composer({
                 aria-label={t`Send`}
                 disabled={sending || !canSend || disabled}
                 onClick={send}
-                className="size-8 rounded-full bg-white text-black hover:bg-white/90 shadow-sm transition-transform active:scale-95"
+                className="size-8 cursor-pointer rounded-full bg-white text-black shadow-none transition-colors duration-150 hover:bg-white/90 active:opacity-90"
               >
                 <ArrowUp size={16} strokeWidth={2.2} />
               </Button>
@@ -6056,7 +6056,7 @@ const Composer = memo(function Composer({
                 aria-label={t`Stop`}
                 disabled={sending}
                 onClick={() => void onStop()}
-                className="size-8 rounded-full border border-border bg-muted text-foreground/80 shadow-sm transition-colors hover:bg-accent hover:text-foreground"
+                className="size-8 cursor-pointer rounded-full border border-border bg-muted text-foreground/80 shadow-none transition-colors duration-150 hover:bg-accent hover:text-foreground active:opacity-90"
               >
                 <Square size={11} strokeWidth={0} fill="currentColor" />
               </Button>
@@ -6067,7 +6067,7 @@ const Composer = memo(function Composer({
               aria-label={t`Send`}
               disabled={sending || !canSend || disabled}
               onClick={send}
-              className="size-8 shrink-0 rounded-full bg-white text-black hover:bg-white/90 shadow-sm transition-transform active:scale-95 disabled:bg-white/10 disabled:text-muted-foreground/30 disabled:shadow-none"
+              className="size-8 shrink-0 cursor-pointer rounded-full bg-white text-black shadow-none transition-colors duration-150 hover:bg-white/90 active:opacity-90 disabled:bg-white/10 disabled:text-muted-foreground/30"
             >
               <ArrowUp size={16} strokeWidth={2.2} />
             </Button>
@@ -6434,7 +6434,7 @@ const MessageView = memo(function MessageView({
     <>
       {speakerName ? (
         <div
-          className="mb-1.5 flex items-center gap-2 text-[13px] font-semibold tracking-tight"
+          className="mb-1.5 flex items-center gap-2 text-[13px] font-normal tracking-tight"
           dir="auto"
           style={{ color: speakerColorDef.light }}
         >
@@ -6631,7 +6631,7 @@ const MessageView = memo(function MessageView({
               className="w-[min(420px,90%)] rounded-[18px] border border-border bg-muted px-[18px] py-4"
             >
               <div className="flex items-center justify-between gap-3">
-                <span className="text-[15px] font-medium text-foreground" dir="auto">
+                <span className="text-[15px] font-normal text-foreground" dir="auto">
                   {block.name}
                 </span>
                 <span
@@ -6671,7 +6671,7 @@ const MessageView = memo(function MessageView({
               className="w-[min(340px,90%)] rounded-[18px] border border-border bg-muted px-[18px] py-4 text-start disabled:opacity-60"
             >
               <div className="flex items-center justify-between">
-                <span className="text-[15px] font-medium text-foreground" dir="auto">
+                <span className="text-[15px] font-normal text-foreground" dir="auto">
                   {block.name}
                 </span>
                 <span
@@ -6810,7 +6810,7 @@ const MessageView = memo(function MessageView({
                 {block.lines.map((line) => (
                   <div key={line.k} className="flex items-baseline gap-2.5 text-[15px]">
                     <span className="text-success">✓</span>
-                    <span className="font-semibold text-white">{line.k}</span>
+                    <span className="font-normal text-white">{line.k}</span>
                     <span className="text-muted-foreground">→</span>
                     <span>{line.v}</span>
                   </div>
@@ -6845,7 +6845,7 @@ const MessageView = memo(function MessageView({
               className="w-[340px] rounded-[18px] border border-border bg-muted px-[18px] py-4"
             >
               <div className="flex items-center justify-between">
-                <span className="text-[15px] font-medium text-foreground">
+                <span className="text-[15px] font-normal text-foreground">
                   <Trans>Computer</Trans>
                 </span>
                 <span

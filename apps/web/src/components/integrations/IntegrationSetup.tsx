@@ -129,7 +129,7 @@ export function IntegrationSetup({
 
   return (
     <div className="space-y-6">
-      <h1 className="text-[32px] font-medium text-foreground">
+      <h1 className="text-[32px] font-normal text-foreground">
         {serverSetup ? t`Server integrations` : t`Add MCP server`}
       </h1>
       {serverSetup ? (

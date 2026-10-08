@@ -203,7 +203,7 @@ export function SettingsOverlay({
 
           <div className="flex min-h-0 min-w-0 flex-1 flex-col">
             <div className="flex items-start justify-between gap-4 px-6 pt-6 sm:px-8 sm:pt-7">
-              <DialogTitle className="text-2xl font-medium text-foreground">
+              <DialogTitle className="text-2xl font-normal text-foreground">
                 {sectionTitle}
               </DialogTitle>
               <DialogClose

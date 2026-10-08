@@ -417,7 +417,7 @@ export function McpServersOverlay({ onClose }: { onClose: () => void }) {
             </CardContent>
           </Card>
           <div>
-            <h2 className="text-[15px] font-medium text-foreground">
+            <h2 className="text-[15px] font-normal text-foreground">
               <Trans>Configured servers</Trans>
             </h2>
             <div className="mt-3 space-y-2">
@@ -432,7 +432,7 @@ export function McpServersOverlay({ onClose }: { onClose: () => void }) {
                     <Card key={server.id} size="sm">
                       <CardContent>
                         <div className="flex items-center justify-between">
-                          <span className="font-medium text-foreground">{server.name}</span>
+                          <span className="font-normal text-foreground">{server.name}</span>
                           <Badge variant="secondary" className="uppercase">
                             {server.transport.replace("_", " ")}
                           </Badge>

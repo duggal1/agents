@@ -156,7 +156,7 @@ export function RoutineListRow({
           )}
         </span>
         <span className="min-w-0 flex-1">
-          <span className="block truncate text-[14.5px] font-medium text-foreground" dir="auto">
+          <span className="block truncate text-[14.5px] font-normal text-foreground" dir="auto">
             {routine.name}
           </span>
           <span className="block truncate text-[12.5px] text-muted-foreground/80">
@@ -262,7 +262,7 @@ export function RoutineEditor({
         >
           <ChevronLeft />
         </Button>
-        <div className="text-[15.5px] font-medium text-foreground">
+        <div className="text-[15.5px] font-normal text-foreground">
           <Trans>Routine</Trans>
         </div>
         <Button
@@ -288,7 +288,7 @@ export function RoutineEditor({
             }`}
           >
             <span
-              className={`absolute top-[2px] left-0 h-[18px] w-[18px] rounded-full bg-background transition-transform ${
+              className={`absolute top-[2px] left-0 h-[18px] w-[18px] rounded-full bg-background transition-colors duration-150 ${
                 draft.active
                   ? "translate-x-[20px] dark:bg-primary-foreground"
                   : "translate-x-[2px] dark:bg-foreground"

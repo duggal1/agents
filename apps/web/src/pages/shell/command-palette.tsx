@@ -125,7 +125,7 @@ export function CommandPalette({
                   <BotAvatar color={bot.color} identity={bot.id} size={32} status={bot.status} />
                   <div className="min-w-0 flex-1">
                     <div className="flex min-w-0 items-center gap-2">
-                      <span className="truncate font-medium text-foreground" dir="auto">
+                      <span className="truncate font-normal text-foreground" dir="auto">
                         {bot.name}
                       </span>
                       {titleTag ? (

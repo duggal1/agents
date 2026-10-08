@@ -119,12 +119,12 @@ export function AvatarStudioPopover({
         type="button"
         disabled={disabled}
         onClick={() => setOpen(true)}
-        className="group relative cursor-pointer rounded-2xl outline-none transition-transform hover:scale-[1.03] focus-visible:ring-2 focus-visible:ring-ring"
+        className="group relative cursor-pointer rounded-2xl outline-none transition-colors duration-150 active:opacity-90 focus-visible:ring-1 focus-visible:ring-ring"
         aria-label={t`Customize bot avatar`}
         data-testid="avatar-studio-trigger"
       >
         <BotAvatar color={value} identity={identity} size={size} status={status} />
-        <div className="absolute -right-1 -bottom-1 flex size-6 items-center justify-center rounded-full border-2 border-background bg-secondary text-foreground shadow-md transition-transform group-hover:scale-110">
+        <div className="absolute -right-1 -bottom-1 flex size-6 items-center justify-center rounded-full border-2 border-background bg-secondary text-foreground shadow-none transition-colors duration-150">
           <Pencil size={12} strokeWidth={2.2} />
         </div>
       </button>
@@ -136,7 +136,7 @@ export function AvatarStudioPopover({
           data-testid="avatar-studio"
         >
           <DialogHeader className="flex-row items-center justify-between space-y-0">
-            <DialogTitle className="text-[14px] font-semibold tracking-tight">
+            <DialogTitle className="text-[14px] font-normal tracking-tight">
               <Trans>Avatar Studio</Trans>
             </DialogTitle>
             <DialogDescription className="sr-only">
@@ -162,9 +162,9 @@ export function AvatarStudioPopover({
                 type="button"
                 onClick={() => setActiveTab("bot")}
                 aria-pressed={activeTab === "bot"}
-                className={`rounded-full px-3 py-1 font-medium transition-colors ${
+                className={`rounded-full px-3 py-1 font-normal transition-colors ${
                   activeTab === "bot"
-                    ? "bg-card text-foreground shadow-sm"
+                    ? "bg-card text-foreground shadow-none"
                     : "text-muted-foreground hover:text-foreground"
                 }`}
               >
@@ -174,9 +174,9 @@ export function AvatarStudioPopover({
                 type="button"
                 onClick={() => setActiveTab("upload")}
                 aria-pressed={activeTab === "upload"}
-                className={`rounded-full px-3 py-1 font-medium transition-colors ${
+                className={`rounded-full px-3 py-1 font-normal transition-colors ${
                   activeTab === "upload"
-                    ? "bg-card text-foreground shadow-sm"
+                    ? "bg-card text-foreground shadow-none"
                     : "text-muted-foreground hover:text-foreground"
                 }`}
               >
@@ -187,7 +187,7 @@ export function AvatarStudioPopover({
             <button
               type="button"
               onClick={restoreDefaultAvatar}
-              className="px-2 py-1 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
+              className="px-2 py-1 text-xs font-normal text-muted-foreground transition-colors hover:text-foreground"
             >
               <Trans>Reset</Trans>
             </button>
@@ -197,7 +197,7 @@ export function AvatarStudioPopover({
             <div className="space-y-4 pt-1" data-testid="avatar-studio-bot-tab">
               <div>
                 <div className="mb-2 flex items-center justify-between">
-                  <div className="text-[11px] font-medium tracking-wider text-muted-foreground uppercase">
+                  <div className="text-[11px] font-normal tracking-wider text-muted-foreground uppercase">
                     <Trans>Shape</Trans>
                   </div>
                   <button
@@ -205,7 +205,7 @@ export function AvatarStudioPopover({
                     data-testid="avatar-studio-default"
                     aria-pressed={isDefaultLook}
                     onClick={restoreDefaultAvatar}
-                    className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
+                    className={`rounded-full px-3 py-1 text-xs font-normal transition-colors ${
                       isDefaultLook
                         ? "bg-secondary text-foreground"
                         : "text-muted-foreground hover:text-foreground"
@@ -228,7 +228,7 @@ export function AvatarStudioPopover({
               </div>
 
               <div className="border-t border-border pt-2">
-                <div className="mb-2 text-[11px] font-medium tracking-wider text-muted-foreground uppercase">
+                <div className="mb-2 text-[11px] font-normal tracking-wider text-muted-foreground uppercase">
                   <Trans>Color</Trans>
                 </div>
                 <div className="grid grid-cols-6 place-items-center gap-2">
@@ -242,10 +242,8 @@ export function AvatarStudioPopover({
                         onClick={() => selectColor(color)}
                         aria-label={t`Color ${color}`}
                         aria-pressed={selected}
-                        className={`size-6 rounded-full border transition-transform hover:scale-110 active:scale-95 focus-visible:ring-2 focus-visible:ring-ring ${
-                          selected
-                            ? "scale-105 border-transparent ring-2 ring-foreground ring-offset-2 ring-offset-popover"
-                            : "border-border"
+                        className={`size-6 cursor-pointer rounded-full border transition-colors duration-150 active:opacity-90 focus-visible:ring-1 focus-visible:ring-ring ${
+                          selected ? "border-foreground" : "border-border"
                         }`}
                         style={{ backgroundColor: color }}
                       />
@@ -285,10 +283,10 @@ export function AvatarStudioPopover({
               <div className="mb-2 grid size-10 place-items-center rounded-full bg-secondary text-muted-foreground">
                 <Upload size={18} strokeWidth={1.8} />
               </div>
-              <p className="text-[12.5px] font-medium text-muted-foreground">
+              <p className="text-[12.5px] font-normal text-muted-foreground">
                 <Trans>Drag, drop, or paste an image</Trans>
               </p>
-              <span className="mt-3 rounded-lg bg-secondary px-3 py-1.5 text-xs font-medium text-foreground">
+              <span className="mt-3 rounded-lg bg-secondary px-3 py-1.5 text-xs font-normal text-foreground">
                 <Trans>Choose file</Trans>
               </span>
             </button>
@@ -298,7 +296,7 @@ export function AvatarStudioPopover({
             <button
               type="button"
               onClick={() => setOpen(false)}
-              className="flex items-center gap-1.5 rounded-xl bg-secondary px-4 py-1.5 text-[13px] font-medium text-foreground transition-colors hover:bg-accent"
+              className="flex items-center gap-1.5 rounded-xl bg-secondary px-4 py-1.5 text-[13px] font-normal text-foreground transition-colors hover:bg-accent"
             >
               <Check size={14} />
               <Trans>Done</Trans>

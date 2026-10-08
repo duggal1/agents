@@ -1,9 +1,10 @@
 import { Trans } from "@lingui/react/macro";
-import { Button } from "@rakazo/ui-web";
+import { Button, RakazoMark } from "@rakazo/ui-web";
 import { useEffect, useState } from "react";
 import { IntegrationSetup } from "../components/integrations/IntegrationSetup";
 import { rpc } from "../lib/rpc";
 import { ModelSettingsOverlay } from "./ModelSettingsOverlay";
+import { WindowChrome } from "./WindowChrome";
 
 export function LocalSettingsPage() {
   const [section, setSection] = useState<"models" | "integrations" | null>(null);
@@ -16,9 +17,13 @@ export function LocalSettingsPage() {
       .catch(() => setError(true));
   }, []);
   return (
-    <main className="h-full overflow-auto bg-background px-6 py-12">
-      <div className="mx-auto max-w-xl space-y-6">
-        <h1 className="text-2xl font-medium">
+    <main className="flex h-full flex-col overflow-auto bg-background">
+      <div className="app-drag flex items-center gap-3 px-5 py-[18px]">
+        <WindowChrome />
+        <RakazoMark className="app-no-drag text-foreground" size={20} />
+      </div>
+      <div className="mx-auto w-full max-w-xl space-y-6 px-6 pb-12">
+        <h1 className="text-2xl font-normal tracking-tight text-foreground antialiased">
           <Trans>Local Server Settings</Trans>
         </h1>
         {error ? (

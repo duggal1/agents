@@ -34,7 +34,7 @@ export function SpaceSearchResults({
           className="rounded-xl px-2.5 py-[11px] text-start hover:bg-background"
         >
           <div className="flex items-baseline justify-between gap-2">
-            <span className="truncate text-[15px] font-medium text-foreground" dir="auto">
+            <span className="truncate text-[15px] font-normal text-foreground" dir="auto">
               {hit.title}
             </span>
             <span className="shrink-0 text-[12px] uppercase tracking-wide text-muted-foreground/80">

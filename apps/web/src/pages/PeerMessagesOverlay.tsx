@@ -84,7 +84,7 @@ export function PeerMessagesOverlay({
               <BotAvatar color={botColor} identity={botId} size={28} />
               <BotAvatar color={peerBotColor} identity={peerBotId} size={28} />
             </div>
-            <DialogTitle className="truncate text-[15.5px] font-medium text-foreground" dir="auto">
+            <DialogTitle className="truncate text-[15.5px] font-normal text-foreground" dir="auto">
               {title}
             </DialogTitle>
           </div>

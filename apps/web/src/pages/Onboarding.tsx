@@ -26,6 +26,7 @@ import {
   Button,
   Input,
   ModelThinkingOptions,
+  RakazoMark,
   Select,
   SelectContent,
   SelectItem,
@@ -41,6 +42,7 @@ import type { ModelCatalogEntry } from "../lib/model-auth";
 import { thinkingLevelLabel } from "../lib/model-catalog";
 import { rpc } from "../lib/rpc";
 import { useModelOAuthSignIn } from "../lib/use-model-oauth-signin";
+import { WindowChrome } from "./WindowChrome";
 
 const CUSTOM_MODEL_OPTION = "__rakazo_custom_model__";
 const DEFAULT_THINKING_LEVEL_OPTION = "__rakazo_default_thinking__";
@@ -447,8 +449,12 @@ export function OnboardingPage() {
   }, [step]);
 
   return (
-    <div className="min-h-full bg-background px-6 py-12">
-      <div className="mx-auto w-full max-w-[560px]">
+    <div className="flex min-h-full flex-col bg-background">
+      <div className="app-drag flex items-center gap-3 px-5 py-[18px]">
+        <WindowChrome />
+        <RakazoMark className="app-no-drag text-foreground" size={20} />
+      </div>
+      <div className="mx-auto w-full max-w-[560px] px-6 pb-12">
         {step === "loading" ? (
           <p className="text-muted-foreground">
             <Trans>Loading…</Trans>
@@ -456,10 +462,10 @@ export function OnboardingPage() {
         ) : null}
         {step === "model" ? (
           <div>
-            <h1 className="text-[32px] font-medium text-foreground">
+            <h1 className="text-[32px] font-normal text-foreground">
               <Trans>Connect a model</Trans>
             </h1>
-            <div className="mt-8 block text-sm font-medium text-foreground">
+            <div className="mt-8 block text-sm font-normal text-foreground">
               <span>
                 <Trans>Provider</Trans>
               </span>
@@ -486,7 +492,7 @@ export function OnboardingPage() {
             <div className="mt-6 block text-sm text-foreground">
               {isOpenAiCompatible ? (
                 <>
-                  <label htmlFor={`${fieldId}-base-url`} className="block font-medium">
+                  <label htmlFor={`${fieldId}-base-url`} className="block font-normal">
                     <Trans>Server URL</Trans>
                     <Input
                       id={`${fieldId}-base-url`}
@@ -508,7 +514,7 @@ export function OnboardingPage() {
                     </Button>
                   </div>
                   <div className="mt-4 block">
-                    <span className="font-medium">
+                    <span className="font-normal">
                       <Trans>Model</Trans>
                     </span>
                     {probeModels.length && !manualModelId ? (
@@ -605,7 +611,7 @@ export function OnboardingPage() {
                 </>
               ) : (
                 <>
-                  <span className="font-medium">
+                  <span className="font-normal">
                     <Trans>Model</Trans>
                   </span>
                   <Select
@@ -632,7 +638,7 @@ export function OnboardingPage() {
                   </Select>
                   {catalogThinkingLevels.length ? (
                     <div className="mt-4 block">
-                      <span className="font-medium">
+                      <span className="font-normal">
                         <Trans>Thinking</Trans>
                       </span>
                       <Select
@@ -800,7 +806,7 @@ export function OnboardingPage() {
               <div className="mt-4 grid gap-4">
                 <label
                   htmlFor={`${fieldId}-account-id`}
-                  className="block text-sm font-medium text-foreground"
+                  className="block text-sm font-normal text-foreground"
                 >
                   <Trans>Account ID</Trans>
                   <Input
@@ -814,7 +820,7 @@ export function OnboardingPage() {
                 </label>
                 <label
                   htmlFor={`${fieldId}-gateway-id`}
-                  className="block text-sm font-medium text-foreground"
+                  className="block text-sm font-normal text-foreground"
                 >
                   <Trans>Gateway ID</Trans>
                   <Input
@@ -847,7 +853,7 @@ export function OnboardingPage() {
               ) : (
                 <label
                   htmlFor={`${fieldId}-api-key`}
-                  className="mt-4 block text-sm font-medium text-foreground"
+                  className="mt-4 block text-sm font-normal text-foreground"
                 >
                   {subscriptionSignIn ? <Trans>Or paste an API key</Trans> : <Trans>API key</Trans>}
                   <Input

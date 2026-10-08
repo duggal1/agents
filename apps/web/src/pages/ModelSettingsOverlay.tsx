@@ -1518,7 +1518,7 @@ function ModelPicker({
         aria-controls={listboxId}
         aria-expanded={open}
         aria-haspopup="listbox"
-        className="flex h-10 w-full items-center justify-between rounded-lg border border-input bg-transparent px-3 text-start text-sm text-foreground outline-none transition-colors focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 dark:bg-input/30"
+        className="flex h-10 w-full cursor-pointer items-center justify-between rounded-lg border border-neutral-700/50 bg-neutral-850/80 px-3 text-start text-[14px] font-normal text-neutral-100 outline-none transition-colors duration-150 placeholder:text-neutral-500 focus-visible:border-ring focus-visible:ring-1 focus-visible:ring-ring"
         onClick={() => setOpen((current) => !current)}
         onKeyDown={onTriggerKeyDown}
       >
@@ -1528,7 +1528,7 @@ function ModelPicker({
         </span>
       </button>
       {open ? (
-        <div className="absolute left-0 right-0 top-full z-20 mt-2 overflow-hidden rounded-lg bg-popover text-popover-foreground shadow-md ring-1 ring-foreground/10">
+        <div className="absolute left-0 right-0 top-full z-20 mt-2 overflow-hidden rounded-lg border border-border bg-popover text-popover-foreground shadow-none">
           <input
             ref={searchRef}
             type="text"

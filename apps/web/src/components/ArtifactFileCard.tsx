@@ -47,7 +47,7 @@ export function ArtifactFileCard(props: ArtifactFileCardProps) {
           onClick={() => void startDownload()}
           className="rounded-2xl border border-border bg-card px-4 py-3 text-left text-[14px] text-foreground hover:bg-accent"
         >
-          <div className="font-medium">{props.name}</div>
+          <div className="font-normal">{props.name}</div>
           <div className="mt-1 text-muted-foreground">
             {props.mimeType} · {formatBytes(props.size)}
           </div>
@@ -76,7 +76,7 @@ export function ArtifactFileCard(props: ArtifactFileCardProps) {
               )}
             </span>
             <span className="min-w-0">
-              <span className="block truncate text-[14px] font-medium">{props.name}</span>
+              <span className="block truncate text-[14px] font-normal">{props.name}</span>
               <span className="mt-0.5 block text-[13px] text-muted-foreground">
                 {formatBytes(props.size)}
               </span>
@@ -158,7 +158,7 @@ function FilePreview({
   return (
     <>
       <header className="flex h-14 shrink-0 items-center gap-1 border-b border-border px-5">
-        <DialogTitle className="min-w-0 flex-1 truncate text-[14px] leading-5 font-medium text-foreground">
+        <DialogTitle className="min-w-0 flex-1 truncate text-[14px] leading-5 font-normal text-foreground">
           {name}
         </DialogTitle>
         <Button

@@ -15,7 +15,7 @@ export function CloudAgentCard({
     <Card size="sm" className="w-80 max-w-full" data-testid="cloud-agent-card">
       <CardContent className="flex flex-col gap-2">
         <div className="flex items-start justify-between gap-3">
-          <span className="font-medium" dir="auto">
+          <span className="font-normal" dir="auto">
             {block.title}
           </span>
           <Badge

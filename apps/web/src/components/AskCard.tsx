@@ -109,7 +109,7 @@ export function AskCard({
         </pre>
       ) : null}
       {block.status === "answered" ? (
-        <div className="mt-3.5 text-[13.5px] font-medium text-success">
+        <div className="mt-3.5 text-[13.5px] font-normal text-success">
           {formatAnsweredState(
             block.answer,
             Boolean(approvalActions),
@@ -119,7 +119,7 @@ export function AskCard({
           )}
         </div>
       ) : !canAnswer ? (
-        <div className="mt-3.5 text-[13.5px] font-medium text-muted-foreground">
+        <div className="mt-3.5 text-[13.5px] font-normal text-muted-foreground">
           <Trans>No longer active</Trans>
         </div>
       ) : askActions?.length ? (

@@ -82,7 +82,7 @@ export function ToolActivityDisclosure({
       className="group"
     >
       <summary
-        className={`flex min-h-6 w-fit cursor-pointer list-none items-center gap-1 rounded-md py-0.5 pe-1.5 text-[13px] font-medium outline-none hover:text-foreground/75 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
+        className={`flex min-h-6 w-fit cursor-pointer list-none items-center gap-1 rounded-md py-0.5 pe-1.5 text-[13px] font-normal outline-none transition-colors duration-150 hover:text-foreground/75 focus-visible:ring-1 focus-visible:ring-ring ${
           live ? "text-foreground/75" : "text-muted-foreground"
         }`}
       >

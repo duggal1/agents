@@ -1,10 +1,11 @@
 import { useLingui } from "@lingui/react/macro";
 import type { Bot, IntegrationSetupState } from "@rakazo/contracts";
-import { NativeSelect, NativeSelectOption } from "@rakazo/ui-web";
+import { NativeSelect, NativeSelectOption, RakazoMark } from "@rakazo/ui-web";
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { IntegrationSetup } from "../components/integrations/IntegrationSetup";
 import { rpc } from "../lib/rpc";
+import { WindowChrome } from "./WindowChrome";
 
 export function IntegrationSetupPage() {
   const navigate = useNavigate();
@@ -44,8 +45,12 @@ export function IntegrationSetupPage() {
     };
   }, [serverSetup, navigate]);
   return (
-    <div className="min-h-full bg-background px-6 py-12">
-      <div className="mx-auto max-w-[560px]">
+    <div className="flex min-h-full flex-col bg-background">
+      <div className="app-drag flex items-center gap-3 px-5 py-[18px]">
+        <WindowChrome />
+        <RakazoMark className="app-no-drag text-foreground" size={20} />
+      </div>
+      <div className="mx-auto w-full max-w-[560px] px-6 pb-12">
         {bots.length > 1 ? (
           <NativeSelect
             aria-label={t`Bot`}

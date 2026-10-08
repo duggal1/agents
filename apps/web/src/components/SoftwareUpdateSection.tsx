@@ -136,7 +136,7 @@ export function SoftwareUpdateSection({ isDeploymentOwner }: { isDeploymentOwner
         data-testid="software-update-settings"
         className="mt-5 rounded-xl border border-border bg-card px-4 py-4"
       >
-        <h3 className="text-[15px] font-medium text-foreground">
+        <h3 className="text-[15px] font-normal text-foreground">
           <Trans>Software update</Trans>
         </h3>
         <p role="alert" className="mt-3 text-[12.5px] text-destructive">
@@ -231,7 +231,7 @@ export function SoftwareUpdateSection({ isDeploymentOwner }: { isDeploymentOwner
       data-testid="software-update-settings"
       className="mt-5 rounded-xl border border-border bg-card px-4 py-4"
     >
-      <h3 className="text-[15px] font-medium text-foreground">
+      <h3 className="text-[15px] font-normal text-foreground">
         <Trans>Software update</Trans>
       </h3>
       <SoftwareUpdatePanel

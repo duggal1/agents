@@ -155,7 +155,7 @@ export function MemorySettingsOverlay({
       {!embedded ? (
         <div className="flex items-start justify-between px-6 pt-6 sm:px-8 sm:pt-7">
           <div>
-            <DialogTitle className="text-2xl font-medium text-foreground">
+            <DialogTitle className="text-2xl font-normal text-foreground">
               <Trans>Memory</Trans>
             </DialogTitle>
             <DialogDescription className="mt-1 text-[13.5px] text-muted-foreground/70">

@@ -70,7 +70,7 @@ export function ActivityList({ onOpenRun }: ActivityListProps) {
     <div className="mb-2 border-b border-border pb-2">
       {activeRuns.length > 0 ? (
         <section>
-          <div className="px-2.5 pb-1 pt-1 text-[12.5px] font-medium text-muted-foreground/80">
+          <div className="px-2.5 pb-1 pt-1 text-[12.5px] font-normal text-muted-foreground/80">
             <Trans>Now</Trans>
           </div>
           {activeRuns.map((run) => (
@@ -80,7 +80,7 @@ export function ActivityList({ onOpenRun }: ActivityListProps) {
       ) : null}
       {recentRuns.length > 0 ? (
         <section className={activeRuns.length > 0 ? "mt-2" : undefined}>
-          <div className="px-2.5 pb-1 pt-1 text-[12.5px] font-medium text-muted-foreground/80">
+          <div className="px-2.5 pb-1 pt-1 text-[12.5px] font-normal text-muted-foreground/80">
             <Trans>Recent</Trans>
           </div>
           {recentRuns.map((run) => (
@@ -111,7 +111,7 @@ function ActivityRow({ run, onOpen }: { run: RunActivityRow; onOpen: () => void 
       />
       <div className="min-w-0 flex-1">
         <div className="flex items-baseline justify-between gap-2">
-          <span className="truncate text-sm font-medium text-foreground">{title}</span>
+          <span className="truncate text-sm font-normal text-foreground">{title}</span>
           <span className="shrink-0 text-xs text-muted-foreground/80">
             {formatRelativeTime(run.updatedAt)}
           </span>

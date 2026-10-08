@@ -73,7 +73,7 @@ export function ComputerUpdateProgress({ onCompleted }: { onCompleted: () => voi
           <Button
             key={update.id}
             variant="outline"
-            className="h-auto gap-3 rounded-xl bg-card px-4 py-2 shadow-sm"
+            className="h-auto gap-3 rounded-xl bg-card px-4 py-2 shadow-none"
             onClick={() => {
               setError(false);
               computerUpdates.open(update.id);
@@ -112,7 +112,7 @@ export function ComputerUpdateProgress({ onCompleted }: { onCompleted: () => voi
             data-testid="computer-update-dialog"
           >
             <div className="border-b border-border px-6 py-5">
-              <DialogTitle className="text-lg font-semibold">{title(selected)}</DialogTitle>
+              <DialogTitle className="text-lg font-normal">{title(selected)}</DialogTitle>
             </div>
             {!computerUpdateNeedsAttention(selected) ? (
               <ol className="space-y-4 px-6 py-6" aria-label={t`Update progress`}>

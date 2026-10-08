@@ -173,7 +173,7 @@ describe("BotAvatar", () => {
     );
     expect(html).toContain('aria-label="hex"');
     expect(html).toContain('aria-pressed="true"');
-    expect(html).toContain("focus-visible:ring-2");
+    expect(html).toContain("focus-visible:ring-1");
   });
 
   it("renders distinct robot and organic previews for the same identity", () => {

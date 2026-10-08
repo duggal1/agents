@@ -6,11 +6,19 @@ This is the light system converted 1:1: same layout, spacing, radii, typography,
 
 ## Stack
 
-- Tailwind CSS v4 (`@import "tailwindcss"` in `app/globals.css`, theme in `@theme inline`)
-- shadcn-style UI primitives built on **Base UI** (`@base-ui/react`), style `base-maia`
-- Icons: **hugeicons** (`hugeicons-react` / `@hugeicons/react`)
-- Motion: `motion/react` with shared presets in `lib/motion/contanier.ts`
-- Fonts: Figtree (`--font-sans`), Geist (`--font-geist-sans`), Geist Mono (`--font-geist-mono`) via `next/font/google`
+- Tailwind CSS v4 (`@import "tailwindcss"`, theme in `@theme inline`)
+- shadcn-style UI primitives built on **Base UI** (`@base-ui/react`), vendored in
+  `packages/ui-web` — the source of truth for every primitive below
+- Design tokens: `@rakazo/ui-tokens` (single TypeScript source generating
+  `tokens.css`); never hardcode a product hex
+- Icons: **lucide-react**, `size-3.5`–`size-4` inline, `size-5` logo
+- Motion: CSS `cubic-bezier(0.22, 1, 0.36, 1)` (`EASE_LUXE`) via Base UI
+  `data-starting-style` / `data-ending-style` — never springs
+- Fonts: Geist Variable via fontsource; headings add `tracking-tight`,
+  hero/logo `tracking-tighter`, prominent text `antialiased`
+- Surfaces: Vite + React web app hosted in the Electron shell on macOS
+  (`apps/web` + `apps/desktop`); the offline setup wizard mirrors the same
+  tokens in plain CSS (`apps/desktop/src/setup.css`)
 
 ## Color
 
@@ -34,7 +42,7 @@ Dark theme only. Surfaces, text and borders use the **neutral** ramp exclusively
 
 Note: Tailwind's built-in `neutral-800` is already `#262626`. A card at `#262626` with a hover of `neutral-800` would not change color. So the card is `#1f1f1f` (the midpoint of 900 and 800) and hover is `neutral-800`. If cards must be `#262626`, hover has to move to `neutral-700`.
 
-### Tokens (`app/globals.css`)
+### Tokens (`packages/ui-tokens`, generated `tokens.css`)
 
 ```css
 :root {
@@ -94,7 +102,7 @@ Accent use (always semantic, never decorative):
 
 ## Typography
 
-- Base UI font: Figtree via `--font-sans`; headings use `--font-heading` (same stack).
+- App font: Geist Variable (system stack in the offline wizard); headings use the same stack.
 - Weights: **always `font-normal`** — never bold, never semibold in product UI.
 - Tracking: `tracking-tight` on headings, `tracking-tighter` on hero/logo.
 - Sizes scale small and deliberate:
@@ -552,7 +560,7 @@ Hard rules:
 | List / section content | 350ms | 150ms |
 | Hero entrance | 800ms, staggerChildren 0.15, delayChildren 0.07 | — |
 
-### Presets (`lib/motion/contanier.ts`)
+### Presets (motion: `EASE_LUXE` + `blurIn`, shared by every surface)
 
 ```ts
 export const EASE_LUXE = [0.22, 1, 0.36, 1] as const;

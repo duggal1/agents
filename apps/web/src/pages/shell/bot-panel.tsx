@@ -436,7 +436,7 @@ export function BotSettings({
         <div className="space-y-0.5 pe-4">
           <div
             id={`${ids}-notify-finish-label`}
-            className="text-[13.5px] font-medium text-foreground"
+            className="text-[13.5px] font-normal text-foreground"
           >
             <Trans>Notifications</Trans>
           </div>

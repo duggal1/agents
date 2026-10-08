@@ -84,7 +84,7 @@ export function ChoiceCard({
                 onClick={() => void choose(option.id)}
                 className={`flex w-full items-start gap-3 rounded-xl px-3.5 py-3.5 text-start text-foreground disabled:opacity-60 ${block.answerId ? "bg-accent" : "bg-muted hover:bg-accent"}`}
               >
-                <span className="mt-0.5 grid h-[24px] w-[24px] shrink-0 place-items-center rounded-[7px] bg-background text-[12.5px] font-medium text-foreground/75">
+                <span className="mt-0.5 grid h-[24px] w-[24px] shrink-0 place-items-center rounded-[7px] bg-background text-[12.5px] font-normal text-foreground/75">
                   {option.letter}
                 </span>
                 <span
@@ -216,7 +216,7 @@ export function AppConnectCard({
           </span>
         )}
         <span className="min-w-0 flex-1">
-          <span className="block text-[15px] font-medium text-foreground">{block.name}</span>
+          <span className="block text-[15px] font-normal text-foreground">{block.name}</span>
           <span className="block truncate text-[13px] text-muted-foreground">
             {block.description}
           </span>
@@ -299,7 +299,7 @@ function ChartCanvas({
   return (
     <div className="text-foreground/75">
       {meta.title ? (
-        <div className="mb-1 text-[14.5px] font-semibold text-foreground">{meta.title}</div>
+        <div className="mb-1 text-[14.5px] font-normal text-foreground">{meta.title}</div>
       ) : null}
       {meta.swatches.length > 0 ? (
         <div className="mb-2 flex flex-wrap gap-x-3 gap-y-1">
@@ -405,7 +405,7 @@ export function McpApprovalCard({
         <span className="grid h-7 w-7 place-items-center rounded-lg bg-muted text-xs text-foreground">
           M
         </span>
-        <span className="text-[14.5px] font-medium text-foreground">
+        <span className="text-[14.5px] font-normal text-foreground">
           <Trans>Connect MCP server “{name}”</Trans>
         </span>
       </div>

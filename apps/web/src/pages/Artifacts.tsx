@@ -564,7 +564,7 @@ function FilterChip({
     <button
       type="button"
       onClick={onClick}
-      className={`rounded-full px-3 py-1.5 text-[13px] font-medium transition-colors ${
+      className={`rounded-full px-3 py-1.5 text-[13px] font-normal transition-colors ${
         active
           ? "bg-primary text-primary-foreground"
           : "border border-border text-muted-foreground hover:bg-accent hover:text-accent-foreground"
@@ -598,7 +598,7 @@ function BotFilterChip({
       type="button"
       onClick={onClick}
       style={{ backgroundColor: active ? `${hex}26` : undefined, borderColor: `${hex}66` }}
-      className={`flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[13px] font-medium transition-colors ${
+      className={`flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[13px] font-normal transition-colors ${
         active
           ? "text-foreground"
           : "text-muted-foreground hover:bg-accent/40 hover:text-accent-foreground"
@@ -659,17 +659,17 @@ function ArtifactCard({
           </span>
           <div className="flex items-center gap-1.5">
             {artifact.versionCount > 1 ? (
-              <span className="rounded-md bg-muted px-2 py-1 text-[11px] font-semibold text-muted-foreground">
+              <span className="rounded-md bg-muted px-2 py-1 text-[11px] font-normal text-muted-foreground">
                 {`v${artifact.version}`}
               </span>
             ) : null}
-            <span className="rounded-md bg-muted px-2 py-1 text-[11px] font-semibold text-muted-foreground">
+            <span className="rounded-md bg-muted px-2 py-1 text-[11px] font-normal text-muted-foreground">
               {mimeLabel(artifact.mimeType)}
             </span>
           </div>
         </div>
         <div className="min-w-0">
-          <div className="truncate text-[15px] font-semibold">{artifact.name}</div>
+          <div className="truncate text-[15px] font-normal">{artifact.name}</div>
           {artifact.description ? (
             <div className="mt-1 line-clamp-2 text-[13px] leading-relaxed text-muted-foreground">
               {artifact.description}
@@ -724,9 +724,9 @@ function ArtifactRow({
           <span className="grid h-6 w-6 shrink-0 place-items-center rounded-[7px] bg-accent text-accent-foreground">
             <ArtifactMimeIcon mimeType={artifact.mimeType} small />
           </span>
-          <span className="min-w-0 flex-1 truncate text-[13.5px] font-medium">{artifact.name}</span>
+          <span className="min-w-0 flex-1 truncate text-[13.5px] font-normal">{artifact.name}</span>
           {artifact.versionCount > 1 ? (
-            <span className="shrink-0 rounded-md bg-muted px-1.5 py-0.5 text-[10.5px] font-semibold text-muted-foreground">
+            <span className="shrink-0 rounded-md bg-muted px-1.5 py-0.5 text-[10.5px] font-normal text-muted-foreground">
               {`v${artifact.version}`}
             </span>
           ) : null}
@@ -869,7 +869,7 @@ function PreviewPane({
     <div className="flex min-w-0 flex-1 flex-col">
       <header className="flex items-center gap-3 border-b border-border px-6 py-3">
         <div className="min-w-0 flex-1">
-          <h2 className="truncate text-[16px] font-semibold">
+          <h2 className="truncate text-[16px] font-normal">
             {state.status === "ready" ? state.artifact.name : t`Loading…`}
           </h2>
           {state.status === "ready" && state.artifact.description ? (
@@ -989,7 +989,7 @@ function ImagePreview({
   if (!url) return null;
   return (
     <div className="grid h-full place-items-center overflow-auto bg-muted/40 p-4">
-      <img src={url} alt={name} className="max-h-full max-w-full rounded-lg shadow-sm" />
+      <img src={url} alt={name} className="max-h-full max-w-full rounded-lg shadow-none" />
     </div>
   );
 }

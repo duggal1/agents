@@ -201,7 +201,7 @@ export function BotCredentialsSection({ botId }: { botId: string }) {
 
   return (
     <section data-testid="bot-credentials" className="mt-5 border-t border-border/20 pt-4">
-      <div className="text-[13.5px] font-medium text-foreground">
+      <div className="text-[13.5px] font-normal text-foreground">
         <Trans>Credentials</Trans>
       </div>
       <p className="mt-0.5 text-[12px] text-muted-foreground/70">
@@ -237,7 +237,7 @@ export function BotCredentialsSection({ botId }: { botId: string }) {
                 data-testid="bot-credential-row"
                 className="rounded-lg border border-border/40 px-3 py-2.5"
               >
-                <div className="truncate text-[13.5px] font-medium text-foreground">
+                <div className="truncate text-[13.5px] font-normal text-foreground">
                   {secret.name}
                 </div>
                 <div className="break-all text-[12.5px] text-muted-foreground">{secret.origin}</div>

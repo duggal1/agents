@@ -36,7 +36,7 @@ export function VoiceChatCard({
         className="flex w-full items-center gap-2 px-3 py-2 text-start"
       >
         <AudioLines className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
-        <span className="text-sm font-medium text-foreground">{t`Voice chat`}</span>
+        <span className="text-sm font-normal text-foreground">{t`Voice chat`}</span>
         <span className="text-xs tabular-nums text-muted-foreground">
           {clock(voiceChatDuration(group))}
         </span>
@@ -47,7 +47,9 @@ export function VoiceChatCard({
           )}
         >
           <span className="sr-only">{open ? t`Hide transcript` : t`Show transcript`}</span>
-          <ChevronDown className={cn("size-4 transition-transform", open && "rotate-180")} />
+          <ChevronDown
+            className={cn("size-4 transition-colors duration-150", open && "rotate-180")}
+          />
         </span>
       </button>
       {!open && summary ? (

@@ -108,7 +108,7 @@ export function ApprovalRulesSettings() {
 
   return (
     <div data-testid="action-confirmation-settings" className="pt-5">
-      <h3 className="text-[15px] font-medium text-foreground">
+      <h3 className="text-[15px] font-normal text-foreground">
         <Trans>Action confirmations</Trans>
       </h3>
       <div className="mt-4 flex flex-col items-start gap-2">

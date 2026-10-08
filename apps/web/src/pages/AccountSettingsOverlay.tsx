@@ -95,7 +95,7 @@ export function GeneralSettingsPanels({
   return (
     <div className="space-y-5">
       <section className="rounded-xl border border-border px-4 py-4">
-        <h3 className="text-[15px] font-medium text-foreground">
+        <h3 className="text-[15px] font-normal text-foreground">
           <Trans>Account</Trans>
         </h3>
         <p className="mt-3 text-[14px] text-foreground/75">{name}</p>
@@ -106,7 +106,7 @@ export function GeneralSettingsPanels({
 
       {messagingEnabled && onOpenMessaging ? (
         <section className="rounded-xl border border-border px-4 py-4">
-          <h3 className="text-[15px] font-medium text-foreground">
+          <h3 className="text-[15px] font-normal text-foreground">
             <Trans>Messaging</Trans>
           </h3>
           <p className="mt-3 text-[13px] text-muted-foreground/70">
@@ -119,7 +119,7 @@ export function GeneralSettingsPanels({
       ) : null}
 
       <section className="rounded-xl border border-border px-4 py-4">
-        <h3 className="text-[15px] font-medium text-foreground">
+        <h3 className="text-[15px] font-normal text-foreground">
           <Trans>Appearance</Trans>
         </h3>
         <AppearancePicker
@@ -132,7 +132,7 @@ export function GeneralSettingsPanels({
       </section>
 
       <section className="rounded-xl border border-border px-4 py-4">
-        <h3 className="text-[15px] font-medium text-foreground">
+        <h3 className="text-[15px] font-normal text-foreground">
           <Trans>Language</Trans>
         </h3>
         <UiLocalePicker value={locale} onChange={chooseLocale} />
@@ -142,7 +142,7 @@ export function GeneralSettingsPanels({
         className="rounded-xl border border-border px-4 py-4"
         data-testid="avatar-style-select"
       >
-        <h3 className="text-[15px] font-medium text-foreground">
+        <h3 className="text-[15px] font-normal text-foreground">
           <Trans>Avatars</Trans>
         </h3>
         <div className="mt-3 grid grid-cols-2 gap-3">
@@ -243,7 +243,7 @@ export function UsageSettingsPanel({
       data-testid="usage-settings"
       className="rounded-xl border border-border px-4 py-4 outline-none"
     >
-      <h3 className="text-[15px] font-medium text-foreground">
+      <h3 className="text-[15px] font-normal text-foreground">
         <Trans>Usage</Trans>
       </h3>
       {usage ? (
@@ -274,7 +274,7 @@ export function ComputerSettingsPanel({
       data-testid="computers-setup-settings"
       className="rounded-xl border border-border px-4 py-4"
     >
-      <h3 className="text-[15px] font-medium text-foreground">
+      <h3 className="text-[15px] font-normal text-foreground">
         <Trans>Computers</Trans>
       </h3>
       <ComputersUnavailableHint
@@ -341,7 +341,7 @@ function ChangePasswordSection({ email }: { email?: string | null }) {
 
   return (
     <section className="rounded-xl border border-border px-4 py-4">
-      <h3 className="text-[15px] font-medium text-foreground">
+      <h3 className="text-[15px] font-normal text-foreground">
         <Trans>Password</Trans>
       </h3>
       <div className="mt-3 grid gap-3">
@@ -446,7 +446,7 @@ function AppearancePicker({
           data-testid={`ui-appearance-${option.value}`}
           pressed={option.value === value}
           onPressedChange={() => onChange(option.value)}
-          className="text-[13px] aria-pressed:bg-background aria-pressed:shadow-sm"
+          className="text-[13px] font-normal aria-pressed:bg-background aria-pressed:shadow-none"
         >
           {option.label}
         </Toggle>
@@ -556,7 +556,7 @@ function UiLocalePicker({
         aria-controls={listboxId}
         aria-expanded={open}
         aria-haspopup="listbox"
-        className="flex h-9 w-full items-center justify-between rounded-lg border border-input bg-transparent px-3 text-start text-sm text-foreground outline-none transition-colors focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 dark:bg-input/30 dark:hover:bg-input/50"
+        className="flex h-9 w-full cursor-pointer items-center justify-between rounded-lg border border-neutral-700/50 bg-neutral-850/80 px-3 text-start text-[14px] font-normal text-neutral-100 outline-none transition-colors duration-150 placeholder:text-neutral-500 focus-visible:border-ring focus-visible:ring-1 focus-visible:ring-ring"
         onClick={() => setOpen((current) => !current)}
         onKeyDown={onTriggerKeyDown}
       >
@@ -570,7 +570,7 @@ function UiLocalePicker({
           id={listboxId}
           role="listbox"
           aria-label={t`Language`}
-          className="rk-scroll absolute left-0 right-0 top-full z-20 mt-1 overflow-y-auto rounded-lg bg-popover p-1 text-popover-foreground shadow-md ring-1 ring-foreground/10"
+          className="rk-scroll absolute left-0 right-0 top-full z-20 mt-1 overflow-y-auto rounded-lg border border-border bg-popover p-1 text-popover-foreground shadow-none"
         >
           {UI_LOCALES.map((code, index) => (
             <button

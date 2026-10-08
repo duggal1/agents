@@ -93,7 +93,7 @@ export function DesktopUpdatesProvider({ children }: { children: ReactNode }) {
         <aside
           aria-label={t`Desktop update`}
           aria-live="polite"
-          className="fixed bottom-4 right-4 z-50 max-w-[calc(100vw-2rem)] rounded-xl border border-border bg-card p-3 text-card-foreground shadow-lg"
+          className="fixed bottom-4 right-4 z-50 max-w-[calc(100vw-2rem)] rounded-xl border border-border bg-card p-3 text-card-foreground shadow-none"
         >
           <div className="flex items-center gap-2">
             <Button
@@ -136,7 +136,7 @@ export function DesktopUpdateSection() {
       data-testid="desktop-update-settings"
       className="mt-5 rounded-xl border border-border px-4 py-4"
     >
-      <h3 className="text-[15px] font-medium text-foreground">
+      <h3 className="text-[15px] font-normal text-foreground">
         <Trans>Desktop app</Trans>
       </h3>
       <div className="mt-3 flex items-center justify-between gap-3">

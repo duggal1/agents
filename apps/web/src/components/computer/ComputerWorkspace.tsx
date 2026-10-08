@@ -104,7 +104,7 @@ export function ComputerWorkspace({
             )}
           </WorkspaceWindow>
         ))}
-      <nav className="absolute bottom-4 left-1/2 z-40 flex -translate-x-1/2 gap-1 rounded-2xl border border-border bg-card/90 p-1.5 shadow-lg backdrop-blur">
+      <nav className="absolute bottom-4 left-1/2 z-40 flex -translate-x-1/2 gap-1 rounded-2xl border border-border bg-card/90 p-1.5 shadow-none backdrop-blur">
         {hasScreen ? (
           <Button
             variant="ghost"
@@ -206,7 +206,7 @@ function WorkspaceWindow({
           drag.current = null;
         }}
       >
-        <span className="flex-1 truncate text-[13px] font-medium text-foreground">{title}</span>
+        <span className="flex-1 truncate text-[13px] font-normal text-foreground">{title}</span>
         <Button
           variant="ghost"
           size="icon-xs"

@@ -31,7 +31,7 @@ export function CallCard({ onSettings }: { onSettings: () => void }) {
   return (
     <div
       data-testid="call-view"
-      className="fixed end-4 top-4 z-50 w-[360px] rounded-2xl border border-border bg-card p-3 shadow-lg"
+      className="fixed end-4 top-4 z-50 w-[360px] rounded-2xl border border-border bg-card p-3 shadow-none"
     >
       <div className="flex items-center gap-2.5">
         <BotAvatar color={call.botColor} identity={call.botId} size={28} />
@@ -41,7 +41,7 @@ export function CallCard({ onSettings }: { onSettings: () => void }) {
           onClick={() => {
             if (!onBotScreen) navigate(`/app/${call.botId}`);
           }}
-          className="min-w-0 truncate text-[14.5px] font-medium text-foreground hover:text-foreground/70"
+          className="min-w-0 truncate text-[14.5px] font-normal text-foreground hover:text-foreground/70"
           dir="auto"
         >
           {call.botName}

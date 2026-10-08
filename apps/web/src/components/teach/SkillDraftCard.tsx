@@ -72,7 +72,7 @@ export function SkillDraftCard({
       data-testid="skill-draft-card"
       className="w-[min(520px,92%)] rounded-2xl border border-border bg-card px-5 py-4"
     >
-      <div className="text-[15px] font-medium text-foreground">
+      <div className="text-[15px] font-normal text-foreground">
         <Trans>Draft skill</Trans>
       </div>
       <div className="mt-1 text-[13.5px] text-muted-foreground">{block.goal}</div>

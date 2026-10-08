@@ -80,7 +80,7 @@ export function ExternalConversationSettings({
   return (
     <div data-testid="external-conversation-settings">
       <div className="mb-6">
-        <h2 className="truncate text-[17px] font-medium text-foreground" dir="auto">
+        <h2 className="truncate text-[17px] font-normal text-foreground" dir="auto">
           {conversation.displayName || t`External conversation`}
         </h2>
         <p className="mt-1 truncate text-[12.5px] text-muted-foreground">
@@ -108,9 +108,9 @@ export function ExternalConversationSettings({
                 setMode(option.value);
                 setSaved(false);
               }}
-              className={`min-h-9 rounded-md px-2 text-[12px] leading-4 transition-colors ${
+              className={`min-h-9 cursor-pointer rounded-md px-2 text-[12px] leading-4 font-normal transition-colors duration-150 ${
                 mode === option.value
-                  ? "bg-background text-foreground shadow-sm"
+                  ? "bg-background text-foreground shadow-none"
                   : "text-muted-foreground hover:text-foreground"
               }`}
             >

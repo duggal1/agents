@@ -39,6 +39,7 @@ vi.mock("@rakazo/ui-web", () => {
     NativeSelect: (props: ComponentProps<"select">) => <select {...props} />,
     NativeSelectOption: (props: ComponentProps<"option">) => <option {...props} />,
     parseBotAvatar: () => ({ color: undefined }),
+    RakazoMark: () => <span />,
     resolvePersonaColorDef: () => ({ hex: "#000000" }),
   };
 });
