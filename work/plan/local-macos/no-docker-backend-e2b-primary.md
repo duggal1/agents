@@ -4,11 +4,11 @@
 
 ## 1. Objective
 
-Remove Docker as a prerequisite for running Rakazo on macOS. When a user chooses **This computer**, the Electron app must run Rakazo's API, worker, and PostgreSQL directly as managed native processes. The app must not install, start, or depend on Docker to run those backend services.
+Remove Docker as a prerequisite for running Sapphire on macOS. When a user chooses **This computer**, the Electron app must run Sapphire's API, worker, and PostgreSQL directly as managed native processes. The app must not install, start, or depend on Docker to run those backend services.
 
 Bot computers are a separate concern. E2B is the primary provider for bot computers. Docker is an optional, local fallback for bot computers only, and is used only when a user has enabled fallback and Docker is available. The app must never silently move a bot from E2B to the macOS host itself.
 
-The existing **Existing instance** path remains the way to connect the desktop app to a separately hosted Rakazo server. This plan does not change server deployment or require a hosted service for local mode.
+The existing **Existing instance** path remains the way to connect the desktop app to a separately hosted Sapphire server. This plan does not change server deployment or require a hosted service for local mode.
 
 For a fresh install and steady-state use, Docker is never required by the backend. Existing local installations are a special migration case: their PostgreSQL data currently lives in Docker-managed volumes, so Docker may be needed once to export that data. If the existing Docker daemon is unavailable, the app must preserve the old data and provide a recoverable migration path; it must not claim the legacy profile migrated or delete its old volume.
 
@@ -66,12 +66,12 @@ Sapphire desktop app (Electron)
   ├─ packaged web renderer
   ├─ local runtime supervisor (Electron main process)
   │    ├─ PostgreSQL 16 native process
-  │    ├─ Rakazo API Node process ────────┐
-  │    └─ Rakazo worker Node process ─────┤ loopback only
+  │    ├─ Sapphire API Node process ────────┐
+  │    └─ Sapphire worker Node process ─────┤ loopback only
   │                                       │
   └─ renderer /rpc and /api ──────────────┘
 
-Rakazo API + worker
+Sapphire API + worker
   └─ sandbox provider routing
        ├─ E2B remote computer: primary
        └─ Docker computer: opt-in fallback only
@@ -210,7 +210,7 @@ Tasks are ordered by dependency. Each task is a separately reviewable implementa
 3. Run unit tests for process lifecycle, database lifecycle, provider policy, and migration. Run desktop UI E2E only in the repository's CI virtual-display job; do not run the focus-stealing Electron suite routinely on a maintainer Mac.
 4. Run a clean-install acceptance test on a Mac with Docker absent: install, configure E2B, launch, create an agent, provision an E2B computer, run a command, restart the app, and verify local data persists.
 5. Run an upgrade acceptance test with a populated old Docker-backed profile and verify the data migration, rollback path, and retained Docker volume.
-6. Measure idle and active RSS/CPU for Electron, API, worker, and PostgreSQL separately. Compare against the current packaged Compose flow using the same workload and report total plus per-process numbers. With E2B primary and local model inference disabled, the proposed total Rakazo process RSS targets are at or below **1.5 GiB after five minutes idle** and the **95th-percentile total RSS at or below 2.5 GiB** during one active chat turn plus one E2B computer session. Include every Rakazo child process; Docker Desktop VM memory is absent from the target path. Validate and lock both targets before T4; if either fails, stop and return the measured blocker rather than raising the budget.
+6. Measure idle and active RSS/CPU for Electron, API, worker, and PostgreSQL separately. Compare against the current packaged Compose flow using the same workload and report total plus per-process numbers. With E2B primary and local model inference disabled, the proposed total Sapphire process RSS targets are at or below **1.5 GiB after five minutes idle** and the **95th-percentile total RSS at or below 2.5 GiB** during one active chat turn plus one E2B computer session. Include every Sapphire child process; Docker Desktop VM memory is absent from the target path. Validate and lock both targets before T4; if either fails, stop and return the measured blocker rather than raising the budget.
 7. Update setup docs and release notes to state that Docker is not needed for the local backend; it is required only if the user opts into Docker computer fallback or uses a Docker-based server deployment.
 
 ## 7. Contracts and safety invariants

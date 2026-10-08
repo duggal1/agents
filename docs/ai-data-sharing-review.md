@@ -26,7 +26,7 @@ using their existing controls. This flow is not a global data-access or run-revo
   client. Older servers without the disclosure endpoints cannot supply the new mobile flow;
   existing web/desktop clients and provider execution are unaffected.
 - Self-hosters can set `PRIVACY_POLICY_URL` to their own absolute HTTP(S) policy URL. Otherwise
-  the mobile flow links Rakazo's policy, which distinguishes hosted and self-hosted operators.
+  the mobile flow links Sapphire's policy, which distinguishes hosted and self-hosted operators.
   Unknown custom providers have no invented provider-policy link.
 - Deploy the website policy together with the mobile release.
 - Review App Store Connect's App Privacy responses against deployed data flows. Specifically

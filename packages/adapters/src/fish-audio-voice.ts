@@ -53,7 +53,7 @@ export class FishAudioVoiceProvider implements VoiceProvider {
     });
   }
 
-  /** Return user-owned then bounded public Fish Audio voices as Rakazo choices. */
+  /** Return user-owned then bounded public Fish Audio voices as Sapphire choices. */
   async listVoices(apiKey: string, context: AdapterContext): Promise<VoiceInfo[]> {
     const signal = voiceDeadline(context.signal, LIST_VOICES_DEADLINE_MS);
     const listContext = { ...context, signal };
@@ -69,7 +69,7 @@ export class FishAudioVoiceProvider implements VoiceProvider {
     });
   }
 
-  /** Synthesize one Rakazo utterance as bounded MP3 audio. */
+  /** Synthesize one Sapphire utterance as bounded MP3 audio. */
   async synthesize(request: VoiceSynthesizeRequest, context: AdapterContext): Promise<SpeechClip> {
     const signal = voiceDeadline(request.signal ?? context.signal, 60_000);
     const model = resolveFishSpeechModel(request.model);

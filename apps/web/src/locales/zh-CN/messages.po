@@ -875,8 +875,8 @@ msgid "Choose file"
 msgstr "选择文件"
 
 #: src/pages/ModelSettingsOverlay.tsx
-msgid "Choose which connected model Rakazo uses."
-msgstr "选择 Rakazo 使用的已连接模型。"
+msgid "Choose which connected model Sapphire uses."
+msgstr "选择 Sapphire 使用的已连接模型。"
 
 #: src/pages/shell/dialogs.tsx
 msgid "Clear"
@@ -1608,8 +1608,8 @@ msgid "Create space"
 msgstr "创建工作区"
 
 #: src/pages/Auth.tsx
-msgid "Create your Rakazo"
-msgstr "创建你的 Rakazo"
+msgid "Create your Sapphire"
+msgstr "创建你的 Sapphire"
 
 #: src/components/AskCard.tsx
 msgid "Created"
@@ -3008,8 +3008,8 @@ msgid "Paste a replacement key"
 msgstr "粘贴替换密钥"
 
 #: src/pages/ModelSettingsOverlay.tsx
-msgid "Paste the OpenAI-compatible address from your server. Rakazo adds /v1 if needed."
-msgstr "粘贴服务器的 OpenAI 兼容地址。需要时 Rakazo 会补上 /v1。"
+msgid "Paste the OpenAI-compatible address from your server. Sapphire adds /v1 if needed."
+msgstr "粘贴服务器的 OpenAI 兼容地址。需要时 Sapphire 会补上 /v1。"
 
 #: src/pages/VoiceSettingsOverlay.tsx
 msgid "Paste your API key"
@@ -3338,8 +3338,8 @@ msgid "Retry screen"
 msgstr ""
 
 #: src/pages/McpOAuthCallback.tsx
-msgid "Return to Rakazo"
-msgstr "返回 Rakazo"
+msgid "Return to Sapphire"
+msgstr "返回 Sapphire"
 
 #. placeholder {0}: doc.revision
 #: src/pages/KnowledgeSection.tsx
@@ -3638,8 +3638,8 @@ msgid "Sign in again"
 msgstr ""
 
 #: src/pages/Auth.tsx
-msgid "Sign in to Rakazo"
-msgstr "登录 Rakazo"
+msgid "Sign in to Sapphire"
+msgstr "登录 Sapphire"
 
 #: src/pages/Auth.tsx
 #: src/pages/Welcome.tsx
@@ -3908,8 +3908,8 @@ msgid "This server is already connected. Disconnect it first to authorize again.
 msgstr "此服务器已连接。请先断开再重新授权。"
 
 #: src/pages/ModelSettingsOverlay.tsx
-msgid "This subscription sign-in is not available in Rakazo yet. Use a deployment credential or choose another provider."
-msgstr "此订阅登录在 Rakazo 中尚不可用。请使用部署凭据或选择其他提供方。"
+msgid "This subscription sign-in is not available in Sapphire yet. Use a deployment credential or choose another provider."
+msgstr "此订阅登录在 Sapphire 中尚不可用。请使用部署凭据或选择其他提供方。"
 
 #: src/pages/Artifacts.tsx
 msgid "This week"

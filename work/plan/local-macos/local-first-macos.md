@@ -70,7 +70,7 @@ Mac window (Electron)
        └─ local API + worker processes, invisible, started/stopped with the Mac app
             ├─ single fixed owner actor minted at boot; single auto-created Space
             ├─ no cookies, no sessions, no login screen anywhere
-            ├─ data in ~/Library/Application Support/Rakazo/rakazo.db (SQLite)
+            ├─ data in ~/Library/Application Support/Sapphire/rakazo.db (SQLite)
             ├─ jobs via in-process queue + boot-time reconciler
             ├─ realtime via in-process fanout
             └─ virtual computers: E2B if E2B_API_KEY present → Docker if daemon
@@ -133,7 +133,7 @@ Docker. Ctrl-C stops everything.
   prompt/abort, permissions, global event SSE, MCP management, provider auth).
 - Mapping: bot run → `session.create` + `session.promptAsync`; streaming →
   `event.subscribe`; stop → `session.abort`; approvals → permission-respond
-  endpoints; Rakazo tools (computer, teach, memory, skills, scratchpad) →
+  endpoints; Sapphire tools (computer, teach, memory, skills, scratchpad) →
   exposed to opencode over MCP (opencode has first-class MCP support).
 - Selection via runtime flag (`RUNTIME_KIND=opencode|pi`, default opencode in
   local mode). Pi stays intact until the opencode path passes the existing

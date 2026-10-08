@@ -215,7 +215,7 @@ async function installVisualFixture(sandbox: SandboxProvider, computer: Computer
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
 
-PAGE = b'''<!doctype html><meta charset="utf-8"><title>Rakazo visual test</title>
+PAGE = b'''<!doctype html><meta charset="utf-8"><title>Sapphire visual test</title>
 <style>body{font-family:sans-serif;text-align:center;padding-top:120px}button{width:760px;height:300px;font-size:58px;background:#2563eb;color:white;border:0;border-radius:24px}</style>
 <button onclick="fetch('/passed',{method:'POST'}).then(()=>document.body.innerHTML='<h1 style=font-size:72px>VISUAL E2E PASSED</h1>')">CLICK TO PASS</button>'''
 

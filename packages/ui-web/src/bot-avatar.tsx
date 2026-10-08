@@ -534,7 +534,7 @@ export function GrokShapePreview({
   );
 }
 
-/** The Rakazo mark. Monochrome via `fill="currentColor"` so it inherits the surface text token. */
+/** The Sapphire mark. Monochrome via `fill="currentColor"` so it inherits the surface text token. */
 export function RakazoMark({ className, size = 20 }: { className?: string; size?: number }) {
   return (
     <svg

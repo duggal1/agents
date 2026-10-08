@@ -41,7 +41,7 @@ export const COMPOSE_PROJECT_NAME_OVERRIDE_ENV = "RAKAZO_COMPOSE_PROJECT_NAME";
 /**
  * The services a recreate replaces. `updater` is deliberately absent: it is the process running
  * the update, and recreating it would kill the run half way through. `postgres` and `caddy` are
- * absent because neither uses the Rakazo image.
+ * absent because neither uses the Sapphire image.
  */
 export const RECREATED_SERVICES = ["api", "worker", "web"] as const;
 

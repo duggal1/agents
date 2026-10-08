@@ -9,21 +9,21 @@ const stars = await fetchGithubStars();
 const starsLabel = stars === null ? "Star" : formatStarCount(stars);
 ---
 
-<BaseLayout title="Support · Rakazo" description="Get help with the Rakazo app and self-hosted Rakazo.">
+<BaseLayout title="Support · Sapphire" description="Get help with the Sapphire app and self-hosted Sapphire.">
   <div class="container">
     <Header starsLabel={starsLabel} />
     <main id="main" class="privacy-copy">
-      <h1>Rakazo support</h1>
+      <h1>Sapphire support</h1>
       <p>
-        For help with the Rakazo mobile app or a hosted Rakazo account, email{" "}
+        For help with the Sapphire mobile app or a hosted Sapphire account, email{" "}
         <a href="mailto:hello@rakazo.com">hello@rakazo.com</a>. Include the email address on your
         account, what you expected to happen, and any error message you saw. Do not send passwords, API keys,
         access tokens, or other secrets.
       </p>
-      <h2>Self-hosted Rakazo</h2>
+      <h2>Self-hosted Sapphire</h2>
       <p>
         Start with the <a href={DOCS_URL}>self-hosting guide</a>. For reproducible bugs or feature requests,
-        open an issue in the <a href={`${GITHUB_URL}/issues`}>Rakazo GitHub repository</a>.
+        open an issue in the <a href={`${GITHUB_URL}/issues`}>Sapphire GitHub repository</a>.
       </p>
       <h2>Account deletion</h2>
       <p>

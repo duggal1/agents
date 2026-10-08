@@ -14,7 +14,7 @@ describe("marketing site middleware", () => {
       "text/markdown; charset=utf-8",
     );
     expect(response.headers.get("vary")).toBe("Accept, Accept-Encoding");
-    await expect(response.text()).resolves.toContain("# Rakazo");
+    await expect(response.text()).resolves.toContain("# Sapphire");
   });
 
   it("gives generic agent fetches a recoverable Markdown 404", async () => {

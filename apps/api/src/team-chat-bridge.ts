@@ -239,7 +239,7 @@ export class TeamChatBridge {
       conversation.spaceId !== target.spaceId ||
       !conversation.thread
     ) {
-      throw new Error("Team chat conversation belongs to a different Rakazo target");
+      throw new Error("Team chat conversation belongs to a different Sapphire target");
     }
     const now = new Date();
     const deferredUntil = new Date(now.getTime() + DEFERRED_RESERVATION_MS);
@@ -478,7 +478,7 @@ export class TeamChatBridge {
     },
   ): Promise<void> {
     if (message.threadMessageId) return;
-    if (!conversation.thread) throw new Error("Team chat conversation has no Rakazo thread");
+    if (!conversation.thread) throw new Error("Team chat conversation has no Sapphire thread");
     const visible = await this.deps.events.sendUserMessage({
       spaceId: conversation.spaceId,
       threadId: conversation.thread.id,
@@ -709,7 +709,7 @@ export class TeamChatBridge {
       const blocks = Array.isArray(response?.blocks) ? (response.blocks as MessageBlock[]) : [];
       const content =
         run.status === "failed"
-          ? `${target.name} could not complete the delegated request. Open Rakazo for details.`
+          ? `${target.name} could not complete the delegated request. Open Sapphire for details.`
           : teamChatResponseText(blocks, target.name, true);
       if (content) {
         await this.deps.send({
@@ -955,7 +955,7 @@ export class TeamChatBridge {
     };
   }): Promise<void> {
     const thread = message.externalConversation.thread;
-    if (!thread) throw new Error("Team chat conversation has no Rakazo thread");
+    if (!thread) throw new Error("Team chat conversation has no Sapphire thread");
     // In-flight routine wakes own the row via engagementReason; never start a
     // fallback TeamChat agent until that claim is cleared.
     if (isRoutingOwnershipReason(message.engagementReason)) {
@@ -1157,7 +1157,7 @@ export class TeamChatBridge {
     await this.sendOnce(message.id, {
       conversationId: message.externalConversation.conversationId,
       replyThreadId: message.replyThreadId,
-      content: `${this.target?.name ?? "The agent"} could not complete that request. Open Rakazo for details.`,
+      content: `${this.target?.name ?? "The agent"} could not complete that request. Open Sapphire for details.`,
       idempotencyKey: `external-message:${message.id}:failure`,
     });
   }

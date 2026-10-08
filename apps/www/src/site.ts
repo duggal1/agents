@@ -1,7 +1,7 @@
-export const SITE_NAME = "Rakazo";
+export const SITE_NAME = "Sapphire";
 export const SITE_URL = "https://rakazo.com";
 export const SITE_DESCRIPTION =
-  "Rakazo is an open source Grok Bot alternative for persistent AI teammates that do real work. Your keys, your model, your machine.";
+  "Sapphire is an open source Grok Bot alternative for persistent AI teammates that do real work. Your keys, your model, your machine.";
 
 export const GITHUB_URL = "https://github.com/elie222/rakazo";
 export const GITHUB_API_REPO = "https://api.github.com/repos/elie222/rakazo";
