@@ -10,8 +10,8 @@ New icons come from exactly two libraries (both installed in
 `bun update` them casually):
 
 - `@hugeicons/react@1.1.10` + `@hugeicons/core-free-icons@4.3.5` — thousands
-  of stroke icons, Lucide-style names plus aliases (`Mail`, `Message`,
-  `LayoutDashboard`).
+  of stroke icons. **The primary set.** Names are descriptive words plus
+  aliases (`Mail`, `Message`, `LayoutDashboard`, `Settings01Icon`).
 - `@phosphor-icons/react@2.1.10` — 3,024 icons, one component per icon, six
   weights (`thin` … `fill`).
 
@@ -24,8 +24,13 @@ that guesses an icon name without searching is doing it wrong.
 - Inline icons: `size-3.5`–`size-4`. Logo mark: `size-5`. Nothing else.
 - Icons inherit text color (`currentColor`). Never hardcode a hex on an icon.
 - One icon per control. No emoji anywhere, ever.
-- Existing `lucide-react` usage stays where it is. New icons come from the two
-  libraries below.
+- **hugeicons first.** Reach for Phosphor only when hugeicons has no clean
+  match for the meaning — not as a style preference.
+- **`lucide-react` is retired.** It is not a dependency of any workspace and
+  must never be imported or reinstalled. If a vendored `shadcn add` component
+  arrives with lucide imports, swap them to hugeicons in the same change.
+  Every icon in `apps/web` and `packages/ui-web` already comes from the two
+  libraries below — there is nothing left to leave "where it is".
 
 ## Workflow: keyword → candidates → one pick
 
