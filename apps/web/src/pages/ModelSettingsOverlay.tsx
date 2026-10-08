@@ -39,6 +39,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
+  Badge,
   Button,
   Dialog,
   DialogClose,
@@ -601,9 +602,9 @@ export function ModelSettingsOverlay({
           </span>
         </span>
         {!connectedSection && rowCredential ? (
-          <span className="text-[12px] text-success">
+          <Badge variant="green">
             <Trans>Connected</Trans>
-          </span>
+          </Badge>
         ) : null}
       </button>
     );

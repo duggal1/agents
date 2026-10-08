@@ -3,6 +3,7 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import { Trans, useLingui } from "@lingui/react/macro";
 import type { VoiceCatalogEntry, VoiceCredential, VoiceInfo, VoiceStatus } from "@rakazo/contracts";
 import {
+  Badge,
   Button,
   Dialog,
   DialogClose,
@@ -248,9 +249,9 @@ export function VoiceSettingsOverlay({
                     </span>
                   </span>
                   {connected ? (
-                    <span className="text-[12px] text-success">
+                    <Badge variant="green">
                       <Trans>Connected</Trans>
-                    </span>
+                    </Badge>
                   ) : null}
                 </button>
               );
