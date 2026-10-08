@@ -1049,12 +1049,12 @@ export function ModelSettingsOverlay({
               <>
                 {connectedGroups.length ? (
                   <>
-                    <p className="border-b border-border px-3.5 pb-1.5 pt-3 text-[11px] font-medium uppercase tracking-[0.08em] text-muted-foreground/80">
+                    <p className="border-b border-border px-3.5 pb-1.5 pt-3 text-[12px] font-normal tracking-[0.02em] text-neutral-500">
                       <Trans>Connected</Trans>
                     </p>
                     {connectedGroups.map((group) => renderProviderRow(group, true))}
                     {otherGroups.length ? (
-                      <p className="border-b border-border px-3.5 pb-1.5 pt-3 text-[11px] font-medium uppercase tracking-[0.08em] text-muted-foreground/80">
+                      <p className="border-b border-border px-3.5 pb-1.5 pt-3 text-[12px] font-normal tracking-[0.02em] text-neutral-500">
                         <Trans>All providers</Trans>
                       </p>
                     ) : null}
@@ -1556,7 +1556,7 @@ function ModelPicker({
             {groupRanges.map((group) => (
               <div key={group.name}>
                 {groupRanges.length > 1 ? (
-                  <p className="px-3 pb-1 pt-2 text-[11px] font-medium uppercase tracking-[0.08em] text-muted-foreground/80">
+                  <p className="px-3 pb-1 pt-2 text-[12px] font-normal tracking-[0.02em] text-neutral-500">
                     {group.name}
                   </p>
                 ) : null}

@@ -141,6 +141,41 @@ Label above, `text-[13px] text-neutral-300`; control `h-8.5`-style, `rounded-lg`
 ### Checkbox
 `size-4 rounded-sm border-neutral-600/50`, checked → `border-blue-600 bg-blue-600`.
 
+### Cursor — every interactive element points
+Cursor is a state signal, not decoration. If it clicks, it points. If it never
+clicks, it never points. No exceptions, no `cursor-default` on controls, no
+missing pointer on a dropdown header trigger.
+
+Pointer (`cursor-pointer`) — all of these, in every surface (web, Electron,
+setup wizard):
+- `button:not(:disabled)`, `a`, `summary`, `details > summary`, `select:not(:disabled)`
+- `label` (including `label[for]`), `input[type="radio"]`, `input[type="checkbox"]`
+- `[role="button"]`, `[role="link"]`, `[role="menuitem"]`, `[role="menuitemcheckbox"]`,
+  `[role="menuitemradio"]`, `[role="option"]`, `[role="tab"]`, `[role="combobox"]`
+- `[role="switch"]`, `[role="checkbox"]` (when not disabled)
+- Every `data-slot`: `dropdown-menu-trigger`, `dropdown-menu-item`,
+  `dropdown-menu-checkbox-item`, `dropdown-menu-radio-item`,
+  `dropdown-menu-sub-trigger`, `select-trigger`, `select-item`, `native-select`,
+  `popover-trigger`, `tooltip-trigger`, `command-item`, `tabs-trigger`, `switch`,
+  `dialog-trigger`, `dialog-close`, `alert-dialog-trigger`
+- File inputs and their buttons (`::file-selector-button`, `::-webkit-file-upload-button`)
+- Disclosure headers that expand/collapse (see "Dropdowns" below): the whole
+  header row is the hit target and carries the pointer
+
+Default cursor (`cursor-default`) — never a pointer:
+- Dropdown / select / popover / dialog **section headers and labels**
+  (`dropdown-menu-label`, `select-group-heading`, `command-group-heading`,
+  `popover-header`, `dialog-header`, plain `<p>` section captions)
+- Disabled anything: `button:disabled`, `select:disabled`, `[aria-disabled="true"]`,
+  `[data-disabled="true"]` → `cursor-default` (never `not-allowed`; disabled is
+  `opacity-60`, not a cursor scolding)
+- Static text, badges, timestamps, icons without actions
+
+Rule: a new interactive element ships with its pointer in the same change.
+A global base-layer rule enforces this so individual components cannot forget it;
+per-component `cursor-pointer` classes repeat it at the usage site for elements
+rendered outside the base layer (portals, Electron wizard, native selects).
+
 ### Badges
 
 Badges carry status and category. They are the only place besides errors and status icons where color appears. The component is the source of truth for every badge in the product (job detail, list rows, dashboard, "This device", connection status).
@@ -220,7 +255,34 @@ Semantic mapping:
 | `neutral` | inactive, draft, salary, counts |
 
 ### Work-mode chip (list row)
-`rounded px-1.5 py-0.5 text-[11px] font-medium`; remote = `purple` badge colors, hybrid/on-site = `neutral` badge colors.
+`rounded px-1.5 py-0.5 text-[11px] font-normal`; remote = `purple` badge colors, hybrid/on-site = `neutral` badge colors.
+
+### Dropdowns, selects, popovers, command palette
+One treatment for every floating list. Content surface: `rounded-lg border
+border-neutral-800 bg-neutral-850` (popover `bg-popover`), `shadow-none`, no ring.
+Motion is always blur in / blur out (see Motion): enter `opacity 0 → 1`,
+`blur 6 → 0`, `scale 0.98 → 1`, 200ms `EASE_LUXE`; exit `opacity → 0`,
+`blur → 4px`, 150ms. Never `slide-in`, never `zoom-in`, never `shadow-md/lg`.
+
+- **Trigger** (the header that opens it): `cursor-pointer`, `text-[14px] font-normal
+  text-neutral-100`, `rounded-lg border-neutral-700/50 bg-neutral-850/80`,
+  `focus-visible:ring-1 focus-visible:ring-neutral-600`. The trigger is a header
+  and a control at once: label text left, chevron/plus icon right, whole row clicks.
+- **Section header / label inside the list** (`dropdown-menu-label`,
+  select group heading, `command-group-heading`, popover section caption):
+  `px-1.5 py-1 text-[12px] font-normal text-neutral-500`, `cursor-default`,
+  never clickable, never a pointer, never brighter than `neutral-500`. One or two
+  words, sentence case ("Work mode", "This device"). Group headings in the command
+  palette use the same `text-[12px] font-normal text-neutral-400` treatment.
+- **Items** (`dropdown-menu-item`, `select-item`, `command-item`, checkbox/radio
+  items, sub-triggers): `cursor-pointer`, `rounded-md px-1.5 py-1 text-[14px]
+  font-normal`, `hover/focus:bg-neutral-800`, never `cursor-default`. Destructive
+  items use the `orange` badge tones for text only.
+- **Header rows that disclose** (accordion `<summary>`, "Filters" toggles, routine
+  section headers): `cursor-pointer list-none`, `text-[14px] font-normal`,
+  chevron rotates via color-only transition, no transform on hover.
+- Disabled items: `opacity-60` + `cursor-default`, no pointer events on the item
+  itself (`pointer-events-none` on the disabled node, tooltip explains why when needed).
 
 ### Toast
 
@@ -279,13 +341,49 @@ One relative wrapper per search field. Input is `h-10 w-full rounded-lg border-n
 Account "Sign out" button: the standard CTA chip, `disabled:opacity-60`, while pending shows `Signing out…` with no spinner. Buttons keep text-only pending states; the Loader below is for everything else.
 
 ### Navbar
-Sticky, `px-6 py-3 text-[13px] font-medium text-neutral-50`; transparent, gains `bg-neutral-850/70 backdrop-blur-lg` after 16px scroll; logo `size-5` + wordmark `text-[17px] tracking-tighter`. Right cluster is `flex items-center gap-2`. **Post Job** is the single CTA (`bg-neutral-50 px-3 py-1 text-[13px] text-neutral-900`). **Dashboard** is a *neutral* chip, not the CTA: `bg-neutral-800 px-3 py-1 text-[13px] text-neutral-50 hover:bg-neutral-700/70`, no border. **Applicants** stays a plain `neutral-300` link.
+Sticky, `px-6 py-3 text-[13px] font-normal text-neutral-50`; transparent, gains `bg-neutral-850/70 backdrop-blur-lg` after 16px scroll; logo `size-5` + wordmark `text-[17px] tracking-tighter`. Right cluster is `flex items-center gap-2`. **Post Job** is the single CTA (`bg-neutral-50 px-3 py-1 text-[13px] text-neutral-900`). **Dashboard** is a *neutral* chip, not the CTA: `bg-neutral-800 px-3 py-1 text-[13px] text-neutral-50 hover:bg-neutral-700/70`, no border. **Applicants** stays a plain `neutral-300` link.
+
+### App header (macOS + web) — top-left is only the logo
+The top-left of every app surface carries exactly one identity: the Rakazo mark,
+and nothing else. No second avatar, no duplicate wordmark, no decorative icon.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" width="20" height="14" viewBox="0 0 20 14" fill="#fff"><path d="M18.51.671 14.99 2.156a13.58 13.58 0 0 1-10.552 0L.916.671A.66.66 0 0 0 0 1.283v11.156c0 .473.48.795.916.611l3.52-1.485a13.58 13.58 0 0 1 10.553 0l3.521 1.485a.66.66 0 0 0 .916-.611V1.283A.66.66 0 0 0 18.51.67m-1.28 7.372c-.54.97-1.682 1.423-2.751 1.136a4 4 0 0 1-.41-.135 2 2 0 0 1-.27-.13c-1.202-.66-2.538-1.034-3.91-1.034h-.353c-1.371 0-2.708.374-3.91 1.035a2 2 0 0 1-.27.129q-.2.08-.41.135c-1.069.286-2.21-.166-2.75-1.136a2.44 2.44 0 0 1-.06-2.253c.503-1.031 1.675-1.538 2.783-1.255q.245.063.479.157.14.058.271.135c1.182.677 2.534 1.006 3.898 1.006h.292c1.363 0 2.714-.329 3.897-1.006q.131-.077.272-.135.234-.095.479-.157c1.108-.282 2.28.224 2.783 1.255a2.44 2.44 0 0 1-.06 2.253"/></svg>
+```
+
+- Render it monochrome via `fill="currentColor"` (`text-neutral-50` on dark) at
+  `20×14` (`size={18}`–`20` in product headers, `24px` wide in the 40px setup slot).
+  It keeps its own 20:14 aspect ratio; never stretch, never recolor, never add a
+  second mark beside it.
+- Lockup: `flex items-center gap-3`, mark + optional `text-[17px] tracking-tighter
+  text-neutral-50` wordmark. In the running app (Shell sidebar, thread header,
+  artifacts header, welcome/auth top-left) the mark alone is enough; the setup
+  wizard pairs mark + "Rakazo" once in the titlebar and once in the 40px
+  `rounded-full bg-neutral-800` hero slot.
+- Order on macOS is always traffic lights → mark. The mark sits in the draggable
+  header with `app-no-drag` on the mark itself only when it must stay clickable;
+  otherwise it rides the drag region. Never put window controls anywhere else.
+
+### macOS shell
+- Window: `frame: true`, `titleBarStyle: hiddenInset`, traffic lights at `16,16`
+  on darwin; framed windows elsewhere. Background `#171717` so the native chrome
+  never flashes a different color behind the canvas.
+- Drag: the header row is `app-drag` (`-webkit-app-region: drag`); every control
+  inside it (buttons, triggers, the mark when clickable) is `app-no-drag`.
+  Window close hides (warm window, 15-minute TTL) instead of quitting;
+  `window-all-closed` quits only off-darwin.
+- Motion and pointer rules apply inside Electron exactly as on web: color-only
+  `transition-colors duration-150` on hover, `active:opacity-90` on press, no
+  `hover:scale`, no transform on hover, pointer on every control (see Cursor).
+- Setup wizard is the same system in plain CSS: same tokens, same
+  `cubic-bezier(0.22,1,0.36,1)` ease, same blur-in mount (`opacity 0 → 1`,
+  `blur 6 → 0`, `y 6 → 0`, 350ms), same pointer-on-everything rule.
 
 ### Job list rows
 `group rounded-lg border border-neutral-800 bg-neutral-850 px-6 py-4 hover:border-neutral-700 hover:bg-neutral-800`; title `text-[15px]`, meta line `text-[13px] text-neutral-400` with `&middot;` separators, flag inline, work-mode chip, right-aligned `timeAgo` in `text-neutral-500`; row CTA "Preview →" goes `neutral-400`→`neutral-200` on hover.
 
 ### Success state (application sent)
-Centered card `max-w-md rounded-xl bg-neutral-850 px-8 py-10 text-center`, company avatar in `size-10 rounded-full bg-neutral-800`, title `text-[15px] font-medium text-neutral-50`, body `text-[13px] text-neutral-400`.
+Centered card `max-w-md rounded-xl bg-neutral-850 px-8 py-10 text-center`, company avatar in `size-10 rounded-full bg-neutral-800`, title `text-[15px] font-normal text-neutral-50`, body `text-[13px] text-neutral-400`.
 
 ### Loader (loading state)
 
@@ -525,9 +623,17 @@ Color-only transitions (`transition-colors duration-150`). No transform on hover
 ## Rules of thumb
 
 1. One CTA per view (the inverted light chip); everything else is a neutral-800/700 chip or ghost.
-2. `font-normal` everywhere; emphasis via size/color, never weight.
-3. Surfaces step 900 (page) → 850 (card) → 800 (hover/fill). Borders are 1px `neutral-800` or `neutral-700/50`; cards and toasts are never shadowed.
+2. `font-normal` everywhere; emphasis via size/color, never weight. `font-medium`,
+   `font-semibold` and bold never ship in product UI — headers, dropdown labels,
+   dialog titles and buttons are all `font-normal`.
+3. Surfaces step 900 (page) → 850 (card) → 800 (hover/fill). Borders are 1px `neutral-800` or `neutral-700/50`; cards and toasts are never shadowed (`shadow-none` everywhere, no `shadow-md/lg`).
 4. Accent color only carries meaning: green = success/connected, yellow = pending, orange = error/attention, rose = failed, purple = remote, blue = checked/type. Badges are the default way to show it.
 5. Numbers and timestamps recede: `neutral-500` at small size. Anything that must be read is `neutral-400` or lighter.
-6. Every state change animates, always blur in / blur out, never bounce or spring.
+6. Every state change animates, always blur in / blur out, never bounce or spring. No `hover:scale`, no transform on hover; press is `active:opacity-90` only.
 7. One loading pattern: the terminal loader, tinted by the agent's avatar color, neutral-50 by default.
+8. If it clicks, it points: `cursor-pointer` on every trigger, item, option, tab,
+   toggle, select, disclosure header and link — including dropdown triggers and
+   dropdown headers that open something. Section labels inside a list stay
+   `cursor-default`. Disabled stays `cursor-default` at `opacity-60`.
+9. Top-left is only the logo: traffic lights → Rakazo mark, every app surface,
+   web and macOS alike. One mark, monochrome, correct aspect ratio, no duplicates.

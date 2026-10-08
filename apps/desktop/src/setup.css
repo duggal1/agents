@@ -6,8 +6,8 @@
  * setup surface matches the editorial system even though the shared ui-tokens
  * ramp has not been remapped.)
  * Type: always font-normal, tight tracking, small sizes. The web app renders
- * Figtree/Geist via next/font; this offline window mirrors its metrics with the
- * system stack. Motion: everything blurs in/out on EASE_LUXE, never springs.
+ * Geist Variable via fontsource; this offline window mirrors its metrics with
+ * the system stack. Motion: everything blurs in/out on EASE_LUXE, never springs.
  */
 
 :root {
@@ -43,8 +43,8 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family:
-    -apple-system, BlinkMacSystemFont, "SF Pro Text", Inter, "Segoe UI", Roboto, Helvetica,
-    Arial, sans-serif;
+    -apple-system, BlinkMacSystemFont, "SF Pro Text", Inter, "Segoe UI", Roboto, Helvetica, Arial,
+    sans-serif;
   font-size: 14px;
   font-weight: 400;
   line-height: 1.5;
@@ -97,6 +97,18 @@ html[data-platform="darwin"] .titlebar {
 }
 
 /* Wordmark, not a label: normal case, tight tracking, must-read neutral. */
+.titlebar-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--foreground);
+}
+
+.brand-mark {
+  display: block;
+  flex: none;
+}
+
 .titlebar-name {
   font-size: 14px;
   font-weight: 400;
@@ -116,7 +128,9 @@ html[data-platform="darwin"] .titlebar {
   cursor: pointer;
   padding: 4px 8px;
   border-radius: 6px;
-  transition: color 150ms var(--ease), background-color 150ms var(--ease);
+  transition:
+    color 150ms var(--ease),
+    background-color 150ms var(--ease);
 }
 
 .titlebar-quit:hover {
@@ -141,9 +155,8 @@ html[data-platform="darwin"] .titlebar {
   animation: rk-in 350ms var(--ease) backwards;
 }
 
-/* Avatar lockup. The mark itself is untouched (same two-bar avatar as the
- * product Wordmark); only the slot follows DESIGN.MD: 40px rounded-full on a
- * neutral-800 fill. */
+/* Avatar lockup. DESIGN.MD: logo on a 40px rounded-full neutral-800 slot.
+ * The mark keeps its own aspect ratio inside the slot. */
 .brand {
   display: flex;
   align-items: center;
@@ -162,12 +175,9 @@ html[data-platform="darwin"] .titlebar {
 }
 
 .avatar svg {
-  width: 22px;
-  height: 22px;
-}
-
-.avatar-bar {
-  fill: var(--foreground);
+  width: 24px;
+  height: auto;
+  color: var(--foreground);
 }
 
 .heading {
@@ -203,7 +213,9 @@ html[data-platform="darwin"] .titlebar {
   border-radius: var(--radius);
   background: var(--card);
   cursor: pointer;
-  transition: border-color 150ms var(--ease), background-color 150ms var(--ease);
+  transition:
+    border-color 150ms var(--ease),
+    background-color 150ms var(--ease);
   animation: rk-in 350ms var(--ease) backwards;
 }
 
@@ -315,7 +327,9 @@ html[data-platform="darwin"] .titlebar {
   background: var(--card-hover);
   color: var(--muted-foreground);
   cursor: pointer;
-  transition: color 150ms var(--ease), background-color 150ms var(--ease);
+  transition:
+    color 150ms var(--ease),
+    background-color 150ms var(--ease);
 }
 
 .icon-button:hover,
@@ -550,7 +564,9 @@ html[data-platform="darwin"] .titlebar {
   border-radius: var(--radius);
   cursor: pointer;
   border: 1px solid transparent;
-  transition: background-color 150ms var(--ease), color 150ms var(--ease);
+  transition:
+    background-color 150ms var(--ease),
+    color 150ms var(--ease);
 }
 
 .button:disabled {
@@ -588,6 +604,35 @@ html[data-platform="darwin"] .titlebar {
 .button-secondary:hover:not(:disabled) {
   background: rgb(64 64 64 / 0.65);
   color: var(--foreground);
+}
+
+/* DESIGN.MD Cursor: if it clicks, it points — buttons, links, choice labels,
+ * radios, checkboxes, summaries, details toggles, icon buttons. Section headers
+ * and disabled controls never point. */
+button:not(:disabled),
+a,
+summary,
+details > summary,
+select:not(:disabled),
+label,
+input[type="radio"]:not(:disabled),
+input[type="checkbox"]:not(:disabled),
+[role="button"]:not([aria-disabled="true"]),
+[role="link"],
+[role="tab"],
+[role="option"],
+[role="switch"]:not([data-disabled]),
+[role="checkbox"]:not([data-disabled]),
+::file-selector-button,
+::-webkit-file-upload-button {
+  cursor: pointer;
+}
+
+button:disabled,
+select:disabled,
+[aria-disabled="true"],
+[data-disabled="true"] {
+  cursor: default;
 }
 
 /* Last so it wins over the flex layouts above at equal specificity. */

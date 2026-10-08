@@ -7,6 +7,8 @@
 @custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
 
 @theme inline {
+  /* DESIGN.MD card level. Tailwind's ramp jumps 900 -> 800; the card sits between. */
+  --color-neutral-850: #1f1f1f;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -52,6 +54,68 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+/* DESIGN.MD Cursor: if it clicks, it points. Triggers, items, options, tabs,
+   toggles, selects, disclosure headers, links and labels — everywhere. */
+@layer base {
+  button:not(:disabled),
+  a,
+  summary,
+  details > summary,
+  select:not(:disabled),
+  label,
+  input[type="radio"]:not(:disabled),
+  input[type="checkbox"]:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]),
+  [role="link"],
+  [role="menuitem"],
+  [role="menuitemcheckbox"],
+  [role="menuitemradio"],
+  [role="option"],
+  [role="tab"],
+  [role="combobox"]:not([aria-disabled="true"]),
+  [role="switch"]:not([data-disabled]),
+  [role="checkbox"]:not([data-disabled]),
+  [data-slot="dropdown-menu-trigger"],
+  [data-slot="select-trigger"],
+  [data-slot="popover-trigger"],
+  [data-slot="tooltip-trigger"],
+  [data-slot="dialog-trigger"],
+  [data-slot="dialog-close"],
+  [data-slot="alert-dialog-trigger"],
+  [data-slot="command-item"],
+  [data-slot="dropdown-menu-item"],
+  [data-slot="dropdown-menu-checkbox-item"],
+  [data-slot="dropdown-menu-radio-item"],
+  [data-slot="dropdown-menu-sub-trigger"],
+  [data-slot="select-item"],
+  [data-slot="tabs-trigger"],
+  [data-slot="switch"],
+  [data-slot="checkbox"],
+  [data-slot="native-select"],
+  ::file-selector-button,
+  ::-webkit-file-upload-button {
+    cursor: pointer;
+  }
+
+  /* Section headers and labels inside floating lists never point. */
+  [data-slot="dropdown-menu-label"],
+  [data-slot="select-group-heading"],
+  [data-slot="command-group-heading"],
+  [data-slot="popover-header"],
+  [data-slot="dialog-header"],
+  [data-slot="alert-dialog-header"] {
+    cursor: default;
+  }
+
+  [aria-disabled="true"],
+  [data-disabled="true"],
+  [data-slot="dropdown-menu-label"],
+  select:disabled,
+  button:disabled {
+    cursor: default;
   }
 }
 

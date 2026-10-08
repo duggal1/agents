@@ -19,6 +19,18 @@
 }
 
 /* Custom variants */
+@custom-variant data-starting-style {
+  &:where([data-starting-style]) {
+    @slot;
+  }
+}
+
+@custom-variant data-ending-style {
+  &:where([data-ending-style]) {
+    @slot;
+  }
+}
+
 @custom-variant data-open {
   &:where([data-state="open"]),
   &:where([data-open]:not([data-open="false"])) {

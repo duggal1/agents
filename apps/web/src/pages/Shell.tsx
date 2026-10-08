@@ -81,6 +81,7 @@ import {
   Popover,
   PopoverContent,
   PopoverTrigger,
+  RakazoMark,
   resolvePersonaColorDef,
 } from "@rakazo/ui-web";
 import {
@@ -2858,7 +2859,10 @@ export function ShellPage() {
         }`}
       >
         <div className="app-drag flex items-center justify-between px-[18px] pb-3 pt-4">
-          <WindowChrome />
+          <div className="flex min-w-0 items-center gap-3">
+            <WindowChrome />
+            <RakazoMark className="app-no-drag text-foreground" size={18} />
+          </div>
           <div className="relative flex items-center gap-2.5">
             <button
               type="button"
@@ -2996,7 +3000,7 @@ export function ShellPage() {
                       <div className="flex items-center pt-3 pb-0.5">
                         <button
                           type="button"
-                          className="flex min-w-0 flex-1 items-center justify-between gap-2 rounded-lg px-2.5 py-1 text-[11px] font-semibold tracking-wider uppercase text-muted-foreground/60 hover:text-foreground focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-ring"
+                          className="flex min-w-0 flex-1 cursor-pointer items-center justify-between gap-2 rounded-lg px-2.5 py-1 text-[11px] font-normal tracking-wider uppercase text-muted-foreground/60 transition-colors duration-150 hover:text-foreground focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-ring"
                           onClick={() => {
                             if (group.emptySpaceId) {
                               openSpaceChat(group.emptySpaceId, "/onboarding");
@@ -3518,6 +3522,7 @@ export function ShellPage() {
           <div className="flex min-w-0 items-center gap-2">
             {/* Collapsed bots sidebar: this header is the leading edge for window chrome. */}
             {botsSidebarCollapsed && desktopBridge() ? <WindowChrome /> : null}
+            <RakazoMark className="app-no-drag hidden text-foreground md:block" size={18} />
             <button
               type="button"
               aria-label={t`Open navigation`}
@@ -5231,7 +5236,7 @@ const QuoteSelectionButton = memo(function QuoteSelectionButton({
       onClick={onQuote}
       style={placement ? { top: placement.top, left: placement.left } : { visibility: "hidden" }}
       className={cn(
-        "fixed z-50 flex -translate-x-1/2 items-center gap-1.5 rounded-full border border-border bg-background px-3 py-1.5 text-[13px] font-medium text-foreground shadow-md hover:bg-muted",
+        "fixed z-50 flex -translate-x-1/2 cursor-pointer items-center gap-1.5 rounded-full border border-border bg-background px-3 py-1.5 text-[13px] font-normal text-foreground shadow-none transition-colors duration-150 hover:bg-muted",
         placement?.above === false ? "translate-y-0" : "-translate-y-full",
       )}
     >

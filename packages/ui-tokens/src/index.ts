@@ -47,38 +47,38 @@ export type ColorTokens = {
 };
 
 export const darkTokens = {
-  background: "#0B0C0E",
-  foreground: "#ECECEE",
-  card: "#141518",
-  cardForeground: "#ECECEE",
-  popover: "#141518",
-  popoverForeground: "#ECECEE",
-  primary: "#F1F1EF",
-  primaryForeground: "#0B0C0E",
-  secondary: "#18191E",
-  secondaryForeground: "#ECECEE",
-  chatUser: "#22242B",
-  chatUserForeground: "#ECECEE",
-  muted: "#141518",
-  mutedForeground: "#85858A",
-  accent: "#1A1B20",
-  accentForeground: "#ECECEE",
-  destructive: "#EF4444",
+  background: "#171717",
+  foreground: "#FAFAFA",
+  card: "#1F1F1F",
+  cardForeground: "#FAFAFA",
+  popover: "#1F1F1F",
+  popoverForeground: "#FAFAFA",
+  primary: "#FAFAFA",
+  primaryForeground: "#171717",
+  secondary: "#262626",
+  secondaryForeground: "#FAFAFA",
+  chatUser: "#1F1F1F",
+  chatUserForeground: "#FAFAFA",
+  muted: "#262626",
+  mutedForeground: "#A3A3A3",
+  accent: "#262626",
+  accentForeground: "#FAFAFA",
+  destructive: "#FB923C",
   destructiveForeground: "#FFFFFF",
-  border: "#1E2026",
-  input: "#18191E",
-  ring: "#3B82F6",
-  sidebar: "#111215",
-  sidebarForeground: "#ECECEE",
-  sidebarBorder: "#1C1D22",
-  sidebarAccent: "#1A1B20",
-  sidebarAccentForeground: "#ECECEE",
-  link: "#3B82F6",
-  success: "#4ECB71",
-  warning: "#E9C46A",
-  overlay: "rgba(4, 4, 5, 0.72)",
-  scrollbar: "#1E2026",
-  scrollbarHover: "#2E313A",
+  border: "#262626",
+  input: "#262626",
+  ring: "#525252",
+  sidebar: "#1F1F1F",
+  sidebarForeground: "#FAFAFA",
+  sidebarBorder: "#262626",
+  sidebarAccent: "#262626",
+  sidebarAccentForeground: "#FAFAFA",
+  link: "#FAFAFA",
+  success: "#4ADE80",
+  warning: "#FACC15",
+  overlay: "rgba(0, 0, 0, 0.6)",
+  scrollbar: "#262626",
+  scrollbarHover: "#404040",
 } as const satisfies ColorTokens;
 
 export const lightTokens = {
@@ -119,7 +119,7 @@ export const lightTokens = {
 /** Dark palette. Prefer `tokensForAppearance` when theme-aware. */
 export const tokens = darkTokens;
 
-export const RADIUS = "0.75rem";
+export const RADIUS = "0.625rem";
 
 export const botColors = [
   "#3EC5A8",

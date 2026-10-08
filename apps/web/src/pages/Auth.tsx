@@ -1,6 +1,6 @@
 import { Trans, useLingui } from "@lingui/react/macro";
 import { readBoundedJsonResponse, signupRequiresEmailVerification } from "@rakazo/core";
-import { Button, Input, Label } from "@rakazo/ui-web";
+import { Button, Input, Label, RakazoMark } from "@rakazo/ui-web";
 import { Eye, EyeOff } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
@@ -124,7 +124,10 @@ export function AuthPage({ mode }: { mode: AuthMode }) {
     <AuthFrame onSubmit={submit} title={title}>
       {sent ? (
         <div className="w-full text-center">
-          <Link to="/sign-in" className="font-medium text-foreground">
+          <Link
+            to="/sign-in"
+            className="cursor-pointer font-normal text-foreground underline decoration-dotted underline-offset-2"
+          >
             <Trans>Back to sign in</Trans>
           </Link>
         </div>
@@ -194,7 +197,10 @@ export function AuthPage({ mode }: { mode: AuthMode }) {
               </div>
               {mode === "in" && reset?.passwordReset ? (
                 <div className="mt-2 text-right text-sm">
-                  <Link to="/forgot-password" className="font-medium text-foreground">
+                  <Link
+                    to="/forgot-password"
+                    className="cursor-pointer font-normal text-foreground underline decoration-dotted underline-offset-2"
+                  >
                     <Trans>Forgot password?</Trans>
                   </Link>
                 </div>
@@ -221,19 +227,28 @@ export function AuthPage({ mode }: { mode: AuthMode }) {
             {mode === "in" ? (
               <>
                 <Trans>Don’t have an account?</Trans>{" "}
-                <Link to="/sign-up" className="font-medium text-foreground">
+                <Link
+                  to="/sign-up"
+                  className="cursor-pointer font-normal text-foreground underline decoration-dotted underline-offset-2"
+                >
                   <Trans>Sign up</Trans>
                 </Link>
               </>
             ) : mode === "up" ? (
               <>
                 <Trans>Already have an account?</Trans>{" "}
-                <Link to="/sign-in" className="font-medium text-foreground">
+                <Link
+                  to="/sign-in"
+                  className="cursor-pointer font-normal text-foreground underline decoration-dotted underline-offset-2"
+                >
                   <Trans>Sign in</Trans>
                 </Link>
               </>
             ) : (
-              <Link to="/sign-in" className="font-medium text-foreground">
+              <Link
+                to="/sign-in"
+                className="cursor-pointer font-normal text-foreground underline decoration-dotted underline-offset-2"
+              >
                 <Trans>Back to sign in</Trans>
               </Link>
             )}
@@ -286,7 +301,10 @@ export function PasswordResetPage() {
           <p className="text-lg">
             <Trans>Password updated</Trans>
           </p>
-          <Link to="/sign-in" className="mt-6 inline-block font-medium">
+          <Link
+            to="/sign-in"
+            className="mt-6 inline-block cursor-pointer font-normal text-foreground underline decoration-dotted underline-offset-2"
+          >
             <Trans>Sign in</Trans>
           </Link>
         </div>
@@ -318,7 +336,10 @@ export function PasswordResetPage() {
           >
             {pending ? <Trans>Working…</Trans> : <Trans>Reset password</Trans>}
           </Button>
-          <Link to="/sign-in" className="mt-6 font-medium">
+          <Link
+            to="/sign-in"
+            className="mt-6 cursor-pointer font-normal text-foreground underline decoration-dotted underline-offset-2"
+          >
             <Trans>Back to sign in</Trans>
           </Link>
         </>
@@ -339,11 +360,13 @@ function AuthFrame({
   return (
     <div className="flex min-h-full items-center justify-center bg-background px-6 py-16 text-foreground">
       <form onSubmit={onSubmit} className="flex w-[460px] flex-col items-center">
-        <div className="flex h-[74px] w-[74px] items-center justify-center gap-[11px] rounded-full bg-muted">
-          <span className="h-5 w-[9px] rounded-full bg-primary" />
-          <span className="h-5 w-[9px] rounded-full bg-primary" />
+        <div className="flex h-[74px] w-[74px] items-center justify-center rounded-full bg-muted">
+          <RakazoMark className="text-foreground" size={36} />
         </div>
-        <h1 aria-live="polite" className="mb-9 mt-7 text-4xl font-medium tracking-tight">
+        <h1
+          aria-live="polite"
+          className="mt-7 mb-9 text-4xl font-normal tracking-tight text-foreground antialiased"
+        >
           {title}
         </h1>
         {children}

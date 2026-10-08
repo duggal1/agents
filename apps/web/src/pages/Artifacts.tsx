@@ -16,6 +16,7 @@ import {
   NativeSelect,
   NativeSelectOption,
   parseBotAvatar,
+  RakazoMark,
   resolvePersonaColorDef,
 } from "@rakazo/ui-web";
 import {
@@ -215,17 +216,18 @@ export function ArtifactsPage() {
       <header className="app-drag border-b border-border px-4 py-4 md:px-6">
         {/* Wraps so window controls and the way back stay on screen with Filters. */}
         <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
-          <div className="flex items-center gap-2">
+          <div className="flex min-w-0 items-center gap-2">
             {/* This route is the window's leading edge, so Electron window controls sit in the header. */}
             {desktopBridge() ? <WindowChrome /> : null}
+            <RakazoMark className="app-no-drag shrink-0 text-foreground" size={18} />
             <Link
               to="/app"
-              className="app-no-drag flex shrink-0 items-center gap-0.5 rounded-lg py-1 pe-1.5 text-[13px] font-medium text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+              className="app-no-drag flex shrink-0 cursor-pointer items-center gap-0.5 rounded-lg py-1 pe-1.5 text-[13px] font-normal text-muted-foreground transition-colors duration-150 hover:bg-accent hover:text-accent-foreground"
             >
               <ChevronLeft size={16} strokeWidth={1.9} aria-hidden="true" />
               <Trans>Bots</Trans>
             </Link>
-            <h1 className="text-xl font-semibold">
+            <h1 className="truncate text-xl font-normal tracking-tight text-foreground antialiased">
               <Trans>Artifacts</Trans>
             </h1>
           </div>
@@ -234,7 +236,7 @@ export function ArtifactsPage() {
               type="button"
               aria-pressed={filtersOpen}
               onClick={() => setFiltersOpen((open) => !open)}
-              className={`flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-[13px] font-medium transition-colors ${
+              className={`flex cursor-pointer items-center gap-1.5 rounded-lg border px-3 py-1.5 text-[13px] font-normal transition-colors duration-150 ${
                 filtersOpen
                   ? "border-transparent bg-primary text-primary-foreground"
                   : "border-border text-muted-foreground hover:bg-accent hover:text-accent-foreground"

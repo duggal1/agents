@@ -7,6 +7,7 @@ export {
   GROK_MASCOT_SHAPES,
   GrokShapePreview,
   parseBotAvatar,
+  RakazoMark,
   resolvePersonaColorDef,
   resolvePersonaShape,
   Wordmark,
