@@ -26,7 +26,7 @@ describe("runtime packaging", () => {
 
   it("pins PostgreSQL 16 and both Mac architectures", () => {
     expect(buildScript).toContain("POSTGRES_MAJOR_VERSION = 16");
-    expect(buildScript).toContain("koffi-darwin-${arch}");
+    expect(buildScript).toMatch(/koffi-darwin-\$\{arch\}/);
     expect(buildScript).toContain("arm64");
     expect(buildScript).toContain("x64");
     expect(POSTGRES_MAJOR_VERSION).toBe(16);

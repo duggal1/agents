@@ -179,6 +179,10 @@ function minimumMacos(binary) {
   return match[1];
 }
 
+function maxVersion(left, right) {
+  return compareVersions(left, right) >= 0 ? left : right;
+}
+
 function compareVersions(left, right) {
   const a = left.split(".").map(Number);
   const b = right.split(".").map(Number);
@@ -189,20 +193,31 @@ function compareVersions(left, right) {
   return 0;
 }
 
+/**
+ * Resolves the source PostgreSQL directory for an architecture. A universal build needs
+ * one per architecture, supplied either as `<dir>/<arch>` subdirectories or as
+ * `SAPPHIRE_POSTGRES_DIR_ARM64` / `SAPPHIRE_POSTGRES_DIR_X64` overrides.
+ */
+async function postgresSource(arch) {
+  const base = process.env.SAPPHIRE_POSTGRES_DIR;
+  const candidates = [
+    process.env[`SAPPHIRE_POSTGRES_DIR_${arch.toUpperCase()}`],
+    base ? path.join(base, arch) : undefined,
+    base,
+  ].filter((candidate) => typeof candidate === "string" && candidate !== "");
+  for (const candidate of candidates) {
+    if (await exists(path.join(candidate, "bin", "postgres"))) return candidate;
+  }
+  throw new Error(
+    `No PostgreSQL ${POSTGRES_MAJOR_VERSION} bin directory for ${arch}. Set SAPPHIRE_POSTGRES_DIR ` +
+      `(or SAPPHIRE_POSTGRES_DIR_${arch.toUpperCase()}) to a build made against macOS ${DESKTOP_MINIMUM_MACOS}.`,
+  );
+}
+
 /** Copies a verified PostgreSQL 16 distribution, or fails clearly when it is missing. */
 async function stagePostgres(arch, destination) {
-  const source = process.env.SAPPHIRE_POSTGRES_DIR;
-  if (!source) {
-    throw new Error(
-      "Set SAPPHIRE_POSTGRES_DIR to a PostgreSQL 16 bin directory built against macOS " +
-        `${DESKTOP_MINIMUM_MACOS} for ${arch} (see SAPPHIRE_POSTGRES_BUILD in CI).`,
-    );
-  }
-  const bin = path.join(source, "bin");
-  const postgres = path.join(bin, "postgres");
-  if (!(await exists(postgres))) {
-    throw new Error(`${postgres} is missing; SAPPHIRE_POSTGRES_DIR must contain a bin directory.`);
-  }
+  const source = await postgresSource(arch);
+  const postgres = path.join(source, "bin", "postgres");
   const version = execFileSync(postgres, ["--version"], { encoding: "utf8" }).trim();
   if (!version.includes(` ${POSTGRES_MAJOR_VERSION}.`)) {
     throw new Error(`${postgres} is not PostgreSQL ${POSTGRES_MAJOR_VERSION}: ${version}`);
@@ -219,7 +234,7 @@ async function stagePostgres(arch, destination) {
 }
 
 /** Writes the manifest the Electron main process reads to launch the services. */
-async function writeManifest(outDir, appVersion, postgresMinimum, koffiArches) {
+async function writeManifest(outDir, appVersion, postgresMinimum, koffiArches, postgresArches) {
   const manifest = {
     version: RUNTIME_MANIFEST_VERSION,
     appVersion,
@@ -234,6 +249,7 @@ async function writeManifest(outDir, appVersion, postgresMinimum, koffiArches) {
       shutdown: { signal: "SIGTERM", timeoutMs: 15000 },
     })),
     postgres: { minimumMacos: postgresMinimum, major: POSTGRES_MAJOR_VERSION },
+    postgresArches,
     koffiArches,
   };
   await writeFile(
@@ -244,11 +260,13 @@ async function writeManifest(outDir, appVersion, postgresMinimum, koffiArches) {
 }
 
 /** Fails the build when a service entry, asset, or PostgreSQL binary is absent. */
-async function verifyLayout(manifest, arch) {
+async function verifyLayout(manifest) {
   const required = [
     [OUT_DIR, "runtime-manifest.json"],
-    [OUT_DIR, `postgres/${arch}/bin/postgres`],
-    [OUT_DIR, `postgres/${arch}/bin/pg_ctl`],
+    ...manifest.postgresArches.flatMap((arch) => [
+      [OUT_DIR, `postgres/${arch}/bin/postgres`],
+      [OUT_DIR, `postgres/${arch}/bin/pg_ctl`],
+    ]),
     [SERVICES_DIR, "data/patch.json"],
     [SERVICES_DIR, "package.json"],
     [SERVICES_DIR, "node_modules/koffi/package.json"],
@@ -279,15 +297,28 @@ async function main() {
 
   console.log(`Bundling services...${universal ? " (universal)" : ` (${arch})`}`);
   for (const service of SERVICES) await bundleService(service, SERVICES_DIR);
-  const koffiArches = await copyRuntimeAssets(SERVICES_DIR, universal ? ["arm64", "x64"] : [arch]);
+  const arches = universal ? ["arm64", "x64"] : [arch];
+  const koffiArches = await copyRuntimeAssets(SERVICES_DIR, arches);
 
-  const postgresDir = path.join(OUT_DIR, "postgres", arch);
-  await rm(postgresDir, { recursive: true, force: true });
-  console.log(`Staging PostgreSQL ${POSTGRES_MAJOR_VERSION} for ${arch}...`);
-  const postgresMinimum = await stagePostgres(arch, postgresDir);
+  const postgresArches = [];
+  let postgresMinimum = null;
+  for (const postgresArch of arches) {
+    const postgresDir = path.join(OUT_DIR, "postgres", postgresArch);
+    await rm(postgresDir, { recursive: true, force: true });
+    console.log(`Staging PostgreSQL ${POSTGRES_MAJOR_VERSION} for ${postgresArch}...`);
+    const minimum = await stagePostgres(postgresArch, postgresDir);
+    postgresMinimum = postgresMinimum === null ? minimum : maxVersion(postgresMinimum, minimum);
+    postgresArches.push(postgresArch);
+  }
 
-  const manifest = await writeManifest(OUT_DIR, appVersion, postgresMinimum, koffiArches);
-  await verifyLayout(manifest, arch);
+  const manifest = await writeManifest(
+    OUT_DIR,
+    appVersion,
+    postgresMinimum ?? DESKTOP_MINIMUM_MACOS,
+    koffiArches,
+    postgresArches,
+  );
+  await verifyLayout(manifest);
   console.log(
     `Runtime ready at ${OUT_DIR} (macOS ${postgresMinimum}+, ${manifest.services.length} services).`,
   );

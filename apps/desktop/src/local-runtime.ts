@@ -57,7 +57,9 @@ export interface LocalRuntimeManifest {
   services: LocalServiceManifest[];
   /** The PostgreSQL distribution shipped beside the services. */
   postgres: { minimumMacos: string; major: number };
-  /** koffi architectures staged for a universal build. */
+  /** Mac architectures that have a PostgreSQL distribution staged. */
+  postgresArches: string[];
+  /** Mac architectures that have a koffi native addon staged. */
   koffiArches: string[];
 }
 
