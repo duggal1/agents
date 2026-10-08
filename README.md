@@ -1,6 +1,6 @@
 # SAPPHIRE/AGENTS
 
-## AI teammates with their own computers.
+ AI teammates with their own computers.
 
 Sapphire lets you build a company of AI teammates.
 
