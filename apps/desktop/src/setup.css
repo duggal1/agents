@@ -114,27 +114,14 @@ html[data-platform="darwin"] .titlebar {
   animation: rk-in 350ms var(--ease) backwards;
 }
 
-/* Avatar lockup. DESIGN.MD: logo on a 40px rounded-full neutral-800 slot.
- * The mark keeps its own aspect ratio inside the slot. */
 .brand {
   display: flex;
   align-items: center;
   margin-bottom: 20px;
 }
 
-.avatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 9999px;
-  background: var(--card-hover);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex: none;
-}
-
-.avatar svg {
-  width: 24px;
+.brand-mark {
+  width: 32px;
   height: auto;
   color: var(--foreground);
 }
