@@ -82,7 +82,7 @@ accent.
 | `neutral-850` | `#1f1f1f` | 900 / 800 | Card, dialog, popover, toast, input |
 | `neutral-820` | `#232323` | 850 / 800 | Hover of a control on an 850 surface |
 | `neutral-800` | `#262626` | — | Card hover and chip fill |
-| `neutral-780` | `#2b2b2b` | 800 / 700 | Hover of a control on an 800 surface |
+| `neutral-780` | `#2b2b2b` | 800 / 700 | Hover of a control on an 800 surface; the engaged fill of a pressed toggle |
 
 Rules:
 - Pick the step by the surface underneath, not by habit. A control on `850`
@@ -90,6 +90,10 @@ lifts to `820`; the same control on `800` lifts to `780`. The hover must always
 be **one visible step**, never two.
 - Hover is a surface change, never a border or text change on its own. Pair it
 with at most one text step (`neutral-300` → `neutral-100`).
+- **A pressed or selected control sits one rung above its own hover**, never on
+the same step. A toggle whose hover and engaged fills are both `neutral-800`
+reads as permanently hovered and its state is invisible. Hover is `neutral-800`,
+engaged is `neutral-780` — the same "one visible step" rule applied upward.
 - This is why the dialog close button is `text-neutral-300` on `bg-popover` and
 `hover:bg-neutral-820 hover:text-neutral-100`: the cross is a control on an 850
 surface, so it takes the 850 hover rung, and its label takes one text step.
