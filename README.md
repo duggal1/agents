@@ -190,8 +190,7 @@ Sapphire gives you the system to run all of it.
 
 ## Demo
 
-[https://github.com/user-attachments/assets/dccdeddb-2134-4a56-8eed-b2e591736b1c](https://github.com/user-attachments/assets/dccdeddb-2134-4a56-8eed-b2e591736b1c)
-
+** Coming soon ** 
 ## Stack
 
 - TypeScript
