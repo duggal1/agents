@@ -1,7 +1,7 @@
-import { EventEmitter } from "node:events";
-import { PassThrough } from "node:stream";
 import type { SpawnOptions } from "node:child_process";
+import { EventEmitter } from "node:events";
 import path from "node:path";
+import { PassThrough } from "node:stream";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   DESKTOP_MACOS_ARCHITECTURES,
@@ -88,7 +88,11 @@ function makeProcess(
     root: "/runtime",
     execPath: "/opt/node/bin/node",
     env: options.env ?? { DATABASE_URL: "postgres://127.0.0.1:5432/sapphire" },
-    inheritedEnv: options.inheritedEnv ?? { HOME: "/Users/me", PATH: "/usr/bin", SECRET_KEY: "leak" },
+    inheritedEnv: options.inheritedEnv ?? {
+      HOME: "/Users/me",
+      PATH: "/usr/bin",
+      SECRET_KEY: "leak",
+    },
     platform: "darwin",
     secrets: options.secrets,
     spawn: options.spawn ?? fake?.spawn,
@@ -104,9 +108,9 @@ describe("runtime packaging contract", () => {
   });
 
   it("reads runtime resources from the bundle when packaged and the repo otherwise", () => {
-    expect(runtimeResourceDir({ packaged: true, resourcesPath: "/App/Resources", appPath: "/x" })).toBe(
-      path.join("/App/Resources", "runtime"),
-    );
+    expect(
+      runtimeResourceDir({ packaged: true, resourcesPath: "/App/Resources", appPath: "/x" }),
+    ).toBe(path.join("/App/Resources", "runtime"));
     expect(
       runtimeResourceDir({ packaged: false, resourcesPath: "/x", appPath: "/repo/apps/desktop" }),
     ).toBe(path.resolve("/repo/runtime"));
@@ -126,7 +130,13 @@ describe("runtimeChildEnv", () => {
   it("inherits only what a Node service needs and merges the explicit service env", () => {
     const env = runtimeChildEnv(
       "darwin",
-      { HOME: "/Users/me", PATH: "/usr/bin", LANG: "en_US.UTF-8", E2B_API_KEY: "leak", SECRET_KEY: "leak" },
+      {
+        HOME: "/Users/me",
+        PATH: "/usr/bin",
+        LANG: "en_US.UTF-8",
+        E2B_API_KEY: "leak",
+        SECRET_KEY: "leak",
+      },
       { DATABASE_URL: "postgres://127.0.0.1:5432/sapphire", NODE_ENV: "production" },
     );
     expect(env).toEqual({
@@ -142,16 +152,20 @@ describe("runtimeChildEnv", () => {
 
   it("keeps the Windows system variables Node depends on", () => {
     expect(
-      runtimeChildEnv("win32", { SystemRoot: "C:\\Windows", APPDATA: "C:\\Users\\me\\AppData" }, {}),
+      runtimeChildEnv(
+        "win32",
+        { SystemRoot: "C:\\Windows", APPDATA: "C:\\Users\\me\\AppData" },
+        {},
+      ),
     ).toEqual({ SystemRoot: "C:\\Windows", APPDATA: "C:\\Users\\me\\AppData" });
   });
 });
 
 describe("redactRuntimeLogLine", () => {
   it("scrubs exact secret values wherever they appear", () => {
-    expect(redactRuntimeLogLine("connecting with supersecret-token now", ["supersecret-token"])).toBe(
-      "connecting with [redacted] now",
-    );
+    expect(
+      redactRuntimeLogLine("connecting with supersecret-token now", ["supersecret-token"]),
+    ).toBe("connecting with [redacted] now");
   });
 
   it("masks labelled and bearer credentials", () => {
@@ -206,7 +220,10 @@ describe("LocalProcess", () => {
   });
 
   it("fails when readiness never arrives within the startup timeout", async () => {
-    const { process } = makeProcess({ readiness: { kind: "log", pattern: "ready" }, startupTimeoutMs: 100 });
+    const { process } = makeProcess({
+      readiness: { kind: "log", pattern: "ready" },
+      startupTimeoutMs: 100,
+    });
     process.start();
     const ready = process.whenReady();
     const assertion = expect(ready).rejects.toThrow(/did not become ready/);

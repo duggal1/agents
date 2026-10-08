@@ -1,5 +1,5 @@
-import { spawn, type SpawnOptions } from "node:child_process";
-import { EventEmitter } from "node:events";
+import { type SpawnOptions, spawn } from "node:child_process";
+import type { EventEmitter } from "node:events";
 import path from "node:path";
 
 /**
@@ -187,8 +187,7 @@ export interface LocalProcessState {
   message: string | null;
 }
 
-const defaultSpawn: SpawnManagedChild = (command, args, options) =>
-  spawn(command, args, options);
+const defaultSpawn: SpawnManagedChild = (command, args, options) => spawn(command, args, options);
 
 /**
  * Supervises exactly one long-running service process. It owns spawn, readiness,
@@ -335,7 +334,7 @@ export class LocalProcess {
       const redacted = redactRuntimeLogLine(line, this.secrets);
       this.logLines = [...this.logLines, redacted].slice(-this.logLimit);
       this.options.onOutput?.(redacted);
-      if (this.readinessMatcher !== null && this.readinessMatcher(redacted)) {
+      if (this.readinessMatcher?.(redacted) === true) {
         this.readinessMatcher = null;
         this.clearStartupTimer();
         this.markRunning();
@@ -401,7 +400,10 @@ export class LocalProcess {
     this.readyWaiters = [];
     for (const waiter of waiters) {
       if (kind === "ready") waiter.resolve();
-      else waiter.reject(error ?? new Error(`${this.state.id} ${kind === "stop" ? "stopped" : "failed"}.`));
+      else
+        waiter.reject(
+          error ?? new Error(`${this.state.id} ${kind === "stop" ? "stopped" : "failed"}.`),
+        );
     }
   }
 
