@@ -5,8 +5,8 @@ import type {
   ServerUpdateRequest,
   ServerUpdateRun,
   ServerUpdateStatus,
-} from "@rakazo/contracts";
-import { ServerUpdateRunSchema } from "@rakazo/contracts";
+} from "@sapphire/contracts";
+import { ServerUpdateRunSchema } from "@sapphire/contracts";
 import {
   DEFAULT_UPDATE_BRANCH,
   detectRestartSupervisor,
@@ -17,8 +17,8 @@ import {
   readBoundedResponseBytes,
   resolveInstallKind,
   restartSupervisorAdvice,
-} from "@rakazo/core";
-import { outgoingCorrelationHeaders } from "@rakazo/logging";
+} from "@sapphire/core";
+import { outgoingCorrelationHeaders } from "@sapphire/logging";
 
 const PRODUCT_VERSION = "0.1.0";
 const STATE_TIMEOUT_MS = 15_000;

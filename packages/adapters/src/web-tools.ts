@@ -1,4 +1,4 @@
-import type { AdapterContext, WebFetchProvider, WebSearchProvider } from "@rakazo/adapter-kit";
+import type { AdapterContext, WebFetchProvider, WebSearchProvider } from "@sapphire/adapter-kit";
 import { clampMaxChars, clampMaxResults } from "./web-limits.js";
 
 export async function webSearchFromTool(

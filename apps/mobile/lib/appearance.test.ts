@@ -51,7 +51,7 @@ describe("mobile appearance", () => {
   });
 
   it("overrides the native scheme for an explicit choice and hands it back for System", async () => {
-    const { UI_APPEARANCE_STORAGE_KEY } = await import("@rakazo/ui-tokens");
+    const { UI_APPEARANCE_STORAGE_KEY } = await import("@sapphire/ui-tokens");
     const { loadAppearancePreference, resolveMobileAppearance, setAppearancePreference } =
       await import("./appearance");
     colorScheme = "light";
@@ -70,7 +70,7 @@ describe("mobile appearance", () => {
   });
 
   it("notifies mounted navigation when the saved preference loads", async () => {
-    const { UI_APPEARANCE_STORAGE_KEY, lightTokens } = await import("@rakazo/ui-tokens");
+    const { UI_APPEARANCE_STORAGE_KEY, lightTokens } = await import("@sapphire/ui-tokens");
     const { loadAppearancePreference, mobileTokens, subscribeAppearance } = await import(
       "./appearance"
     );
@@ -117,7 +117,7 @@ describe("mobile appearance", () => {
   });
 
   it("keeps the latest native scheme and stored preference when writes overlap", async () => {
-    const { UI_APPEARANCE_STORAGE_KEY } = await import("@rakazo/ui-tokens");
+    const { UI_APPEARANCE_STORAGE_KEY } = await import("@sapphire/ui-tokens");
     const { setItemAsync } = await import("expo-secure-store");
     const { getCachedAppearancePreference, setAppearancePreference } = await import("./appearance");
     let releaseFirst!: () => void;

@@ -1,5 +1,5 @@
 {
-  "name": "@rakazo/adapter-kit",
+  "name": "@sapphire/adapter-kit",
   "version": "0.1.0",
   "license": "Apache-2.0",
   "type": "module",
@@ -15,7 +15,7 @@
     "test": "vitest run --root ../.. packages/adapter-kit/src"
   },
   "dependencies": {
-    "@rakazo/contracts": "workspace:*",
+    "@sapphire/contracts": "workspace:*",
     "zod": "4.6.2"
   },
   "devDependencies": {

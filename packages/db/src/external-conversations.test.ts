@@ -1,4 +1,4 @@
-import type { Actor } from "@rakazo/contracts";
+import type { Actor } from "@sapphire/contracts";
 import { describe, expect, it, vi } from "vitest";
 import { createExternalConversationRepos } from "./external-conversations.js";
 import { IsolationError } from "./scope.js";

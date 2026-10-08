@@ -1,5 +1,5 @@
 import { ResponseError } from "@asciidev/box-sdk";
-import { redactSecrets } from "@rakazo/core";
+import { redactSecrets } from "@sapphire/core";
 import { readBodyCapped } from "./web-ssrf.js";
 
 const MAX_BOX_ERROR_RESPONSE_BYTES = 16 * 1024;

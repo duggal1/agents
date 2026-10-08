@@ -1,14 +1,14 @@
-import type { AdapterContext, JobPublisher } from "@rakazo/adapter-kit";
-import { cloudAgentPollJob } from "@rakazo/adapter-kit";
-import { cloudAgentBlockFromPayload } from "@rakazo/core";
+import type { AdapterContext, JobPublisher } from "@sapphire/adapter-kit";
+import { cloudAgentPollJob } from "@sapphire/adapter-kit";
+import { cloudAgentBlockFromPayload } from "@sapphire/core";
 import {
   appendEventInTransaction,
   type CloudAgent,
   createThreadMessageInTransaction,
   type PrismaClient,
   type ThreadEvents,
-} from "@rakazo/db";
-import { getLogger } from "@rakazo/logging";
+} from "@sapphire/db";
+import { getLogger } from "@sapphire/logging";
 import { type CloudAgentConnection, cloudAgentsEnabled } from "./cloud-agent-factory.js";
 import { cloudAgentLaunchSchema, cloudAgentReplySchema } from "./cloud-agent-tools.js";
 

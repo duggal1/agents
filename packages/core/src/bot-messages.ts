@@ -2,7 +2,7 @@ import {
   BOT_DESCRIPTION_MAX_LENGTH,
   type BotMessageIntent,
   type MessageBlock,
-} from "@rakazo/contracts";
+} from "@sapphire/contracts";
 
 export const BOT_MESSAGE_MAX_LENGTH = 8_000;
 

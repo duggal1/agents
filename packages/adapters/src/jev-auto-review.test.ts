@@ -1,4 +1,4 @@
-import type { AdapterContext, AutoReviewRequest } from "@rakazo/adapter-kit";
+import type { AdapterContext, AutoReviewRequest } from "@sapphire/adapter-kit";
 import { describe, expect, it } from "vitest";
 import { JevAutoReviewProvider } from "./jev-auto-review.js";
 

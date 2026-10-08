@@ -5,7 +5,7 @@ import type {
   AgentRunRequest,
   AgentRuntime,
   AgentRuntimeEvent,
-} from "@rakazo/adapter-kit";
+} from "@sapphire/adapter-kit";
 
 /** Default `opencode serve` address. Override with OPENCODE_SERVER_URL. */
 export const DEFAULT_OPENCODE_SERVER_URL = "http://127.0.0.1:4096";

@@ -12,14 +12,14 @@ import type {
   ConnectionCatalogItem,
   IntegrationCatalogResult,
   IntegrationCatalogSurface,
-} from "@rakazo/contracts";
+} from "@sapphire/contracts";
 import {
   abortableDelay,
   buildFeaturedConnectorTiles,
   CONNECTION_CATALOG_PAGE_SIZE,
   filterConnectionCatalogItems,
   humanizeToolName,
-} from "@rakazo/core";
+} from "@sapphire/core";
 import {
   Button,
   Card,
@@ -34,7 +34,7 @@ import {
   Input,
   NativeSelect,
   NativeSelectOption,
-} from "@rakazo/ui-web";
+} from "@sapphire/ui-web";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { IntegrationSetup } from "../components/integrations/IntegrationSetup";
 import { optionalCatalogFeedProbe } from "../lib/optional-catalog-feed";

@@ -9,9 +9,9 @@ import type {
   MemorySnapshot,
   MemoryStore,
   PortableFile,
-} from "@rakazo/adapter-kit";
-import { MEMORY_REVISION_CONFLICT_ERROR } from "@rakazo/adapter-kit";
-import { Prisma, type PrismaClient, withTransactionRetry } from "@rakazo/db";
+} from "@sapphire/adapter-kit";
+import { MEMORY_REVISION_CONFLICT_ERROR } from "@sapphire/adapter-kit";
+import { Prisma, type PrismaClient, withTransactionRetry } from "@sapphire/db";
 
 export class MarkdownMemoryStore implements MemoryStore {
   constructor(private readonly prisma: PrismaClient) {}

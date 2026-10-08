@@ -1,4 +1,4 @@
-import { plainTextFromMarkdown } from "@rakazo/core";
+import { plainTextFromMarkdown } from "@sapphire/core";
 
 /** A line longer than this is shown as written rather than converted. */
 const LINE_LIMIT = 100_000;

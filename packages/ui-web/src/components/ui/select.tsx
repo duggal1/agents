@@ -3,7 +3,7 @@
 import { Select as SelectPrimitive } from "@base-ui/react/select";
 import { CheckIcon, ChevronDownIcon, ChevronUpIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { cn } from "@rakazo/ui-web/lib/utils";
+import { cn } from "@sapphire/ui-web/lib/utils";
 import type * as React from "react";
 
 const Select = SelectPrimitive.Root;

@@ -1,5 +1,5 @@
-import type { MessageBlock } from "@rakazo/contracts";
-import { BOT_AVATAR_VALUE_MAX_LENGTH, isBotAvatarValue } from "@rakazo/contracts";
+import type { MessageBlock } from "@sapphire/contracts";
+import { BOT_AVATAR_VALUE_MAX_LENGTH, isBotAvatarValue } from "@sapphire/contracts";
 
 export const BOT_AVATAR_ENCODE_SIZE = 256;
 

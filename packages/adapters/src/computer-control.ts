@@ -4,9 +4,9 @@ import {
   type JobPublisher,
   runContinueJob,
   type SandboxProvider,
-} from "@rakazo/adapter-kit";
-import type { PrismaClient, ThreadEvents } from "@rakazo/db";
-import { getLogger } from "@rakazo/logging";
+} from "@sapphire/adapter-kit";
+import type { PrismaClient, ThreadEvents } from "@sapphire/db";
+import { getLogger } from "@sapphire/logging";
 import { toComputerRef } from "./computer-support.js";
 import { isSandboxGoneError } from "./e2b-sandbox.js";
 

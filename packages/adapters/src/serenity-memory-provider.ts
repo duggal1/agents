@@ -8,7 +8,7 @@ import type {
   SemanticMemoryResponse,
   SemanticMemoryResult,
   SemanticMemorySaveRequest,
-} from "@rakazo/adapter-kit";
+} from "@sapphire/adapter-kit";
 import {
   classifySerenityEndpointTrust,
   forgetSerenity,

@@ -1,9 +1,9 @@
 import { XIcon as X } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { Trans, useLingui } from "@lingui/react/macro";
-import type { MessageBlock } from "@rakazo/contracts";
-import { abortableDelay } from "@rakazo/core";
-import { Button, Dialog, DialogClose, DialogContent, DialogTitle } from "@rakazo/ui-web";
+import type { MessageBlock } from "@sapphire/contracts";
+import { abortableDelay } from "@sapphire/core";
+import { Button, Dialog, DialogClose, DialogContent, DialogTitle } from "@sapphire/ui-web";
 import { useEffect, useRef, useState } from "react";
 import { BuiCard, SuccessPop } from "../../components/ai/primitives";
 import { type ArtifactTarget, decodeArtifactBase64 } from "../../lib/artifact-open";
@@ -263,7 +263,7 @@ function ChartCanvas({
     // Plot loads lazily so threads without charts never pay for the library.
     void (async () => {
       try {
-        const { buildPlotParts } = await import("@rakazo/core/plot");
+        const { buildPlotParts } = await import("@sapphire/core/plot");
         if (cancelled || !ref.current) return;
         // Hover inspection by default: give the first mark a tooltip unless
         // the spec already asks for one somewhere.

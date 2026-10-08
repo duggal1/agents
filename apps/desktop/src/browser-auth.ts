@@ -1,5 +1,5 @@
 import { createServer, type Server } from "node:http";
-import type { RakazoDesktopOAuthCallback } from "@rakazo/contracts";
+import type { RakazoDesktopOAuthCallback } from "@sapphire/contracts";
 import { LOOPBACK_HOSTS } from "./oauth-callback.js";
 
 /** Native transport only: providers still own PKCE, token exchange and persistence. */

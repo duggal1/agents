@@ -1,7 +1,7 @@
 import { LockIcon as Lock, UsersIcon as Users } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { Trans, useLingui } from "@lingui/react/macro";
-import type { Bot, BotSection } from "@rakazo/contracts";
+import type { Bot, BotSection } from "@sapphire/contracts";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -19,7 +19,7 @@ import {
   DialogHeader,
   DialogTitle,
   Input,
-} from "@rakazo/ui-web";
+} from "@sapphire/ui-web";
 import { useId, useState } from "react";
 
 /** Each dialog is mounted only while open, so `open` is always true and the

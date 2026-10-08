@@ -6,8 +6,8 @@ import {
   ChatSdkMessagingSurface,
   createEmulatedSendbluePlatform,
   SendBlueEmulator,
-} from "@rakazo/adapters";
-import { formatMessagingLinkCode, issueMessagingLinkCode } from "@rakazo/db";
+} from "@sapphire/adapters";
+import { formatMessagingLinkCode, issueMessagingLinkCode } from "@sapphire/db";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 process.env.WAKEUP_DRIVER = "memory";

@@ -8,8 +8,8 @@ import type {
   VoiceSynthesizeRequest,
   VoiceTranscribeRequest,
   VoiceVerifyResult,
-} from "@rakazo/adapter-kit";
-import { getLogger } from "@rakazo/logging";
+} from "@sapphire/adapter-kit";
+import { getLogger } from "@sapphire/logging";
 import {
   readVoiceAudio,
   readVoiceJson,

@@ -5,17 +5,17 @@ import type {
   ComputerRef,
   JobPublisher,
   SandboxProvider,
-} from "@rakazo/adapter-kit";
-import { computerControlExpireJobKey } from "@rakazo/adapter-kit";
-import type { ComputerUpdate } from "@rakazo/contracts";
-import { ACTIVE_RUN_STATUSES, parseScreenLeaseId, screenLeaseId } from "@rakazo/core";
+} from "@sapphire/adapter-kit";
+import { computerControlExpireJobKey } from "@sapphire/adapter-kit";
+import type { ComputerUpdate } from "@sapphire/contracts";
+import { ACTIVE_RUN_STATUSES, parseScreenLeaseId, screenLeaseId } from "@sapphire/core";
 import {
   expireComputerExecutionLeases,
   type PrismaClient,
   parseComputerMode,
   type ThreadEvents,
-} from "@rakazo/db";
-import { getLogger } from "@rakazo/logging";
+} from "@sapphire/db";
+import { getLogger } from "@sapphire/logging";
 import {
   clearInactiveUserComputerControl,
   expireComputerControl,

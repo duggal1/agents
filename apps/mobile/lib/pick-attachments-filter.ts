@@ -2,7 +2,7 @@ import {
   ATTACHMENT_MAX_BYTES,
   ATTACHMENT_MAX_COUNT,
   type AttachmentMimeType,
-} from "@rakazo/contracts";
+} from "@sapphire/contracts";
 
 export type PickedAttachment = {
   id: string;

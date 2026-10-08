@@ -1,8 +1,8 @@
 import { i18n } from "@lingui/core";
 import { t } from "@lingui/core/macro";
 import { Trans, useLingui } from "@lingui/react/macro";
-import type { RunActivityRow } from "@rakazo/contracts";
-import { isAgedStuckWork } from "@rakazo/core";
+import type { RunActivityRow } from "@sapphire/contracts";
+import { isAgedStuckWork } from "@sapphire/core";
 import { useEffect, useState } from "react";
 import { rpc } from "../lib/rpc";
 

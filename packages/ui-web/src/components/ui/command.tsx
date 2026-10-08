@@ -8,9 +8,9 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "@rakazo/ui-web/components/ui/dialog";
-import { InputGroup, InputGroupAddon } from "@rakazo/ui-web/components/ui/input-group";
-import { cn } from "@rakazo/ui-web/lib/utils";
+} from "@sapphire/ui-web/components/ui/dialog";
+import { InputGroup, InputGroupAddon } from "@sapphire/ui-web/components/ui/input-group";
+import { cn } from "@sapphire/ui-web/lib/utils";
 import { Command as CommandPrimitive } from "cmdk";
 import type * as React from "react";
 

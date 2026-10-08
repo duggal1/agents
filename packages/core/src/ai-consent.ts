@@ -1,5 +1,5 @@
-import type { AiConsentStatus, AiDataUse, AiRecipient } from "@rakazo/contracts";
-import { AI_CONSENT_REQUIRED } from "@rakazo/contracts";
+import type { AiConsentStatus, AiDataUse, AiRecipient } from "@sapphire/contracts";
+import { AI_CONSENT_REQUIRED } from "@sapphire/contracts";
 
 /** A foreground check failed before the requested mutation was dispatched. */
 export class AiConsentBlocked extends Error {

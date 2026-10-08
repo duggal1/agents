@@ -1,4 +1,4 @@
-import type { MessageBlock, ThreadMessage } from "@rakazo/contracts";
+import type { MessageBlock, ThreadMessage } from "@sapphire/contracts";
 import { cloudAgentBlockFromPayload } from "./cloud-agent.js";
 
 export function projectMessages(

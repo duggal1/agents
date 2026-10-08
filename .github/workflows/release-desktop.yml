@@ -120,7 +120,7 @@ jobs:
           node-version: 22
       - run: pnpm install --frozen-lockfile
       - name: Build renderer and Electron main process
-        run: pnpm --filter @rakazo/web build && pnpm --filter @rakazo/desktop build
+        run: pnpm --filter @sapphire/web build && pnpm --filter @sapphire/desktop build
         env:
           RAKAZO_ALLOW_DEV_SECRETS: "1"
 
@@ -153,7 +153,7 @@ jobs:
           APPLE_API_ISSUER: ${{ secrets.APPLE_API_ISSUER }}
           APPLE_API_KEY: ${{ runner.temp }}/apple-api-key.p8
         run: >-
-          pnpm --filter @rakazo/desktop exec electron-builder
+          pnpm --filter @sapphire/desktop exec electron-builder
           --mac --universal --publish never -c.forceCodeSigning=true
       - name: Remove the App Store Connect API key from the runner
         if: always() && runner.os == 'macOS'
@@ -190,7 +190,7 @@ jobs:
           WIN_CSC_LINK: ${{ secrets.DESKTOP_WIN_CSC_LINK }}
           WIN_CSC_KEY_PASSWORD: ${{ secrets.DESKTOP_WIN_CSC_KEY_PASSWORD }}
         run: >-
-          pnpm --filter @rakazo/desktop exec electron-builder
+          pnpm --filter @sapphire/desktop exec electron-builder
           --win --x64 --publish never -c.forceCodeSigning=true
       - name: Verify Windows Authenticode signature and publisher-bound update feed
         if: runner.os == 'Windows'
@@ -222,7 +222,7 @@ jobs:
       - name: Package x64 Linux AppImage
         if: runner.os == 'Linux'
         run: >-
-          pnpm --filter @rakazo/desktop exec electron-builder
+          pnpm --filter @sapphire/desktop exec electron-builder
           --linux --x64 --publish never
       - name: Verify Linux update feed is pinned to the official GitHub channel
         if: runner.os == 'Linux'

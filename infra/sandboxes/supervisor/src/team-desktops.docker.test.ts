@@ -12,7 +12,7 @@ import {
   releaseDesktopCommand,
   screenPorts,
   stopAllDesktopBrowsersCommand,
-} from "@rakazo/core/node/desktop-runtime";
+} from "@sapphire/core/node/desktop-runtime";
 import { expect, it } from "vitest";
 import {
   browserProfilePathForScreen,

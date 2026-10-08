@@ -2,7 +2,7 @@ import type {
   AgentToolExecutionResult,
   ComputerAction,
   ComputerObservation,
-} from "@rakazo/adapter-kit";
+} from "@sapphire/adapter-kit";
 
 /** Identical visual actions that leave the frame unchanged before computer_act stops repeating them. */
 export const MAX_CONSECUTIVE_UNCHANGED_VISUAL_ACTIONS = 3;

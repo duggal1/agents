@@ -1,4 +1,4 @@
-import type { IntegrationSetupState } from "@rakazo/contracts";
+import type { IntegrationSetupState } from "@sapphire/contracts";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import {

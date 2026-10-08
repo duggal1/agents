@@ -1,7 +1,7 @@
 import { mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import type { ComputerRef, ProcessEvent, SandboxProvider } from "@rakazo/adapter-kit";
+import type { ComputerRef, ProcessEvent, SandboxProvider } from "@sapphire/adapter-kit";
 import { describe, expect, it } from "vitest";
 import { BoxSandboxEmulator } from "./box-emulator.js";
 import { DaytonaSandboxEmulator } from "./daytona-emulator.js";

@@ -1,9 +1,9 @@
-import type { AdapterContext } from "@rakazo/adapter-kit";
-import { computerControlExpireJobKey } from "@rakazo/adapter-kit";
-import { type ComputerUpdate, ComputerUpdateSchema } from "@rakazo/contracts";
-import { ACTIVE_RUN_STATUSES } from "@rakazo/core";
-import type { Prisma, PrismaClient, ThreadEvents } from "@rakazo/db";
-import { getLogger } from "@rakazo/logging";
+import type { AdapterContext } from "@sapphire/adapter-kit";
+import { computerControlExpireJobKey } from "@sapphire/adapter-kit";
+import { type ComputerUpdate, ComputerUpdateSchema } from "@sapphire/contracts";
+import { ACTIVE_RUN_STATUSES } from "@sapphire/core";
+import type { Prisma, PrismaClient, ThreadEvents } from "@sapphire/db";
+import { getLogger } from "@sapphire/logging";
 import {
   enqueueTakeoverContinuation,
   isIdleOwnComputerTakeover,

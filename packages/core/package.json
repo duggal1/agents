@@ -1,5 +1,5 @@
 {
-  "name": "@rakazo/core",
+  "name": "@sapphire/core",
   "version": "0.1.0",
   "license": "Apache-2.0",
   "type": "module",
@@ -51,7 +51,7 @@
   },
   "dependencies": {
     "@observablehq/plot": "0.6.17",
-    "@rakazo/contracts": "workspace:*",
+    "@sapphire/contracts": "workspace:*",
     "croner": "10.0.1",
     "d3-dsv": "3.0.1",
     "dotenv": "17.4.2",

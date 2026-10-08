@@ -1,4 +1,4 @@
-import { RESPONSE_STREAMING_STORAGE_KEY } from "@rakazo/core";
+import { RESPONSE_STREAMING_STORAGE_KEY } from "@sapphire/core";
 import { describe, expect, it } from "vitest";
 import {
   persistResponseStreamingPreference,

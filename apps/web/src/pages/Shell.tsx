@@ -35,7 +35,7 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import { i18n } from "@lingui/core";
 import { t } from "@lingui/core/macro";
 import { Trans, useLingui } from "@lingui/react/macro";
-import { ChatMarkdown, LinkifiedText } from "@rakazo/chat-ui/web";
+import { ChatMarkdown, LinkifiedText } from "@sapphire/chat-ui/web";
 import type {
   AgentSkillCatalogEntry,
   Bot,
@@ -56,7 +56,7 @@ import type {
   ThreadMessage,
   ThreadSnapshot,
   VoiceStatus,
-} from "@rakazo/contracts";
+} from "@sapphire/contracts";
 import {
   ATTACHMENT_ALLOWED_MIME_TYPES,
   ATTACHMENT_MAX_BYTES,
@@ -65,7 +65,7 @@ import {
   MESSAGE_REACTIONS,
   type MessageReaction,
   normalizeCreateBotProfile,
-} from "@rakazo/contracts";
+} from "@sapphire/contracts";
 import {
   attachmentsForThread,
   buildComposerMentionOptions,
@@ -97,7 +97,7 @@ import {
   truncateSlashDescription,
   userVisibleMessages,
   withLiveStreamingProgress,
-} from "@rakazo/core";
+} from "@sapphire/core";
 import {
   AvatarStyleProvider,
   BotAvatar,
@@ -117,7 +117,7 @@ import {
   PopoverTrigger,
   RakazoMark,
   resolvePersonaColorDef,
-} from "@rakazo/ui-web";
+} from "@sapphire/ui-web";
 import {
   type ClipboardEvent,
   type DragEvent,

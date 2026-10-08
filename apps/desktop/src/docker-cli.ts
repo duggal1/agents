@@ -1,6 +1,6 @@
 import { spawn } from "node:child_process";
 import path from "node:path";
-import type { DesktopSetupLink } from "@rakazo/contracts";
+import type { DesktopSetupLink } from "@sapphire/contracts";
 
 /** Pages the setup window may open when Docker is missing. Nothing is ever installed by the app. */
 export const DOCKER_INSTALL_LINKS: Record<DesktopSetupLink, string> = {

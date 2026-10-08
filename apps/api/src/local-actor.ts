@@ -1,6 +1,6 @@
-import type { Actor } from "@rakazo/contracts";
-import type { PrismaClient } from "@rakazo/db";
-import { bootstrapUserSpace, requireMembership } from "@rakazo/db";
+import type { Actor } from "@sapphire/contracts";
+import type { PrismaClient } from "@sapphire/db";
+import { bootstrapUserSpace, requireMembership } from "@sapphire/db";
 
 /**
  * Local mode (RAKAZO_LOCAL_MODE=1): the Mac app is single-user, so there are

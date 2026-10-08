@@ -4,7 +4,7 @@ import {
   BOT_TITLE_MAX_LENGTH,
   type ComputerMode,
   normalizeCreateBotProfile,
-} from "@rakazo/contracts";
+} from "@sapphire/contracts";
 import { Stack, useRouter } from "expo-router";
 import { useState } from "react";
 import { Pressable, ScrollView, Text, TextInput } from "react-native";

@@ -1,5 +1,5 @@
 {
-  "name": "@rakazo/chat-ui",
+  "name": "@sapphire/chat-ui",
   "version": "0.1.0",
   "license": "Apache-2.0",
   "type": "module",
@@ -12,9 +12,9 @@
     "test": "vitest run --root ../.. packages/chat-ui/src"
   },
   "dependencies": {
-    "@rakazo/contracts": "workspace:*",
-    "@rakazo/ui-tokens": "workspace:*",
-    "@rakazo/ui-web": "workspace:*",
+    "@sapphire/contracts": "workspace:*",
+    "@sapphire/ui-tokens": "workspace:*",
+    "@sapphire/ui-web": "workspace:*",
     "@ronradtke/react-native-markdown-display": "9.0.3",
     "linkify-it": "5.0.2",
     "react-markdown": "10.1.0",

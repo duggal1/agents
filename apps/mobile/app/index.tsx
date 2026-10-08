@@ -4,9 +4,9 @@ import {
   type SearchHit,
   type SpaceBot,
   type SpaceGroup,
-} from "@rakazo/contracts";
-import { ACTIVE_RUN_STATUSES } from "@rakazo/core";
-import { botColors } from "@rakazo/ui-tokens";
+} from "@sapphire/contracts";
+import { ACTIVE_RUN_STATUSES } from "@sapphire/core";
+import { botColors } from "@sapphire/ui-tokens";
 import { Redirect, useFocusEffect, useRouter } from "expo-router";
 import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {

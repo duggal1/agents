@@ -1,6 +1,6 @@
 vi.mock("./ai-consent", () => ({ promptAiConsent: vi.fn() }));
 
-import { withLiveStreamingProgress } from "@rakazo/core";
+import { withLiveStreamingProgress } from "@sapphire/core";
 import * as SecureStore from "expo-secure-store";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { promptAiConsent } from "./ai-consent";

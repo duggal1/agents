@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
-import { RECREATED_SERVICES } from "@rakazo/core";
+import { RECREATED_SERVICES } from "@sapphire/core";
 import { describe, expect, it } from "vitest";
 import { parse } from "yaml";
 

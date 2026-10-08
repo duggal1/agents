@@ -16,14 +16,14 @@ import {
   parseModelMaxImagesPerPrompt,
   parseModelMaxTokens,
   type ThinkingLevel,
-} from "@rakazo/contracts";
+} from "@sapphire/contracts";
 import {
   COMPATIBLE_THINKING_LEVELS,
   clampCatalogThinkingLevel,
   createModelProbe,
   initialModelProbeState,
   pickCatalogModelId,
-} from "@rakazo/core";
+} from "@sapphire/core";
 import {
   Button,
   Input,
@@ -34,7 +34,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@rakazo/ui-web";
+} from "@sapphire/ui-web";
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { IntegrationSetup } from "../components/integrations/IntegrationSetup";

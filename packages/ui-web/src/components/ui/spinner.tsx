@@ -1,7 +1,7 @@
 import { Loading03Icon as Loader2Icon } from "@hugeicons/core-free-icons";
 import type { HugeiconsIconProps } from "@hugeicons/react";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { cn } from "@rakazo/ui-web/lib/utils";
+import { cn } from "@sapphire/ui-web/lib/utils";
 
 type SpinnerProps = Omit<HugeiconsIconProps, "icon"> & { className?: string };
 

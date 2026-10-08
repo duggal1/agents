@@ -9,7 +9,7 @@ This is the light system converted 1:1: same layout, spacing, radii, typography,
 - Tailwind CSS v4 (`@import "tailwindcss"`, theme in `@theme inline`)
 - shadcn-style UI primitives built on **Base UI** (`@base-ui/react`), vendored in
   `packages/ui-web` — the source of truth for every primitive below
-- Design tokens: `@rakazo/ui-tokens` (single TypeScript source generating
+- Design tokens: `@sapphire/ui-tokens` (single TypeScript source generating
   `tokens.css`); never hardcode a product hex
 - Icons: **hugeicons is the primary set** — `@hugeicons/react` renders
   `@hugeicons/core-free-icons` data. Phosphor (`@phosphor-icons/react`) is the
@@ -674,11 +674,11 @@ Hard rules:
 ### Presets — one module, `packages/ui-web/src/motion.ts`
 
 Every value below is exported from `packages/ui-web/src/motion.ts`, re-exported
-from `@rakazo/ui-web` and available at the `@rakazo/ui-web/motion` subpath.
+from `@sapphire/ui-web` and available at the `@sapphire/ui-web/motion` subpath.
 Import the preset; **never re-declare an easing or a duration at the call site.**
 
 ```tsx
-import { blurInFloat, DURATION, EASE_LUXE } from "@rakazo/ui-web";
+import { blurInFloat, DURATION, EASE_LUXE } from "@sapphire/ui-web";
 
 <motion.div {...blurInFloat} />;
 ```
@@ -689,7 +689,7 @@ Exports: `EASE_LUXE`, `EASE_LUXE_CSS`, `DURATION`, `luxe(duration, delay?)`,
 `blurInDialog`, `blurInToast`, `blurInLaunch` (the macOS launch mark),
 `heroContainer`/`heroItem`, `toastMotion`.
 
-`LuxeMotionProvider` (also from `@rakazo/ui-web`) wraps the app root in
+`LuxeMotionProvider` (also from `@sapphire/ui-web`) wraps the app root in
 `MotionConfig transition={luxeTransition} reducedMotion="user"`, so a bare
 `animate` prop already tweens luxe and OS reduced-motion is honoured without any
 per-component branch.

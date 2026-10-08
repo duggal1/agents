@@ -1,12 +1,12 @@
-import type { ConnectorRegistry } from "@rakazo/adapters";
-import type { Actor, MessageBlock } from "@rakazo/contracts";
-import { featuredConnectorProvidersMatch } from "@rakazo/core";
-import type { Prisma, PrismaClient, ThreadEvents } from "@rakazo/db";
+import type { ConnectorRegistry } from "@sapphire/adapters";
+import type { Actor, MessageBlock } from "@sapphire/contracts";
+import { featuredConnectorProvidersMatch } from "@sapphire/core";
+import type { Prisma, PrismaClient, ThreadEvents } from "@sapphire/db";
 import {
   appendEventInTransaction,
   createThreadMessageInTransaction,
   IsolationError,
-} from "@rakazo/db";
+} from "@sapphire/db";
 import { requireBotThread, updateBlocks } from "./bot-thread.js";
 
 /**

@@ -1,6 +1,6 @@
 import path from "node:path";
 import { _electron as electron, expect, test } from "@playwright/test";
-import type { RakazoDesktop } from "@rakazo/contracts";
+import type { RakazoDesktop } from "@sapphire/contracts";
 
 const fixture = `<!doctype html>
 <html lang="en">

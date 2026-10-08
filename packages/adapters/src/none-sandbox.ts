@@ -9,7 +9,7 @@ import type {
   ProcessEvent,
   SandboxProvider,
   ScreenRequest,
-} from "@rakazo/adapter-kit";
+} from "@sapphire/adapter-kit";
 
 export const NO_SANDBOX_MESSAGE =
   "Computers unavailable. Set SANDBOX_PROVIDER=docker with SANDBOX_SUPERVISOR_TOKEN, or use e2b, daytona, or box with its API key.";

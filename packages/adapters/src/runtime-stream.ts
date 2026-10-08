@@ -1,4 +1,4 @@
-import type { AgentRuntimeEvent } from "@rakazo/adapter-kit";
+import type { AgentRuntimeEvent } from "@sapphire/adapter-kit";
 
 /** Cancel executor tool work before closing an interrupted runtime's iterator. */
 export async function* withRuntimeCleanup(

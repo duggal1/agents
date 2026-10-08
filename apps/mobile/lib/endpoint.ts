@@ -1,4 +1,4 @@
-import { readBoundedJsonResponse } from "@rakazo/core";
+import { readBoundedJsonResponse } from "@sapphire/core";
 import { t } from "./i18n";
 
 const LOCAL_API = "http://127.0.0.1:3100";

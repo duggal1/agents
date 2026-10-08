@@ -1,8 +1,8 @@
 import { CheckIcon as Check } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { Trans, useLingui } from "@lingui/react/macro";
-import type { IntegrationCatalogResult, IntegrationSetupState } from "@rakazo/contracts";
-import { Button, Input } from "@rakazo/ui-web";
+import type { IntegrationCatalogResult, IntegrationSetupState } from "@sapphire/contracts";
+import { Button, Input } from "@sapphire/ui-web";
 import { useEffect, useId, useState } from "react";
 import { newClientId } from "../../lib/client-id";
 import { connectMcpOauth } from "../../lib/mcp-connect";

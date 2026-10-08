@@ -2,7 +2,7 @@ import {
   persistAppearancePreference,
   resolveAppearancePreference,
   UI_APPEARANCE_STORAGE_KEY,
-} from "@rakazo/ui-tokens";
+} from "@sapphire/ui-tokens";
 import { describe, expect, it } from "vitest";
 import { applyResolvedAppearance, readSystemAppearance } from "./ui-appearance";
 

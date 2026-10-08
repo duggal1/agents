@@ -3,8 +3,8 @@
 import { Dialog as DialogPrimitive } from "@base-ui/react/dialog";
 import { XIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { Button } from "@rakazo/ui-web/components/ui/button";
-import { cn } from "@rakazo/ui-web/lib/utils";
+import { Button } from "@sapphire/ui-web/components/ui/button";
+import { cn } from "@sapphire/ui-web/lib/utils";
 import type * as React from "react";
 
 function Dialog({ ...props }: DialogPrimitive.Root.Props) {

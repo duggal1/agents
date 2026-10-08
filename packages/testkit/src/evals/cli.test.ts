@@ -7,7 +7,7 @@ it("lists eval cases without importing a generated database client or runtime ad
     import { registerHooks } from 'node:module';
     registerHooks({
       resolve(specifier, context, nextResolve) {
-        if (specifier === '@rakazo/db' || specifier === '@rakazo/adapters') {
+        if (specifier === '@sapphire/db' || specifier === '@sapphire/adapters') {
           throw new Error('Runtime imported before database generation');
         }
         return nextResolve(specifier, context);

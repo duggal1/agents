@@ -2,15 +2,15 @@ import {
   resolveCloudAgentProvider,
   resolveDeploymentModel,
   resolveSandboxProvider,
-} from "@rakazo/adapters";
+} from "@sapphire/adapters";
 import {
   resolveAuthSecret,
   resolveEncryptionKey,
   resolveScreenProxySecret,
   resolveSupervisorToken,
-} from "@rakazo/core";
+} from "@sapphire/core";
 
-export { resolveCloudAgentProvider, resolveSandboxProvider } from "@rakazo/adapters";
+export { resolveCloudAgentProvider, resolveSandboxProvider } from "@sapphire/adapters";
 
 export interface AppEnv {
   nodeEnv: string;

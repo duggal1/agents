@@ -1,4 +1,4 @@
-import type { ComputerStatus } from "@rakazo/contracts";
+import type { ComputerStatus } from "@sapphire/contracts";
 import { SCREEN_URL_RENEW_MS, screenRenewReadAt } from "./computer";
 
 export { SCREEN_URL_RENEW_MS };

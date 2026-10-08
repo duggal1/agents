@@ -1,4 +1,4 @@
-import { DEFAULT_COMPOSE_PROJECT_NAME, isLocalImageTag } from "@rakazo/core";
+import { DEFAULT_COMPOSE_PROJECT_NAME, isLocalImageTag } from "@sapphire/core";
 import { describe, expect, it } from "vitest";
 import {
   DEFAULT_COMPOSE_FILE,

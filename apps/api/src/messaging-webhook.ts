@@ -1,4 +1,4 @@
-import type { MessagingSurface } from "@rakazo/adapter-kit";
+import type { MessagingSurface } from "@sapphire/adapter-kit";
 import type { Hono } from "hono";
 
 export const MESSAGING_WEBHOOK_BASE_PATH = "/api/v1/messaging/webhook";

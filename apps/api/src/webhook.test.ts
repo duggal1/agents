@@ -1,5 +1,5 @@
 import { createHash, createHmac } from "node:crypto";
-import { GithubWebhookEmulator } from "@rakazo/adapters";
+import { GithubWebhookEmulator } from "@sapphire/adapters";
 import { Hono } from "hono";
 import { describe, expect, it, vi } from "vitest";
 import { readBoundedBody } from "./http-body.js";

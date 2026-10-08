@@ -13,9 +13,9 @@ import {
   expect,
   type Page,
 } from "@playwright/test";
-import { abortableDelay } from "@rakazo/core";
-import { loadRootEnv } from "@rakazo/core/node/load-root-env";
-import { createThreadMessage, type PrismaClient } from "@rakazo/db";
+import { abortableDelay } from "@sapphire/core";
+import { loadRootEnv } from "@sapphire/core/node/load-root-env";
+import { createThreadMessage, type PrismaClient } from "@sapphire/db";
 import { PostgreSqlContainer } from "@testcontainers/postgresql";
 import type { createApp } from "../../../../apps/api/src/app.ts";
 import {
@@ -187,12 +187,12 @@ function performanceEnvironment(databaseUrl: string): NodeJS.ProcessEnv {
 }
 
 function buildProductionArtifacts(env: NodeJS.ProcessEnv) {
-  run("pnpm", ["--filter", "@rakazo/desktop", "pack:dir"], env);
+  run("pnpm", ["--filter", "@sapphire/desktop", "pack:dir"], env);
 }
 
 function migrateDatabase(env: NodeJS.ProcessEnv) {
-  run("pnpm", ["--filter", "@rakazo/db", "generate"], env);
-  run("pnpm", ["--filter", "@rakazo/db", "exec", "prisma", "migrate", "deploy"], env);
+  run("pnpm", ["--filter", "@sapphire/db", "generate"], env);
+  run("pnpm", ["--filter", "@sapphire/db", "exec", "prisma", "migrate", "deploy"], env);
 }
 
 function run(command: string, args: string[], env: NodeJS.ProcessEnv) {
@@ -204,7 +204,7 @@ function startPreview(env: NodeJS.ProcessEnv) {
     "pnpm",
     [
       "--filter",
-      "@rakazo/web",
+      "@sapphire/web",
       "exec",
       "vite",
       "preview",

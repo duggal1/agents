@@ -7,8 +7,8 @@ import {
   githubToolResultHasSeededRelease,
   RELEASE_WATCH_GITHUB_TOOL_NAMES,
   resolveReleaseWatchEvalModelId,
-} from "@rakazo/adapters";
-import { loadRootEnv } from "@rakazo/core/node/load-root-env";
+} from "@sapphire/adapters";
+import { loadRootEnv } from "@sapphire/core/node/load-root-env";
 import { afterAll, describe, expect, it } from "vitest";
 import { sessionCookieHeader } from "./index.js";
 

@@ -1,4 +1,4 @@
-import type { AdapterContext } from "@rakazo/adapter-kit";
+import type { AdapterContext } from "@sapphire/adapter-kit";
 import { describe, expect, it } from "vitest";
 import { EmulatorCloudAgentProvider } from "./cloud-agent-emulator.js";
 import { cloudAgentsEnabled, createCloudAgentConnection } from "./cloud-agent-factory.js";

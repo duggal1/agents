@@ -1,4 +1,4 @@
-import type { MessageBlock } from "@rakazo/contracts";
+import type { MessageBlock } from "@sapphire/contracts";
 import { cloudAgentBlockFromPayload } from "./cloud-agent.js";
 
 /** Remove this run's live message and obsolete unscoped progress without reordering history. */

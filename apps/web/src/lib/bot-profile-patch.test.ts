@@ -1,4 +1,4 @@
-import { BOT_DESCRIPTION_MAX_LENGTH, BOT_INSTRUCTIONS_MAX_LENGTH } from "@rakazo/contracts";
+import { BOT_DESCRIPTION_MAX_LENGTH, BOT_INSTRUCTIONS_MAX_LENGTH } from "@sapphire/contracts";
 import { describe, expect, it } from "vitest";
 import { botProfilePatch } from "./bot-profile-patch.js";
 

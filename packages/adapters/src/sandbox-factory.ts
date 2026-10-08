@@ -1,4 +1,4 @@
-import type { SandboxProvider } from "@rakazo/adapter-kit";
+import type { SandboxProvider } from "@sapphire/adapter-kit";
 import { BoxSandboxEmulator } from "./box-emulator.js";
 import { BoxSandboxProvider } from "./box-sandbox.js";
 import { CreateOSSandboxProvider } from "./createos-sandbox.js";

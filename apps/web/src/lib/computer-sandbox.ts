@@ -1,4 +1,4 @@
-import type { Me } from "@rakazo/contracts";
+import type { Me } from "@sapphire/contracts";
 import { rpc } from "./rpc";
 
 export function computersAreUnavailable(sandboxProvider: string | null | undefined): boolean {

@@ -65,7 +65,7 @@ jobs:
           BETTER_AUTH_SECRET: ci-build-auth-secret-at-least-32-characters
           ENCRYPTION_KEY: ci-build-encryption-key-at-least-32-characters
       - name: Electron smoke
-        run: xvfb-run --auto-servernum pnpm --filter @rakazo/desktop exec playwright test --config e2e/playwright.config.ts
+        run: xvfb-run --auto-servernum pnpm --filter @sapphire/desktop exec playwright test --config e2e/playwright.config.ts
       - name: Upload desktop setup screenshots
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
@@ -244,7 +244,7 @@ jobs:
         run: pnpm install --frozen-lockfile
       - name: Verify mobile project
         if: steps.ota.outputs.publish == 'true'
-        run: pnpm --filter @rakazo/mobile check
+        run: pnpm --filter @sapphire/mobile check
       - name: Publish production update
         if: steps.ota.outputs.publish == 'true'
         working-directory: apps/mobile

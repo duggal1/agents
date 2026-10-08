@@ -1,4 +1,4 @@
-import type { ProductEvent } from "@rakazo/contracts";
+import type { ProductEvent } from "@sapphire/contracts";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { IDLE_TIMEOUT_MS, runThreadSubscription } from "./thread-subscription.js";
 

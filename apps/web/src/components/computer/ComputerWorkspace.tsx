@@ -6,8 +6,8 @@ import {
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { useLingui } from "@lingui/react/macro";
-import type { ComputerStatus } from "@rakazo/contracts";
-import { Button, cn } from "@rakazo/ui-web";
+import type { ComputerStatus } from "@sapphire/contracts";
+import { Button, cn } from "@sapphire/ui-web";
 import type { PointerEvent, ReactNode, RefObject } from "react";
 import { lazy, Suspense, useCallback, useRef, useState } from "react";
 import { FilesApp } from "./FilesApp";

@@ -1,6 +1,6 @@
 import { ChevronDownIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { cn } from "@rakazo/ui-web/lib/utils";
+import { cn } from "@sapphire/ui-web/lib/utils";
 import type * as React from "react";
 
 type NativeSelectProps = Omit<React.ComponentProps<"select">, "size"> & {

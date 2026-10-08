@@ -1,6 +1,6 @@
 import { lookup } from "node:dns/promises";
 import { isIP } from "node:net";
-import { isLocalMcpHost } from "@rakazo/contracts";
+import { isLocalMcpHost } from "@sapphire/contracts";
 import type { ResolvedAddress, ResolveHostname } from "./network-address.js";
 import { createPrivateNetworkFetch } from "./remote-mcp.js";
 import { readBodyCapped } from "./web-ssrf.js";

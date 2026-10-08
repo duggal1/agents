@@ -4,7 +4,7 @@ import type {
   ConnectorEvent,
   ConnectorProvider,
   ConnectorTool,
-} from "@rakazo/adapter-kit";
+} from "@sapphire/adapter-kit";
 import { describe, expect, it } from "vitest";
 import { ConnectorRegistry } from "./composio-connector.js";
 import { DestinationEmulator } from "./destination-emulator.js";

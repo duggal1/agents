@@ -1,4 +1,4 @@
-import type { MessageBlock } from "@rakazo/contracts";
+import type { MessageBlock } from "@sapphire/contracts";
 import { speechFromBlocks } from "./speech-text.js";
 
 /** The fields grouping reads; web `ThreadMessage` and mobile `MobileMessage` both satisfy it. */

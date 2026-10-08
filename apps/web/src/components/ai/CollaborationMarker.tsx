@@ -1,4 +1,4 @@
-import { BotAvatar, GroupAvatar, type GroupAvatarMember } from "@rakazo/ui-web";
+import { BotAvatar, GroupAvatar, type GroupAvatarMember } from "@sapphire/ui-web";
 import { LoadingState } from "./primitives";
 
 /** Lightweight peer event shown without exposing the exchanged message body. */

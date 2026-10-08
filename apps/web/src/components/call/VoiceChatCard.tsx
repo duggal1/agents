@@ -4,9 +4,9 @@ import {
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { useLingui } from "@lingui/react/macro";
-import type { VoiceChatGroup } from "@rakazo/core";
-import { speechFromBlocks, voiceChatDuration, voiceChatSummary } from "@rakazo/core";
-import { buttonVariants, cn } from "@rakazo/ui-web";
+import type { VoiceChatGroup } from "@sapphire/core";
+import { speechFromBlocks, voiceChatDuration, voiceChatSummary } from "@sapphire/core";
+import { buttonVariants, cn } from "@sapphire/ui-web";
 import { useState } from "react";
 
 function clock(seconds: number): string {

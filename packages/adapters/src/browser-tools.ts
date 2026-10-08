@@ -4,7 +4,7 @@ import type {
   BrowserActStep,
   BrowserProvider,
   ComputerRef,
-} from "@rakazo/adapter-kit";
+} from "@sapphire/adapter-kit";
 import type { LoginField } from "./bot-secrets.js";
 import { redactConnectorPayload } from "./connector-safety.js";
 

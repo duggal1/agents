@@ -1,4 +1,4 @@
-import type { AdapterContext, BrowserProvider, ComputerRef } from "@rakazo/adapter-kit";
+import type { AdapterContext, BrowserProvider, ComputerRef } from "@sapphire/adapter-kit";
 import { describe, expect, it } from "vitest";
 import { EmulatorBrowserProvider } from "./browser-emulator.js";
 import { FakeBrowserProvider } from "./fake-browser.js";

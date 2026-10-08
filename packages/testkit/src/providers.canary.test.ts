@@ -6,10 +6,10 @@ import {
   CreateOSSandboxProvider,
   E2BSandboxProvider,
   PiAgentRuntime,
-} from "@rakazo/adapters";
-import type { RunStatus } from "@rakazo/contracts";
-import { isTerminal } from "@rakazo/core";
-import { loadRootEnv } from "@rakazo/core/node/load-root-env";
+} from "@sapphire/adapters";
+import type { RunStatus } from "@sapphire/contracts";
+import { isTerminal } from "@sapphire/core";
+import { loadRootEnv } from "@sapphire/core/node/load-root-env";
 import { afterAll, describe, expect, it } from "vitest";
 import { sessionCookieHeader } from "./index.js";
 

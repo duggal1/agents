@@ -1,5 +1,5 @@
 {
-  "name": "@rakazo/mobile",
+  "name": "@sapphire/mobile",
   "version": "0.1.0",
   "license": "Apache-2.0",
   "main": "expo-router/entry",
@@ -18,10 +18,10 @@
   },
   "dependencies": {
     "@expo/metro-runtime": "57.0.16",
-    "@rakazo/chat-ui": "workspace:*",
-    "@rakazo/contracts": "workspace:*",
-    "@rakazo/core": "workspace:*",
-    "@rakazo/ui-tokens": "workspace:*",
+    "@sapphire/chat-ui": "workspace:*",
+    "@sapphire/contracts": "workspace:*",
+    "@sapphire/core": "workspace:*",
+    "@sapphire/ui-tokens": "workspace:*",
     "@react-native-vector-icons/ionicons": "13.1.4",
     "@react-native-vector-icons/material-design-icons": "13.1.4",
     "expo": "57.0.27",

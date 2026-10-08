@@ -1,5 +1,5 @@
 import { I18nProvider } from "@lingui/react";
-import type { MessageBlock } from "@rakazo/contracts";
+import type { MessageBlock } from "@sapphire/contracts";
 import { useSyncExternalStore } from "react";
 import { createRoot } from "react-dom/client";
 import {

@@ -1,4 +1,4 @@
-import type { MessageBlock } from "@rakazo/contracts";
+import type { MessageBlock } from "@sapphire/contracts";
 
 export function cloudAgentHttpsUrl(value: string | null | undefined): string | undefined {
   if (!value) return undefined;

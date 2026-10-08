@@ -1,5 +1,5 @@
 {
-  "name": "@rakazo/api",
+  "name": "@sapphire/api",
   "version": "0.1.0",
   "license": "Apache-2.0",
   "type": "module",
@@ -12,14 +12,14 @@
   "dependencies": {
     "@hono/node-server": "2.1.3",
     "@orpc/server": "1.15.4",
-    "@rakazo/adapter-kit": "workspace:*",
-    "@rakazo/adapters": "workspace:*",
-    "@rakazo/auth": "workspace:*",
-    "@rakazo/contracts": "workspace:*",
-    "@rakazo/core": "workspace:*",
-    "@rakazo/db": "workspace:*",
-    "@rakazo/logging": "workspace:*",
-    "@rakazo/memory": "workspace:*",
+    "@sapphire/adapter-kit": "workspace:*",
+    "@sapphire/adapters": "workspace:*",
+    "@sapphire/auth": "workspace:*",
+    "@sapphire/contracts": "workspace:*",
+    "@sapphire/core": "workspace:*",
+    "@sapphire/db": "workspace:*",
+    "@sapphire/logging": "workspace:*",
+    "@sapphire/memory": "workspace:*",
     "hono": "4.13.13"
   },
   "devDependencies": {

@@ -1,5 +1,5 @@
-import type { AiConsentStatus } from "@rakazo/contracts";
-import { AI_DATA_DISCLOSURES, AI_PRIVACY_URL } from "@rakazo/contracts";
+import type { AiConsentStatus } from "@sapphire/contracts";
+import { AI_DATA_DISCLOSURES, AI_PRIVACY_URL } from "@sapphire/contracts";
 import { useEffect, useState } from "react";
 import { Alert, Button, Linking, ScrollView, StyleSheet, Text, View } from "react-native";
 import { promptAiConsent } from "../lib/ai-consent";

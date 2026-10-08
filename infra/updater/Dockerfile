@@ -20,7 +20,7 @@ COPY packages/contracts packages/contracts
 COPY packages/core packages/core
 COPY packages/logging packages/logging
 COPY infra/updater infra/updater
-RUN corepack enable && pnpm install --frozen-lockfile --prod --filter "@rakazo/updater..."
+RUN corepack enable && pnpm install --frozen-lockfile --prod --filter "@sapphire/updater..."
 WORKDIR /app/infra/updater
 ARG GIT_SHA
 ENV GIT_SHA=$GIT_SHA

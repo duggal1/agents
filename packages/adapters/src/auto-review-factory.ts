@@ -1,4 +1,4 @@
-import type { AutoReviewProvider, AutoReviewRequest, AutoReviewResult } from "@rakazo/adapter-kit";
+import type { AutoReviewProvider, AutoReviewRequest, AutoReviewResult } from "@sapphire/adapter-kit";
 import type { LlmAutoReviewOptions } from "./auto-review.js";
 import {
   autoReviewMinConfidence,

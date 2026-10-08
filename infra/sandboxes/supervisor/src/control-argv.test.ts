@@ -1,6 +1,6 @@
 import { spawnSync } from "node:child_process";
 import path from "node:path";
-import { browserProfilePathForScreen } from "@rakazo/core/node/desktop-runtime";
+import { browserProfilePathForScreen } from "@sapphire/core/node/desktop-runtime";
 import { describe, expect, it } from "vitest";
 import { containerActionStep } from "./supervisor-logic.js";
 

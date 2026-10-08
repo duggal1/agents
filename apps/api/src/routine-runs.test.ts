@@ -1,6 +1,6 @@
-import type { Actor } from "@rakazo/contracts";
-import { RoutineHistorySchema } from "@rakazo/contracts";
-import type { PrismaClient } from "@rakazo/db";
+import type { Actor } from "@sapphire/contracts";
+import { RoutineHistorySchema } from "@sapphire/contracts";
+import type { PrismaClient } from "@sapphire/db";
 import { describe, expect, it, vi } from "vitest";
 import { listRoutineRuns } from "./routine-runs.js";
 

@@ -3,8 +3,8 @@ import type {
   AgentRunRequest,
   AgentRuntime,
   AgentRuntimeEvent,
-} from "@rakazo/adapter-kit";
-import { abortableDelay, inferHandoffTargetName } from "@rakazo/core";
+} from "@sapphire/adapter-kit";
+import { abortableDelay, inferHandoffTargetName } from "@sapphire/core";
 
 const running = new Map<string, AbortController>();
 

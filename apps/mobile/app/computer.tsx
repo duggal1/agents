@@ -1,4 +1,4 @@
-import type { ComputerMode, ComputerReleaseReason } from "@rakazo/contracts";
+import type { ComputerMode, ComputerReleaseReason } from "@sapphire/contracts";
 import { useLocalSearchParams, useNavigation } from "expo-router";
 import * as ScreenOrientation from "expo-screen-orientation";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";

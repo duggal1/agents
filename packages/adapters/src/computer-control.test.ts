@@ -3,9 +3,9 @@ import type {
   BackgroundJob,
   JobPublisher,
   SandboxProvider,
-} from "@rakazo/adapter-kit";
-import type { PrismaClient, ThreadEvents } from "@rakazo/db";
-import { createLogger, createTestSink, installLogger } from "@rakazo/logging";
+} from "@sapphire/adapter-kit";
+import type { PrismaClient, ThreadEvents } from "@sapphire/db";
+import { createLogger, createTestSink, installLogger } from "@sapphire/logging";
 import { describe, expect, it, vi } from "vitest";
 import {
   clearInactiveUserComputerControl,

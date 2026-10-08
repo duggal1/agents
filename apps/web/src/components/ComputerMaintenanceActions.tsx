@@ -1,7 +1,7 @@
 import { MoreHorizontalIcon as MoreHorizontal } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { Trans, useLingui } from "@lingui/react/macro";
-import type { ComputerStatus } from "@rakazo/contracts";
+import type { ComputerStatus } from "@sapphire/contracts";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -16,7 +16,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@rakazo/ui-web";
+} from "@sapphire/ui-web";
 import { useState } from "react";
 import { computerUpdates } from "../lib/computer-updates";
 import { rpc } from "../lib/rpc";

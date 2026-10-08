@@ -29,9 +29,9 @@ import type {
   AgentToolCompletion,
   AgentToolExecutionResult,
   ConnectorTool,
-} from "@rakazo/adapter-kit";
-import { usableModelId } from "@rakazo/contracts";
-import { getLogger } from "@rakazo/logging";
+} from "@sapphire/adapter-kit";
+import { usableModelId } from "@sapphire/contracts";
+import { getLogger } from "@sapphire/logging";
 import { isToolPauseResult } from "./approval-effect.js";
 import { connectionIdArgument, credentialArgument } from "./bot-secrets.js";
 import { builtinAgentTools, DELEGATION_TOOL_NAMES } from "./builtin-tools.js";

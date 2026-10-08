@@ -24,15 +24,15 @@ import type {
   SandboxProvider,
   SemanticMemoryProvider,
   WebProvider,
-} from "@rakazo/adapter-kit";
+} from "@sapphire/adapter-kit";
 import {
   historyCompactJob,
   MEMORY_REVISION_CONFLICT_ERROR,
   routineJobKey,
   routineWakeupJob,
   runContinueJob,
-} from "@rakazo/adapter-kit";
-import type { ComputerCommand, MessageBlock, RunStatus } from "@rakazo/contracts";
+} from "@sapphire/adapter-kit";
+import type { ComputerCommand, MessageBlock, RunStatus } from "@sapphire/contracts";
 import {
   ATTACHMENT_MAX_BYTES,
   BOT_DESCRIPTION_MAX_LENGTH,
@@ -44,7 +44,7 @@ import {
   COMPUTER_COMMAND_OUTPUT_MAX_CHARS,
   isAttachmentImageMimeType,
   OPENAI_COMPATIBLE_PROVIDER_ID,
-} from "@rakazo/contracts";
+} from "@sapphire/contracts";
 import {
   type ActionApprovalRule,
   appendTextSegment,
@@ -85,14 +85,14 @@ import {
   truncatedPlainText,
   unattendedTriggerToolRequiresApproval,
   userTurnMessageForRun,
-} from "@rakazo/core";
+} from "@sapphire/core";
 import {
   approvalEffectKey,
   isToolEffectIdempotencyKey,
   legacyScopedToolEffectIdempotencyKey,
   stableJsonValue,
   toolEffectIdempotencyKey,
-} from "@rakazo/core/node/approval-effect-key";
+} from "@sapphire/core/node/approval-effect-key";
 import {
   appendEventInTransaction,
   createSpaceForMember,
@@ -110,8 +110,8 @@ import {
   retireModelCredential,
   SpaceLimitError,
   type ThreadEvents,
-} from "@rakazo/db";
-import { getLogger } from "@rakazo/logging";
+} from "@sapphire/db";
+import { getLogger } from "@sapphire/logging";
 import { parse as parseShellCommand } from "shell-quote";
 import {
   connectAgent,

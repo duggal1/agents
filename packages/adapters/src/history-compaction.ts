@@ -1,9 +1,9 @@
-import type { AgentRunRequest, AgentRuntime, JobPublisher } from "@rakazo/adapter-kit";
-import { historyCompactJob } from "@rakazo/adapter-kit";
-import type { MessageBlock } from "@rakazo/contracts";
-import { blocksToAgentHistoryText } from "@rakazo/core";
-import type { PrismaClient } from "@rakazo/db";
-import { getLogger, unwrapJobPayload } from "@rakazo/logging";
+import type { AgentRunRequest, AgentRuntime, JobPublisher } from "@sapphire/adapter-kit";
+import { historyCompactJob } from "@sapphire/adapter-kit";
+import type { MessageBlock } from "@sapphire/contracts";
+import { blocksToAgentHistoryText } from "@sapphire/core";
+import type { PrismaClient } from "@sapphire/db";
+import { getLogger, unwrapJobPayload } from "@sapphire/logging";
 import { formatCurrentTimeInstruction } from "./current-time.js";
 import { resolveDeploymentModel } from "./deployment-model.js";
 import type {

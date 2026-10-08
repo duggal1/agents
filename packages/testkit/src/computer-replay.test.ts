@@ -1,4 +1,4 @@
-import { FakeSandboxProvider } from "@rakazo/adapters";
+import { FakeSandboxProvider } from "@sapphire/adapters";
 import { describe, expect, it } from "vitest";
 import { computerReplayContext, runComputerReplay } from "./computer-replay.js";
 import {

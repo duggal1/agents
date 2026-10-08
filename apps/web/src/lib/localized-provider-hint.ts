@@ -1,5 +1,5 @@
 import { t } from "@lingui/core/macro";
-import type { ModelCatalogEntry } from "@rakazo/contracts";
+import type { ModelCatalogEntry } from "@sapphire/contracts";
 
 /** Localize known provider auth hint fallbacks; pass through catalog `authHint` as-is. */
 export function localizedProviderHint(entry: ModelCatalogEntry): string {

@@ -1,4 +1,4 @@
-import { LuxeMotionProvider } from "@rakazo/ui-web";
+import { LuxeMotionProvider } from "@sapphire/ui-web";
 import { StrictMode, useEffect, useLayoutEffect } from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";

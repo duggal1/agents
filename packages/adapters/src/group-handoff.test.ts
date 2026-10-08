@@ -1,4 +1,4 @@
-import type { PrismaClient } from "@rakazo/db";
+import type { PrismaClient } from "@sapphire/db";
 import { describe, expect, it, vi } from "vitest";
 import { handoffToGroupBot } from "./group-handoff.js";
 

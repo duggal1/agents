@@ -28,12 +28,12 @@
 - Use top-level `import type`, never inline type imports. Reserve dynamic `import()` for necessary deferred loading.
 - Keep code simple: reuse existing primitives and one source of truth, remove duplication and unused flexibility, and avoid speculative abstractions. Add an interface when it protects a real external or platform boundary, not for its own sake.
 - Treat auth, secret handling, sandbox boundaries, host commands, and integrations as security-sensitive. Keep tests deterministic and offline by default.
-- The desktop Playwright suite (`pnpm --filter @rakazo/desktop test:e2e`) opens real Electron windows and steals focus on macOS. Do not run it on a maintainer's machine as routine verification; run the unit tests locally and let CI's virtual-display job run the e2e on push.
+- The desktop Playwright suite (`pnpm --filter @sapphire/desktop test:e2e`) opens real Electron windows and steals focus on macOS. Do not run it on a maintainer's machine as routine verification; run the unit tests locally and let CI's virtual-display job run the e2e on push.
 - After creating a pull request, stay with it until CI and automated review bots have finished; passing checks alone do not mean the review is complete. Follow `.agents/skills/pr-watch/SKILL.md`: run its `pr-digest --watch` helper as a single backgrounded call that blocks until the checks on the current head commit are terminal, then act on the verdict it prints. Do not poll in the foreground on a timer, which mostly buys repeated snapshots of an unchanged PR and dies at the tool timeout. Address every actionable issue, push the fixes, and repeat until no actionable feedback remains. Do not merge while review bots are still pending or review issues remain unresolved.
 - PR descriptions say why the change exists, what changed, and how it was tested. Write Why as the product reason (what was wrong and what this changes); never "Elie wants" or a third-person briefing of a named person; the maintainer is the author.
 - Commit messages, PR descriptions, issues, and review replies are public too. Describe test results in words instead of pasting tool output, and never include anything that identifies a person, machine, or account: local paths, usernames, hostnames, signing identities, legal entity names, Apple Team IDs, API key IDs, issuer or tenant IDs, account emails, or the accounts, machines, and files that secret values came from. Naming the secrets a workflow reads is fine; use placeholders when a value must be shown.
 - For UI changes, link the CI E2E screenshot that shows the change on the PR; add the web test that opens that screen if it is missing. For native-only mobile UI that CI cannot capture, say so in the PR instead of linking an unrelated web screenshot.
-- UI system. Colors live in `@rakazo/ui-tokens` as semantic tokens (background, card, muted, border, primary, destructive, ...) with one TypeScript source that generates `tokens.css`; never hardcode a product hex or use `[var(--…)]` arbitrary values. Web and Electron use shadcn/ui on Base UI, vendored into `packages/ui-web` via `pnpm exec shadcn add` from the official registry only (third-party registries are a supply-chain risk); reuse those components before writing chrome by hand, and reuse `apps/web/src/components/ai/` for AI moments (loading, shimmer, success). The app is monochrome: primary is ink, status colors are destructive/success/warning, bots carry the only identity color. Mobile is native-first: Expo Router, Expo UI, native sheets, menus, alerts and pickers wherever one exists; custom surfaces (thread, composer, avatars, cards) use plain StyleSheet with the shared tokens through `apps/mobile/lib/appearance.ts`, and system chrome stays PlatformColor via `lib/native.ts`. Mobile may diverge from web when the native pattern is better.
+- UI system. Colors live in `@sapphire/ui-tokens` as semantic tokens (background, card, muted, border, primary, destructive, ...) with one TypeScript source that generates `tokens.css`; never hardcode a product hex or use `[var(--…)]` arbitrary values. Web and Electron use shadcn/ui on Base UI, vendored into `packages/ui-web` via `pnpm exec shadcn add` from the official registry only (third-party registries are a supply-chain risk); reuse those components before writing chrome by hand, and reuse `apps/web/src/components/ai/` for AI moments (loading, shimmer, success). The app is monochrome: primary is ink, status colors are destructive/success/warning, bots carry the only identity color. Mobile is native-first: Expo Router, Expo UI, native sheets, menus, alerts and pickers wherever one exists; custom surfaces (thread, composer, avatars, cards) use plain StyleSheet with the shared tokens through `apps/mobile/lib/appearance.ts`, and system chrome stays PlatformColor via `lib/native.ts`. Mobile may diverge from web when the native pattern is better.
 
 ---
 
@@ -409,7 +409,7 @@ Tests: 16 colocated `src/*.test.ts` suites mirror modules above (contents UNVERI
 
 Public interfaces: `rakazoDesktop` bridge (window chrome, OAuth capture, updater state), `rakazoSetup` bridge (wizard-only), `/.well-known/rakazo-desktop-stack` token-gated probe, `probeServer` via `${url}/rpc/health`.
 
-Gotchas: only `@rakazo/contracts` + `@rakazo/ui-tokens` are shared-package deps — desktop is a shell, not a reimplementation; setup IPC refuses non-setup senders and app bridge refuses non-app senders; `0600` setup secrets; macOS specifics in §2.
+Gotchas: only `@sapphire/contracts` + `@sapphire/ui-tokens` are shared-package deps — desktop is a shell, not a reimplementation; setup IPC refuses non-setup senders and app bridge refuses non-app senders; `0600` setup secrets; macOS specifics in §2.
 
 ## 7. apps/mobile — Expo native app (iOS + Android)
 
@@ -617,7 +617,7 @@ Purpose: background execution. Builds executor, secret store, sandbox/MCP/messag
 
 Job types consumed (from `adapter-kit`): `runContinueJob`, `routineWakeupJob`, `messagingDeliverJob`, `skillTeachingExpireJob`, `computerControlExpireJob`, `scheduleComputerSleep`, `runJobKey` cancels.
 
-Gotchas: worker declares no `@rakazo/auth` or `@rakazo/contracts` dependency; both processes must agree on deployment model/provider/key; reconciler repairs missed wakes; `pollInboundMessages` stays false in worker.
+Gotchas: worker declares no `@sapphire/auth` or `@sapphire/contracts` dependency; both processes must agree on deployment model/provider/key; reconciler repairs missed wakes; `pollInboundMessages` stays false in worker.
 
 ## 10. packages/contracts — API shapes source of truth
 
@@ -888,7 +888,7 @@ Gotchas: only inline `data:` rasters render as images; remote images degrade to 
 
 ## 15. packages/adapter-kit — neutral contracts, no vendors
 
-Purpose: provider-neutral interfaces every adapter implements and every consumer codes against. Depends only on `@rakazo/contracts` + zod. Vendors live in `packages/adapters` and composition roots only.
+Purpose: provider-neutral interfaces every adapter implements and every consumer codes against. Depends only on `@sapphire/contracts` + zod. Vendors live in `packages/adapters` and composition roots only.
 
 | File | Summary |
 |---|---|

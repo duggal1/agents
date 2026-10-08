@@ -1,9 +1,9 @@
-import type * as db from "@rakazo/db";
+import type * as db from "@sapphire/db";
 import { describe, expect, it, vi } from "vitest";
 import { chooseFocus, markAppConnected } from "./onboarding.js";
 
 const posted = vi.hoisted(() => [] as Array<{ blocks: unknown[] }>);
-vi.mock("@rakazo/db", async (original) => ({
+vi.mock("@sapphire/db", async (original) => ({
   ...(await original<typeof db>()),
   createThreadMessageInTransaction: vi.fn(async (_tx, input) => {
     posted.push(input);

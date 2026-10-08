@@ -1,5 +1,5 @@
 import { Trans } from "@lingui/react/macro";
-import { RakazoMark } from "@rakazo/ui-web";
+import { RakazoMark } from "@sapphire/ui-web";
 import { useNavigate } from "react-router-dom";
 import { WindowChrome } from "./WindowChrome";
 

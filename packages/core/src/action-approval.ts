@@ -1,4 +1,4 @@
-import type { ActionApprovalRule as StoredActionApprovalRule } from "@rakazo/contracts";
+import type { ActionApprovalRule as StoredActionApprovalRule } from "@sapphire/contracts";
 
 const APPROVAL_EXEMPT_TOOLS = new Set([
   "computer_observe",

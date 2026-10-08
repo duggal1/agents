@@ -8,7 +8,7 @@ import {
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { useLingui } from "@lingui/react/macro";
-import { BotAvatar, Button, cn } from "@rakazo/ui-web";
+import { BotAvatar, Button, cn } from "@sapphire/ui-web";
 import { useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { endCall, toggleMute, toggleTranscript, useCallSession } from "../../lib/call-session";

@@ -5,7 +5,7 @@ import type {
   ConnectorEvent,
   ConnectorProvider,
   ConnectorTool,
-} from "@rakazo/adapter-kit";
+} from "@sapphire/adapter-kit";
 
 export interface DestinationRecord {
   id: string;

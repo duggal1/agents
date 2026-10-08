@@ -1,5 +1,5 @@
 import { isIP } from "node:net";
-import { OPENAI_COMPATIBLE_PROVIDER_ID } from "@rakazo/contracts";
+import { OPENAI_COMPATIBLE_PROVIDER_ID } from "@sapphire/contracts";
 import { isCloudMetadataAddress, isLinkLocalAddress, isPrivateAddress } from "./network-address.js";
 
 export { OPENAI_COMPATIBLE_PROVIDER_ID };

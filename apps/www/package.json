@@ -1,5 +1,5 @@
 {
-  "name": "@rakazo/www",
+  "name": "@sapphire/www",
   "version": "0.1.0",
   "private": true,
   "license": "Apache-2.0",
@@ -14,8 +14,8 @@
   "dependencies": {
     "@astrojs/react": "6.0.5",
     "@astrojs/sitemap": "3.7.4",
-    "@rakazo/core": "workspace:*",
-    "@rakazo/ui-web": "workspace:*",
+    "@sapphire/core": "workspace:*",
+    "@sapphire/ui-web": "workspace:*",
     "@vercel/functions": "3.9.7",
     "astro": "7.3.2",
     "posthog-js": "1.430.1",

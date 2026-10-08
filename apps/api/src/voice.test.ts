@@ -1,6 +1,6 @@
-import * as adapters from "@rakazo/adapters";
-import type { Actor } from "@rakazo/contracts";
-import type { PrismaClient } from "@rakazo/db";
+import * as adapters from "@sapphire/adapters";
+import type { Actor } from "@sapphire/contracts";
+import type { PrismaClient } from "@sapphire/db";
 import { Hono } from "hono";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {

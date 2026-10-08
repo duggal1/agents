@@ -12,7 +12,7 @@ import type {
   PageBrowserCommand,
   PageBrowserResult,
   SandboxProvider,
-} from "@rakazo/adapter-kit";
+} from "@sapphire/adapter-kit";
 import { FakeBrowserProvider, type FakeBrowserProviderOptions } from "./fake-browser.js";
 
 const DETACHED_MESSAGE =

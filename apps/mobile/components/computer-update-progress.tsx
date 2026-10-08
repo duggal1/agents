@@ -1,5 +1,5 @@
-import { COMPUTER_UPDATE_STAGES, type ComputerUpdate } from "@rakazo/contracts";
-import { computerUpdateNeedsAttention, computerUpdateStages } from "@rakazo/core";
+import { COMPUTER_UPDATE_STAGES, type ComputerUpdate } from "@sapphire/contracts";
+import { computerUpdateNeedsAttention, computerUpdateStages } from "@sapphire/core";
 import { usePathname } from "expo-router";
 import { useEffect, useState, useSyncExternalStore } from "react";
 import { ActivityIndicator, Alert, Modal, Pressable, StyleSheet, Text, View } from "react-native";

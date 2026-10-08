@@ -10,8 +10,8 @@ import type {
   ModelCredential,
   Space,
   SpaceNavigation,
-} from "@rakazo/contracts";
-import type { ThreadHistory } from "@rakazo/core";
+} from "@sapphire/contracts";
+import type { ThreadHistory } from "@sapphire/core";
 import {
   aiConsentTarget,
   aiDataUsesForProcedure,
@@ -28,7 +28,7 @@ import {
   takeLiveMessage,
   updateCloudAgentMessages,
   upsertMessageById,
-} from "@rakazo/core";
+} from "@sapphire/core";
 import * as SecureStore from "expo-secure-store";
 import { promptAiConsent } from "./ai-consent";
 import { getCachedAvatarStyle, saveAvatarStyle } from "./avatar-style";

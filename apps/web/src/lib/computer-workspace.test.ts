@@ -1,4 +1,4 @@
-import type { ComputerCommand, ProductEvent } from "@rakazo/contracts";
+import type { ComputerCommand, ProductEvent } from "@sapphire/contracts";
 import { describe, expect, it } from "vitest";
 import {
   applyComputerCommandHistory,

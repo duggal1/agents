@@ -13,7 +13,7 @@ import {
 import net from "node:net";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import { encodeTerminalInput, encodeTerminalResize } from "@rakazo/contracts";
+import { encodeTerminalInput, encodeTerminalResize } from "@sapphire/contracts";
 import { afterEach, describe, expect, it } from "vitest";
 import { interactiveScreenCommand, screenPorts, startTerminalCommand } from "./desktop-runtime.js";
 import { TERMINAL_SERVER_PROGRAM } from "./terminal-server.js";

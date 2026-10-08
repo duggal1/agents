@@ -1,4 +1,4 @@
-import type { RealtimeFanout } from "@rakazo/adapter-kit";
+import type { RealtimeFanout } from "@sapphire/adapter-kit";
 import { Client, type Notification } from "pg";
 
 const POSTGRES_CHANNEL = "rakazo_events";

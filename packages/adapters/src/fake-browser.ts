@@ -8,7 +8,7 @@ import type {
   BrowserSnapshotRequest,
   BrowserSnapshotResult,
   ComputerRef,
-} from "@rakazo/adapter-kit";
+} from "@sapphire/adapter-kit";
 import { PageBrowserSessionStore, pageBrowserSessionKey } from "./page-browser-session.js";
 import { fetchSafeWebText } from "./web-ssrf.js";
 

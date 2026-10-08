@@ -1,6 +1,6 @@
 import { execFileSync } from "node:child_process";
 import { randomUUID } from "node:crypto";
-import { ensureScreenCommand } from "@rakazo/core/node/desktop-runtime";
+import { ensureScreenCommand } from "@sapphire/core/node/desktop-runtime";
 import { describe, expect, it } from "vitest";
 
 describe.skipIf(process.env.RUN_COMPUTER_REPLAY_DOCKER !== "1")(

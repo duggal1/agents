@@ -6,7 +6,7 @@ import type {
   OAuthCredential,
 } from "@earendil-works/pi-ai";
 import { builtinModels } from "@earendil-works/pi-ai/providers/all";
-import type { ModelCredentialFailedState, ModelCredentialRetireReason } from "@rakazo/adapter-kit";
+import type { ModelCredentialFailedState, ModelCredentialRetireReason } from "@sapphire/adapter-kit";
 import {
   MAX_MODEL_CONTEXT_WINDOW,
   MAX_MODEL_MAX_TOKENS,
@@ -14,9 +14,9 @@ import {
   type ModelOAuthSignInMode,
   type ThinkingLevel,
   ThinkingLevelSchema,
-} from "@rakazo/contracts";
-import type { PrismaClient } from "@rakazo/db";
-import { getLogger } from "@rakazo/logging";
+} from "@sapphire/contracts";
+import type { PrismaClient } from "@sapphire/db";
+import { getLogger } from "@sapphire/logging";
 import { createManualAnthropicOAuthLogin } from "./pi-anthropic-oauth.js";
 import type { EncryptedSecretStore } from "./secrets.js";
 

@@ -1,5 +1,5 @@
 import { Duplex, PassThrough, Readable, Writable } from "node:stream";
-import { resolveSupervisorToken } from "@rakazo/core";
+import { resolveSupervisorToken } from "@sapphire/core";
 import { beforeEach, expect, it, vi } from "vitest";
 
 const mock = vi.hoisted(() => ({ exec: vi.fn(), inspect: vi.fn(), stdin: [] as string[] }));

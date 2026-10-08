@@ -1,4 +1,4 @@
-import type { ThreadMessage } from "@rakazo/contracts";
+import type { ThreadMessage } from "@sapphire/contracts";
 
 const PEER_HISTORY_PAGE_TIMEOUT_MS = 15_000;
 const PEER_HISTORY_TOTAL_TIMEOUT_MS = 60_000;

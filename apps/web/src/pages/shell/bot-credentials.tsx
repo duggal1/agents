@@ -1,7 +1,7 @@
 import { Trans, useLingui } from "@lingui/react/macro";
-import type { BotSecretMetadata } from "@rakazo/contracts";
-import { BotSecretName, encodeLoginSecret } from "@rakazo/contracts";
-import { Button, Input, NativeSelect, NativeSelectOption } from "@rakazo/ui-web";
+import type { BotSecretMetadata } from "@sapphire/contracts";
+import { BotSecretName, encodeLoginSecret } from "@sapphire/contracts";
+import { Button, Input, NativeSelect, NativeSelectOption } from "@sapphire/ui-web";
 import { useEffect, useId, useState } from "react";
 import { rpc } from "../../lib/rpc";
 

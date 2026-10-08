@@ -1,5 +1,5 @@
 {
-  "name": "@rakazo/db",
+  "name": "@sapphire/db",
   "version": "0.1.0",
   "license": "Apache-2.0",
   "type": "module",
@@ -18,12 +18,12 @@
     "test": "vitest run --root ../.. packages/db/src"
   },
   "dependencies": {
-    "@rakazo/adapter-kit": "workspace:*",
+    "@sapphire/adapter-kit": "workspace:*",
     "@prisma/adapter-pg": "7.10.0",
     "@prisma/client": "7.10.0",
-    "@rakazo/contracts": "workspace:*",
-    "@rakazo/core": "workspace:*",
-    "@rakazo/logging": "workspace:*",
+    "@sapphire/contracts": "workspace:*",
+    "@sapphire/core": "workspace:*",
+    "@sapphire/logging": "workspace:*",
     "pg": "8.23.0",
     "dotenv": "17.4.2"
   },

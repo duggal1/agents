@@ -1,4 +1,4 @@
-import type { ModelCatalogEntry } from "@rakazo/contracts";
+import type { ModelCatalogEntry } from "@sapphire/contracts";
 import { describe, expect, it } from "vitest";
 import {
   clampCatalogThinkingLevel,

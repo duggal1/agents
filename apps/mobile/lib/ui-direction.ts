@@ -1,4 +1,4 @@
-import { textDirectionForLocale } from "@rakazo/core";
+import { textDirectionForLocale } from "@sapphire/core";
 import { reloadAppAsync } from "expo";
 import { I18nManager, Platform } from "react-native";
 

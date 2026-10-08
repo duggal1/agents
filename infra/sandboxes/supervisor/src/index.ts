@@ -10,11 +10,11 @@ import {
   boundedSandboxCommandTimeoutMs,
   readBoundedJsonResponse,
   resolveSupervisorToken,
-} from "@rakazo/core";
-import { loadRootEnv } from "@rakazo/core/node/load-root-env";
-import { SERVICE_NAMES } from "@rakazo/logging";
-import { createRootLogger } from "@rakazo/logging/axiom";
-import { requestLogging } from "@rakazo/logging/hono";
+} from "@sapphire/core";
+import { loadRootEnv } from "@sapphire/core/node/load-root-env";
+import { SERVICE_NAMES } from "@sapphire/logging";
+import { createRootLogger } from "@sapphire/logging/axiom";
+import { requestLogging } from "@sapphire/logging/hono";
 import Docker from "dockerode";
 import { Hono, type MiddlewareHandler } from "hono";
 import { bodyLimit } from "hono/body-limit";

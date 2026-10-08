@@ -1,6 +1,6 @@
 import { ORPCError } from "@orpc/server";
-import { type JobPublisher, runContinueJob, type SandboxProvider } from "@rakazo/adapter-kit";
-import { cancelComputerRunWork, screenLeaseIdForRun, toComputerRef } from "@rakazo/adapters";
+import { type JobPublisher, runContinueJob, type SandboxProvider } from "@sapphire/adapter-kit";
+import { cancelComputerRunWork, screenLeaseIdForRun, toComputerRef } from "@sapphire/adapters";
 import {
   type Actor,
   GROUP_MEMBER_MIN,
@@ -10,7 +10,7 @@ import {
   type MessageReaction,
   type RunStatus,
   type ThreadSnapshot,
-} from "@rakazo/contracts";
+} from "@sapphire/contracts";
 import {
   ACTIVE_RUN_STATUSES,
   callIdFromClientNonce,
@@ -19,8 +19,8 @@ import {
   projectMessages,
   resolveGroupTargetBotIds,
   runFailureError,
-} from "@rakazo/core";
-import { deriveMessageQuote } from "@rakazo/core/message-quote";
+} from "@sapphire/core";
+import { deriveMessageQuote } from "@sapphire/core/message-quote";
 import {
   answerWaitingRunWithTextInTransaction,
   appendEventInTransaction,
@@ -34,8 +34,8 @@ import {
   type PrismaClient,
   type ThreadEvents,
   touchGroupUpdatedAt,
-} from "@rakazo/db";
-import { getLogger } from "@rakazo/logging";
+} from "@sapphire/db";
+import { getLogger } from "@sapphire/logging";
 import {
   buildSendPrompt,
   buildUserMessageBlocks,

@@ -1,5 +1,5 @@
 import { Trans } from "@lingui/react/macro";
-import { Button, Field, FieldError, FieldLabel, Input, Toggle } from "@rakazo/ui-web";
+import { Button, Field, FieldError, FieldLabel, Input, Toggle } from "@sapphire/ui-web";
 import { useId, useState } from "react";
 import type { MemoryProviderSettingsFormProps } from "./registry";
 import type { SerenityEndpointFieldError } from "./serenity-settings";

@@ -1,5 +1,5 @@
-import { blurInLaunch, DURATION, luxe } from "@rakazo/ui-web";
-import StartMark from "@rakazo/ui-web/components/start";
+import { blurInLaunch, DURATION, luxe } from "@sapphire/ui-web";
+import StartMark from "@sapphire/ui-web/components/start";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { useEffect, useState } from "react";
 import { desktopBridge } from "../lib/desktop";

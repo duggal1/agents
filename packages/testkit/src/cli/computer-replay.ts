@@ -3,7 +3,7 @@ import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { loadRootEnv } from "@rakazo/core/node/load-root-env";
+import { loadRootEnv } from "@sapphire/core/node/load-root-env";
 
 /** Offline by default. Only explicit --live --record loads a model key for a manual capture. */
 async function main() {

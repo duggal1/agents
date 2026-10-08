@@ -1,4 +1,4 @@
-import type { AgentRunRequest, AgentRuntimeEvent } from "@rakazo/adapter-kit";
+import type { AgentRunRequest, AgentRuntimeEvent } from "@sapphire/adapter-kit";
 import { describe, expect, it } from "vitest";
 import {
   adaptOpencodeEvent,

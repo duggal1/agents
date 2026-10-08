@@ -2,7 +2,7 @@ import { execSync } from "node:child_process";
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import { loadRootEnv } from "@rakazo/core/node/load-root-env";
+import { loadRootEnv } from "@sapphire/core/node/load-root-env";
 import { PostgreSqlContainer, type StartedPostgreSqlContainer } from "@testcontainers/postgresql";
 
 async function main() {
@@ -41,8 +41,8 @@ async function main() {
       DATA_DIR: dataDir,
     };
     if (postgres) {
-      execSync("pnpm --filter @rakazo/db generate", { stdio: "inherit", env });
-      execSync("pnpm --filter @rakazo/db exec prisma migrate deploy", {
+      execSync("pnpm --filter @sapphire/db generate", { stdio: "inherit", env });
+      execSync("pnpm --filter @sapphire/db exec prisma migrate deploy", {
         stdio: "inherit",
         env,
         cwd: path.resolve("packages/db"),

@@ -74,7 +74,7 @@ jobs:
         timeout-minutes: 5
         # Skip --with-deps: GitHub ubuntu-latest already has Chromium's OS libraries,
         # and apt-get against azure.archive.ubuntu.com can stall until the job timeout.
-        run: pnpm --filter @rakazo/web exec playwright install chromium
+        run: pnpm --filter @sapphire/web exec playwright install chromium
       - name: Validate E2B credentials
         if: inputs.sandbox_provider == 'e2b'
         env:
@@ -103,7 +103,7 @@ jobs:
       - name: Run marketing homepage E2E
         id: www_playwright_tests
         if: always() && (steps.playwright_tests.outcome == 'success' || steps.playwright_tests.outcome == 'failure')
-        run: pnpm --filter @rakazo/www e2e
+        run: pnpm --filter @sapphire/www e2e
       - name: Record Playwright result
         if: always() && inputs.upload_artifacts
         env:

@@ -48,7 +48,7 @@ services:
     command:
       - bash
       - -lc
-      - pnpm --filter @rakazo/db exec prisma migrate deploy && pnpm --filter @rakazo/api start
+      - pnpm --filter @sapphire/db exec prisma migrate deploy && pnpm --filter @sapphire/api start
     init: true
     logging: *logging
     security_opt:
@@ -107,7 +107,7 @@ services:
       args:
         GIT_SHA: ${GIT_SHA:-}
     restart: unless-stopped
-    command: ["pnpm", "--filter", "@rakazo/worker", "start"]
+    command: ["pnpm", "--filter", "@sapphire/worker", "start"]
     init: true
     logging: *logging
     security_opt:
@@ -156,7 +156,7 @@ services:
       args:
         GIT_SHA: ${GIT_SHA:-}
     restart: unless-stopped
-    command: ["pnpm", "--filter", "@rakazo/web", "preview", "--host", "0.0.0.0", "--port", "5173"]
+    command: ["pnpm", "--filter", "@sapphire/web", "preview", "--host", "0.0.0.0", "--port", "5173"]
     init: true
     logging: *logging
     security_opt:

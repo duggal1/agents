@@ -7,8 +7,8 @@ import type {
   Bot,
   ExternalConversation,
   ExternalConversationPolicy,
-} from "@rakazo/contracts";
-import { Button } from "@rakazo/ui-web";
+} from "@sapphire/contracts";
+import { Button } from "@sapphire/ui-web";
 import { useMemo, useState } from "react";
 import { SuccessPop } from "../components/ai/primitives";
 

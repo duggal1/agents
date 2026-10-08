@@ -1,6 +1,6 @@
-import type { JobPublisher, JobWorkerHost } from "@rakazo/adapter-kit";
-import { ComposioConnector, IntegrationProviderSettings } from "@rakazo/adapters";
-import { loadRootEnv } from "@rakazo/core/node/load-root-env";
+import type { JobPublisher, JobWorkerHost } from "@sapphire/adapter-kit";
+import { ComposioConnector, IntegrationProviderSettings } from "@sapphire/adapters";
+import { loadRootEnv } from "@sapphire/core/node/load-root-env";
 
 loadRootEnv();
 
@@ -46,17 +46,17 @@ import {
   ScriptedAgentRuntime,
   SpaceMemoryProviderResolver,
   sandboxProviderOptionsFromEnv,
-} from "@rakazo/adapters";
-import { resolveEncryptionKey, resolveSupervisorToken } from "@rakazo/core";
+} from "@sapphire/adapters";
+import { resolveEncryptionKey, resolveSupervisorToken } from "@sapphire/core";
 import {
   createDb,
   createThreadEvents,
   isTooManyDatabaseConnections,
   parsePositiveInteger,
-} from "@rakazo/db";
-import { SERVICE_NAMES } from "@rakazo/logging";
-import { createRootLogger } from "@rakazo/logging/axiom";
-import { MarkdownMemoryStore } from "@rakazo/memory";
+} from "@sapphire/db";
+import { SERVICE_NAMES } from "@sapphire/logging";
+import { createRootLogger } from "@sapphire/logging/axiom";
+import { MarkdownMemoryStore } from "@sapphire/memory";
 
 const logger = createRootLogger(SERVICE_NAMES.worker);
 

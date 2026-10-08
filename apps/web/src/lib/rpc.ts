@@ -1,8 +1,8 @@
 import { createORPCClient } from "@orpc/client";
 import { RPCLink } from "@orpc/client/fetch";
 import type { ContractRouterClient } from "@orpc/contract";
-import type { AppContract } from "@rakazo/contracts";
-import { LOCAL_SETTINGS_PAGE, LOCAL_SETTINGS_RPC } from "@rakazo/contracts";
+import type { AppContract } from "@sapphire/contracts";
+import { LOCAL_SETTINGS_PAGE, LOCAL_SETTINGS_RPC } from "@sapphire/contracts";
 import { desktopBridge } from "./desktop";
 
 const SPACE_STORAGE_KEY = "rakazo:space-id";

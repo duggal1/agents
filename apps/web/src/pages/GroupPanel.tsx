@@ -1,8 +1,8 @@
 import { CheckIcon as Check, XIcon as X } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { Trans, useLingui } from "@lingui/react/macro";
-import { type Bot, GROUP_MEMBER_MAX, GROUP_MEMBER_MIN, type Group } from "@rakazo/contracts";
-import { BotAvatar, Button, Input } from "@rakazo/ui-web";
+import { type Bot, GROUP_MEMBER_MAX, GROUP_MEMBER_MIN, type Group } from "@sapphire/contracts";
+import { BotAvatar, Button, Input } from "@sapphire/ui-web";
 import { useId, useMemo, useState } from "react";
 
 function validSelection(name: string, selected: readonly string[]) {

@@ -1,4 +1,4 @@
-import type { BackgroundJob, JobPublisher } from "@rakazo/adapter-kit";
+import type { BackgroundJob, JobPublisher } from "@sapphire/adapter-kit";
 import { describe, expect, it, vi } from "vitest";
 import { deferFutureRoutine } from "./executor.js";
 

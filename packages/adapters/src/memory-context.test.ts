@@ -1,4 +1,4 @@
-import type { AdapterContext, MemorySnapshot, MemoryStore } from "@rakazo/adapter-kit";
+import type { AdapterContext, MemorySnapshot, MemoryStore } from "@sapphire/adapter-kit";
 import { describe, expect, it, vi } from "vitest";
 import { loadAgentMemoryContext } from "./memory-context.js";
 

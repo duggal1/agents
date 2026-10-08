@@ -99,7 +99,7 @@ jobs:
       - name: Generate Android project
         if: steps.screenshot-apk.outputs.cache-hit != 'true'
         run: |
-          pnpm --filter @rakazo/mobile exec expo prebuild --platform android --no-install
+          pnpm --filter @sapphire/mobile exec expo prebuild --platform android --no-install
           sed -i 's/<application /<application android:usesCleartextTraffic="true" /' \
             apps/mobile/android/app/src/main/AndroidManifest.xml
           sed -i 's/MaxMetaspaceSize=512m/MaxMetaspaceSize=1g/' \

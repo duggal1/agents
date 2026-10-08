@@ -4,7 +4,7 @@ import { access, lstat, open, readFile, rename, unlink } from "node:fs/promises"
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { serve } from "@hono/node-server";
-import type { ServerUpdateRun } from "@rakazo/contracts";
+import type { ServerUpdateRun } from "@sapphire/contracts";
 import {
   type ComposeUpdateStep,
   chooseUpdateStrategy,
@@ -32,10 +32,10 @@ import {
   selectLatestRelease,
   upsertEnvAssignments,
   validateUpdateRequest,
-} from "@rakazo/core";
-import { type Logger, SERVICE_NAMES } from "@rakazo/logging";
-import { createRootLogger } from "@rakazo/logging/axiom";
-import { requestLogging } from "@rakazo/logging/hono";
+} from "@sapphire/core";
+import { type Logger, SERVICE_NAMES } from "@sapphire/logging";
+import { createRootLogger } from "@sapphire/logging/axiom";
+import { requestLogging } from "@sapphire/logging/hono";
 import { type Context, Hono } from "hono";
 import {
   readTagState,

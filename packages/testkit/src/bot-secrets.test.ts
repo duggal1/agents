@@ -1,9 +1,9 @@
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import type { AgentRuntimeEvent } from "@rakazo/adapter-kit";
-import { ScriptedAgentRuntime } from "@rakazo/adapters";
-import { answerRunInput } from "@rakazo/db";
+import type { AgentRuntimeEvent } from "@sapphire/adapter-kit";
+import { ScriptedAgentRuntime } from "@sapphire/adapters";
+import { answerRunInput } from "@sapphire/db";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import type { createApp } from "../../../apps/api/src/app.ts";
 import { discardBotIntroFromCreate } from "./discard-bot-intro.js";

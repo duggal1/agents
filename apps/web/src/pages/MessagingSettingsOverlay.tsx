@@ -7,7 +7,7 @@ import type {
   MessagingAgentConnection,
   MessagingChannelMembership,
   MessagingStatus,
-} from "@rakazo/contracts";
+} from "@sapphire/contracts";
 import {
   Button,
   Dialog,
@@ -16,7 +16,7 @@ import {
   DialogTitle,
   NativeSelect,
   NativeSelectOption,
-} from "@rakazo/ui-web";
+} from "@sapphire/ui-web";
 import { useEffect, useState } from "react";
 
 import { providerLabel } from "../lib/messaging";

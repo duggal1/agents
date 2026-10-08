@@ -1,4 +1,4 @@
-import type { AgentToolCompletion, ConnectorTool } from "@rakazo/adapter-kit";
+import type { AgentToolCompletion, ConnectorTool } from "@sapphire/adapter-kit";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const fakeAgentState = vi.hoisted(() => ({

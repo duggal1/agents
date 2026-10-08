@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 import { constants } from "node:fs";
 import { lstat, mkdir, open, rename, rm } from "node:fs/promises";
 import path from "node:path";
-import type { DesktopSetup } from "@rakazo/contracts";
+import type { DesktopSetup } from "@sapphire/contracts";
 import { parseStoredSetup, SETUP_FILE_NAME, serializeSetup } from "./setup-config.js";
 
 const O_NOFOLLOW = constants.O_NOFOLLOW ?? 0;

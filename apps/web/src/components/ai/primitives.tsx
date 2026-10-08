@@ -1,4 +1,4 @@
-import { cn } from "@rakazo/ui-web";
+import { cn } from "@sapphire/ui-web";
 import type { CSSProperties } from "react";
 import { useEffect, useState } from "react";
 import "./beautiful-ui.css";

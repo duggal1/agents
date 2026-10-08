@@ -1,4 +1,4 @@
-import type { AvatarStyle } from "@rakazo/contracts";
+import type { AvatarStyle } from "@sapphire/contracts";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState, useSyncExternalStore } from "react";
 import {

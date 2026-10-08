@@ -1,16 +1,16 @@
-import type { JobPublisher } from "@rakazo/adapter-kit";
-import { messagingDeliverJob, runContinueJob } from "@rakazo/adapter-kit";
-import type { MessageBlock } from "@rakazo/contracts";
+import type { JobPublisher } from "@sapphire/adapter-kit";
+import { messagingDeliverJob, runContinueJob } from "@sapphire/adapter-kit";
+import type { MessageBlock } from "@sapphire/contracts";
 import {
   botMessageHopExhausted,
   buildBotMessageWakePrompt,
   clampBotMessage,
   nextBotMessageHop,
   sanitizeMessagingLabel,
-} from "@rakazo/core";
-import type { PrismaClient, ThreadEvents } from "@rakazo/db";
-import { appendEventInTransaction, createThreadMessageInTransaction } from "@rakazo/db";
-import { getLogger } from "@rakazo/logging";
+} from "@sapphire/core";
+import type { PrismaClient, ThreadEvents } from "@sapphire/db";
+import { appendEventInTransaction, createThreadMessageInTransaction } from "@sapphire/db";
+import { getLogger } from "@sapphire/logging";
 import { currentBotMessageHop } from "./bot-messages.js";
 
 export interface AgentConnectionDeps {

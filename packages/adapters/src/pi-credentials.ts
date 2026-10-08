@@ -9,8 +9,8 @@ import type {
   AgentModelOAuthCredential,
   ModelCredentialFailedState,
   ModelCredentialRetireReason,
-} from "@rakazo/adapter-kit";
-import { getLogger } from "@rakazo/logging";
+} from "@sapphire/adapter-kit";
+import { getLogger } from "@sapphire/logging";
 import {
   OAUTH_ACCOUNT_CHANGED_ERROR,
   oauthCredentialAccountId,

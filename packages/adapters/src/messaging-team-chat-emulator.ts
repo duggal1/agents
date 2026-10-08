@@ -8,7 +8,7 @@ import type {
   MessagingSendRequest,
   MessagingSendResult,
   MessagingSurface,
-} from "@rakazo/adapter-kit";
+} from "@sapphire/adapter-kit";
 import { type MessagingPlatform, providerOfThreadId } from "./chat-sdk-surface.js";
 
 export interface TeamChatEmulatorInbound {

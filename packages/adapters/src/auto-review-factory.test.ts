@@ -1,4 +1,4 @@
-import type { AutoReviewProvider } from "@rakazo/adapter-kit";
+import type { AutoReviewProvider } from "@sapphire/adapter-kit";
 import { describe, expect, it } from "vitest";
 import { LlmAutoReviewProvider } from "./auto-review.js";
 import { createAutoReviewProvider } from "./auto-review-factory.js";

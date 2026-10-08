@@ -1,4 +1,4 @@
-import type { AdapterContext, ComputerRef } from "@rakazo/adapter-kit";
+import type { AdapterContext, ComputerRef } from "@sapphire/adapter-kit";
 import { describe, expect, it } from "vitest";
 import { BrowserStoppedReleaseError } from "./computer-screens.js";
 import { LinuxDesktop } from "./linux-desktop.js";

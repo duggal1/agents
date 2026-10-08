@@ -1,4 +1,4 @@
-import { createComputerUpdates } from "@rakazo/core";
+import { createComputerUpdates } from "@sapphire/core";
 import { rpc } from "./rpc";
 export const computerUpdates = createComputerUpdates({
   list: () => rpc.computer.updates(),

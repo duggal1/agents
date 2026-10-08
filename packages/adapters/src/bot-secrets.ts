@@ -1,5 +1,5 @@
 import { randomBytes } from "node:crypto";
-import type { BotSecretDestination } from "@rakazo/contracts";
+import type { BotSecretDestination } from "@sapphire/contracts";
 import {
   BotSecretAuth,
   BotSecretName,
@@ -7,8 +7,8 @@ import {
   decodeLoginSecret,
   isPrivateNetworkHost,
   SecretHttpRequest,
-} from "@rakazo/contracts";
-import type { Prisma, PrismaClient } from "@rakazo/db";
+} from "@sapphire/contracts";
+import type { Prisma, PrismaClient } from "@sapphire/db";
 import { combineSignals, redactConnectorPayload } from "./connector-safety.js";
 import type { RemoteTransportDependencies } from "./remote-mcp.js";
 import { createPrivateNetworkFetch, createSafeRemoteFetch } from "./remote-mcp.js";

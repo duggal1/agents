@@ -83,7 +83,7 @@ vi.mock("react-native", async () => {
   };
 });
 
-import { darkTokens } from "@rakazo/ui-tokens";
+import { darkTokens } from "@sapphire/ui-tokens";
 import { act } from "react";
 import { createRoot } from "react-dom/client";
 import { Pressable } from "react-native";

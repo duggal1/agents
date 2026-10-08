@@ -1,4 +1,4 @@
-import type { ConnectionCatalogItem, SandboxKind } from "@rakazo/contracts";
+import type { ConnectionCatalogItem, SandboxKind } from "@sapphire/contracts";
 
 export interface AdapterContext {
   operationId: string;

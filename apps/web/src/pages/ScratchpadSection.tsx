@@ -1,8 +1,8 @@
 import { XIcon as X } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { Trans, useLingui } from "@lingui/react/macro";
-import type { ScratchpadItem } from "@rakazo/contracts";
-import { Button, Checkbox, Input } from "@rakazo/ui-web";
+import type { ScratchpadItem } from "@sapphire/contracts";
+import { Button, Checkbox, Input } from "@sapphire/ui-web";
 import { useEffect, useRef, useState } from "react";
 
 import { rpc } from "../lib/rpc";

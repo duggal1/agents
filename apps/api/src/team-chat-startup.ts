@@ -1,4 +1,4 @@
-import type { MessagingInboundMessage } from "@rakazo/adapter-kit";
+import type { MessagingInboundMessage } from "@sapphire/adapter-kit";
 
 /** Cap buffered TeamChat events while the bridge is still starting. */
 export const PENDING_TEAM_CHAT_LIMIT = 100;

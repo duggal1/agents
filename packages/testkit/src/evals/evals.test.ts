@@ -1,4 +1,4 @@
-import type { AdapterContext, ConnectorCall } from "@rakazo/adapter-kit";
+import type { AdapterContext, ConnectorCall } from "@sapphire/adapter-kit";
 import { describe, expect, it } from "vitest";
 import { EVAL_CASES, type Evidence } from "./cases.js";
 import { emptyTrial, redact, summarize, validateControls } from "./report.js";

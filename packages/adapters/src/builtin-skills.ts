@@ -1,4 +1,4 @@
-import { buildSkillMd } from "@rakazo/core";
+import { buildSkillMd } from "@sapphire/core";
 
 /**
  * Built-in Agent Skills (SKILL.md recipes) available to every user.

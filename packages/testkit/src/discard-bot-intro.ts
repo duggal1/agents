@@ -1,7 +1,7 @@
-import { runJobKey } from "@rakazo/adapter-kit";
-import type { RunStatus } from "@rakazo/contracts";
-import { isActive } from "@rakazo/core";
-import type { PrismaClient } from "@rakazo/db";
+import { runJobKey } from "@sapphire/adapter-kit";
+import type { RunStatus } from "@sapphire/contracts";
+import { isActive } from "@sapphire/core";
+import type { PrismaClient } from "@sapphire/db";
 
 type App = { request: (input: string, init?: RequestInit) => Promise<Response> };
 

@@ -1,5 +1,5 @@
 import { i18n } from "@lingui/core";
-import type { ThinkingLevel } from "@rakazo/contracts";
+import type { ThinkingLevel } from "@sapphire/contracts";
 
 export function thinkingLevelLabel(level: ThinkingLevel) {
   if (level === "xhigh") return i18n._({ id: "Extra high", message: "Extra high" });

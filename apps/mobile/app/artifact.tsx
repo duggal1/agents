@@ -1,6 +1,6 @@
-import { ChatMarkdown } from "@rakazo/chat-ui/native";
-import type { ArtifactVersion } from "@rakazo/contracts";
-import { isAttachmentImageMimeType } from "@rakazo/contracts";
+import { ChatMarkdown } from "@sapphire/chat-ui/native";
+import type { ArtifactVersion } from "@sapphire/contracts";
+import { isAttachmentImageMimeType } from "@sapphire/contracts";
 import type { File } from "expo-file-system";
 import { useLocalSearchParams, useNavigation, useRouter } from "expo-router";
 import { useCallback, useEffect, useLayoutEffect, useState } from "react";

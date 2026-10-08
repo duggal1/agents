@@ -1,8 +1,8 @@
 import { spawnSync } from "node:child_process";
 import { createServer } from "node:net";
 import path from "node:path";
-import type { RunsListOutput, ThreadSnapshot } from "@rakazo/contracts";
-import { isTerminal } from "@rakazo/core";
+import type { RunsListOutput, ThreadSnapshot } from "@sapphire/contracts";
+import { isTerminal } from "@sapphire/core";
 import { computerNetworkNameFor } from "../../../../infra/sandboxes/supervisor/src/computer-spec.js";
 
 const composeFile = path.resolve("infra/compose/docker-compose.topology.yml");

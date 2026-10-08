@@ -1,4 +1,4 @@
-import type { PrismaClient } from "@rakazo/db";
+import type { PrismaClient } from "@sapphire/db";
 import { describe, expect, it, vi } from "vitest";
 import { listAvailablePiCatalog } from "./pi-catalog-availability.js";
 import type { CodexCatalogModel, CodexCatalogSpaceAuth } from "./pi-codex-catalog.js";

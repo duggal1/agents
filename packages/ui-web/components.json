@@ -13,11 +13,11 @@
   "iconLibrary": "hugeicons",
   "rtl": false,
   "aliases": {
-    "components": "@rakazo/ui-web/components",
-    "utils": "@rakazo/ui-web/lib/utils",
-    "ui": "@rakazo/ui-web/components/ui",
-    "lib": "@rakazo/ui-web/lib",
-    "hooks": "@rakazo/ui-web/hooks"
+    "components": "@sapphire/ui-web/components",
+    "utils": "@sapphire/ui-web/lib/utils",
+    "ui": "@sapphire/ui-web/components/ui",
+    "lib": "@sapphire/ui-web/lib",
+    "hooks": "@sapphire/ui-web/hooks"
   },
   "menuColor": "default",
   "menuAccent": "subtle",

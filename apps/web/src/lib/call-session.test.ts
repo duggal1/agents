@@ -1,10 +1,10 @@
-import type { ProductEvent, ThreadMessage, ThreadSnapshot } from "@rakazo/contracts";
+import type { ProductEvent, ThreadMessage, ThreadSnapshot } from "@sapphire/contracts";
 import {
   callIdFromClientNonce,
   groupVoiceChats,
   INTERIM_BARGE_IN_MS,
   runThreadSubscription,
-} from "@rakazo/core";
+} from "@sapphire/core";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ECHO_GUARD_MS, endCall, getSnapshot, startCall, toggleMute } from "./call-session";
 import { dictation } from "./dictation.js";
@@ -17,8 +17,8 @@ vi.mock("@lingui/core/macro", () => ({
   t: (strings: TemplateStringsArray, ...values: unknown[]) => String.raw(strings, ...values),
 }));
 
-vi.mock("@rakazo/core", async (importOriginal) => ({
-  ...(await importOriginal<typeof import("@rakazo/core")>()),
+vi.mock("@sapphire/core", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@sapphire/core")>()),
   runThreadSubscription: vi.fn(async () => undefined),
 }));
 

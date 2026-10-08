@@ -1,4 +1,4 @@
-import { DEFAULT_MODEL_MAX_TOKENS } from "@rakazo/contracts";
+import { DEFAULT_MODEL_MAX_TOKENS } from "@sapphire/contracts";
 
 /** Hung completions must fail before the typical 5-minute run lease. */
 export const MODEL_STREAM_TIMEOUT_MS = 120_000;

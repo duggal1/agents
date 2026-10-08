@@ -1,8 +1,8 @@
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import { approvalEffectKey } from "@rakazo/core/node/approval-effect-key";
-import { createThreadEvents, createThreadMessage, loadRunHistoryMessages } from "@rakazo/db";
+import { approvalEffectKey } from "@sapphire/core/node/approval-effect-key";
+import { createThreadEvents, createThreadMessage, loadRunHistoryMessages } from "@sapphire/db";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import type { createApp } from "../../../apps/api/src/app.ts";
 import { discardBotIntroFromCreate } from "./discard-bot-intro.js";

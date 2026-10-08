@@ -1,5 +1,5 @@
-import type { ComputerUpdate } from "@rakazo/contracts";
-import { createComputerUpdates } from "@rakazo/core";
+import type { ComputerUpdate } from "@sapphire/contracts";
+import { createComputerUpdates } from "@sapphire/core";
 import { rpc } from "./api";
 export const computerUpdates = createComputerUpdates({
   list: () => rpc<ComputerUpdate[]>("computer/updates"),

@@ -1,4 +1,4 @@
-import { resolvePersonaColorDef, shippedBotAvatarShapePath } from "@rakazo/core";
+import { resolvePersonaColorDef, shippedBotAvatarShapePath } from "@sapphire/core";
 import { describe, expect, it } from "vitest";
 import { mobileBotAvatarPresentation } from "./bot-avatar.js";
 

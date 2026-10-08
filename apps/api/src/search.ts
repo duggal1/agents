@@ -1,6 +1,6 @@
-import type { Actor, MessageBlock, SearchHit } from "@rakazo/contracts";
-import { extractLinksFromText, matchesSearchQuery, snippetAroundMatch } from "@rakazo/core";
-import { Prisma, type PrismaClient } from "@rakazo/db";
+import type { Actor, MessageBlock, SearchHit } from "@sapphire/contracts";
+import { extractLinksFromText, matchesSearchQuery, snippetAroundMatch } from "@sapphire/core";
+import { Prisma, type PrismaClient } from "@sapphire/db";
 
 const SEARCH_LIMIT = 25;
 /** Cap name matches so content hits (messages/files/links/routines) keep most of the budget. */

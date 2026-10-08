@@ -1,5 +1,5 @@
 import { randomBytes } from "node:crypto";
-import { signupPolicyFromEnv } from "@rakazo/core";
+import { signupPolicyFromEnv } from "@sapphire/core";
 import type { PrismaClient } from "./client.js";
 
 export interface SignupPolicyEnv {

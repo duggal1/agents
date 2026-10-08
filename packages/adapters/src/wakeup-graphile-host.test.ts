@@ -1,10 +1,10 @@
-import type { BackgroundJobHandlers } from "@rakazo/adapter-kit";
+import type { BackgroundJobHandlers } from "@sapphire/adapter-kit";
 import {
   HISTORY_COMPACT_MAX_ATTEMPTS,
   historyCompactJob,
   messagingDeliverJob,
-} from "@rakazo/adapter-kit";
-import { createLogger, createTestSink, installLogger, wrapJobPayload } from "@rakazo/logging";
+} from "@sapphire/adapter-kit";
+import { createLogger, createTestSink, installLogger, wrapJobPayload } from "@sapphire/logging";
 import type { Runner } from "graphile-worker";
 import { makeWorkerUtils } from "graphile-worker";
 import type { Pool } from "pg";

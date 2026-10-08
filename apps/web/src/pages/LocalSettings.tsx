@@ -1,5 +1,5 @@
 import { Trans } from "@lingui/react/macro";
-import { Button, RakazoMark } from "@rakazo/ui-web";
+import { Button, RakazoMark } from "@sapphire/ui-web";
 import { useEffect, useState } from "react";
 import { IntegrationSetup } from "../components/integrations/IntegrationSetup";
 import { rpc } from "../lib/rpc";

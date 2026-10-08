@@ -1,8 +1,8 @@
 import { EyeIcon as Eye, EyeOffIcon as EyeOff } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { Trans, useLingui } from "@lingui/react/macro";
-import { readBoundedJsonResponse, signupRequiresEmailVerification } from "@rakazo/core";
-import { Button, Input, Label, RakazoMark } from "@rakazo/ui-web";
+import { readBoundedJsonResponse, signupRequiresEmailVerification } from "@sapphire/core";
+import { Button, Input, Label, RakazoMark } from "@sapphire/ui-web";
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { authClient } from "../lib/auth";

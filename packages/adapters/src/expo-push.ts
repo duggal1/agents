@@ -6,8 +6,8 @@ import type {
   AdapterContext,
   NotificationMessage,
   NotificationProvider,
-} from "@rakazo/adapter-kit";
-import { getLogger } from "@rakazo/logging";
+} from "@sapphire/adapter-kit";
+import { getLogger } from "@sapphire/logging";
 import { combineSignals } from "./connector-safety.js";
 import { readBodyCapped, withAbort } from "./web-ssrf.js";
 

@@ -1,8 +1,8 @@
 import { ChevronDownIcon as ChevronDown } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { Trans, useLingui } from "@lingui/react/macro";
-import type { RoutineHistory } from "@rakazo/contracts";
-import { Button } from "@rakazo/ui-web";
+import type { RoutineHistory } from "@sapphire/contracts";
+import { Button } from "@sapphire/ui-web";
 import { useEffect, useId, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { rpc } from "../lib/rpc";

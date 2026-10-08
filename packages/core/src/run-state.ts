@@ -1,4 +1,4 @@
-import type { RunStatus } from "@rakazo/contracts";
+import type { RunStatus } from "@sapphire/contracts";
 
 export const ACTIVE_RUN_STATUSES = [
   "queued",

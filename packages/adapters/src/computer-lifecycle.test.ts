@@ -6,8 +6,8 @@ import type {
   AgentHomeStore,
   JobPublisher,
   SandboxProvider,
-} from "@rakazo/adapter-kit";
-import { clearThread, type PrismaClient, type ThreadEvents } from "@rakazo/db";
+} from "@sapphire/adapter-kit";
+import { clearThread, type PrismaClient, type ThreadEvents } from "@sapphire/db";
 import { describe, expect, it, vi } from "vitest";
 import {
   acquireComputerExecutionLease,

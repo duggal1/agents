@@ -20,7 +20,7 @@ import {
   GROK_BOT_COLORS,
   GrokShapePreview,
   parseBotAvatar,
-} from "@rakazo/ui-web";
+} from "@sapphire/ui-web";
 import { type ClipboardEvent, type DragEvent, useRef, useState } from "react";
 
 export interface AvatarStudioPopoverProps {

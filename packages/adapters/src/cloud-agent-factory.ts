@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import type { CloudAgentProvider } from "@rakazo/adapter-kit";
+import type { CloudAgentProvider } from "@sapphire/adapter-kit";
 import { EmulatorCloudAgentProvider } from "./cloud-agent-emulator.js";
 import { resolveCloudAgentProvider } from "./cloud-agent-provider-env.js";
 import { CursorCloudAgentProvider } from "./cursor-cloud-agent.js";

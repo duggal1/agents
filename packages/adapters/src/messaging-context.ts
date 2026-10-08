@@ -1,4 +1,4 @@
-import type { PrismaClient } from "@rakazo/db";
+import type { PrismaClient } from "@sapphire/db";
 
 /**
  * Executor dep answering "does this bot belong to a messaging identity?" —

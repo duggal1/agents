@@ -1,4 +1,4 @@
-import type { ConnectorTool } from "@rakazo/adapter-kit";
+import type { ConnectorTool } from "@sapphire/adapter-kit";
 
 export const CLOUD_AGENT_TOOL_NAMES = new Set([
   "cloud_agent_launch",

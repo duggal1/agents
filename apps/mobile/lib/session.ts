@@ -1,4 +1,4 @@
-import type { AvatarStyle } from "@rakazo/contracts";
+import type { AvatarStyle } from "@sapphire/contracts";
 import * as SecureStore from "expo-secure-store";
 import { clearAvatarStyle, saveAvatarStyle } from "./avatar-style";
 import { stopLiveNotifications } from "./live-notifications";

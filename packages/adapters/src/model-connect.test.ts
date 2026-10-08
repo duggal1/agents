@@ -1,7 +1,7 @@
 import {
   CLOUDFLARE_AI_GATEWAY_CONFIG_MESSAGE,
   CLOUDFLARE_AI_GATEWAY_PROVIDER_ID,
-} from "@rakazo/contracts";
+} from "@sapphire/contracts";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { buildModelConnectPlaintext, modelCredentialDto } from "./model-connect.js";
 import { parseModelSecret, serializeModelSecret } from "./pi-oauth.js";

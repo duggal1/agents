@@ -16,9 +16,9 @@ import type {
   ScreenRequest,
   ScreenSession,
   TerminalRequest,
-} from "@rakazo/adapter-kit";
-import { boundedSandboxCommandTimeoutMs, resolveSupervisorToken } from "@rakazo/core";
-import { outgoingCorrelationHeaders } from "@rakazo/logging";
+} from "@sapphire/adapter-kit";
+import { boundedSandboxCommandTimeoutMs, resolveSupervisorToken } from "@sapphire/core";
+import { outgoingCorrelationHeaders } from "@sapphire/logging";
 import {
   boundedComputerActions,
   clampRounded,

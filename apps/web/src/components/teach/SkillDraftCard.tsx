@@ -1,7 +1,7 @@
 import { Trans } from "@lingui/react/macro";
-import type { SkillPlaybook } from "@rakazo/contracts";
-import { formatSkillRunPrompt } from "@rakazo/core";
-import { Button, Input, Label, Textarea } from "@rakazo/ui-web";
+import type { SkillPlaybook } from "@sapphire/contracts";
+import { formatSkillRunPrompt } from "@sapphire/core";
+import { Button, Input, Label, Textarea } from "@sapphire/ui-web";
 import { useEffect, useState } from "react";
 import { rpc } from "../../lib/rpc";
 

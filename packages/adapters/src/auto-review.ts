@@ -7,9 +7,9 @@ import type {
   AutoReviewProvider,
   AutoReviewRequest,
   AutoReviewResult,
-} from "@rakazo/adapter-kit";
-import type { AutoReviewJudgeDecision } from "@rakazo/core";
-import { redactSecrets } from "@rakazo/core";
+} from "@sapphire/adapter-kit";
+import type { AutoReviewJudgeDecision } from "@sapphire/core";
+import { redactSecrets } from "@sapphire/core";
 import { formatCurrentTimeInstruction } from "./current-time.js";
 import { resolveDeploymentModel } from "./deployment-model.js";
 import { LOCAL_PROVIDER_ID } from "./pi-local-provider.js";

@@ -1,4 +1,4 @@
-import { droppedTableHtmlText } from "@rakazo/contracts";
+import { droppedTableHtmlText } from "@sapphire/contracts";
 
 /**
  * Pure helpers behind the markdown table card: hast extraction, type

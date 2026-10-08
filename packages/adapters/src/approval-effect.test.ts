@@ -1,4 +1,4 @@
-import { approvalEffectKey } from "@rakazo/core/node/approval-effect-key";
+import { approvalEffectKey } from "@sapphire/core/node/approval-effect-key";
 import { describe, expect, it, vi } from "vitest";
 import {
   approvalPausedToolResult,

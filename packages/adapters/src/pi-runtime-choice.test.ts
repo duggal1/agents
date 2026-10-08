@@ -1,4 +1,4 @@
-import type { AgentRuntimeEvent, ConnectorTool } from "@rakazo/adapter-kit";
+import type { AgentRuntimeEvent, ConnectorTool } from "@sapphire/adapter-kit";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const fakeAgentState = vi.hoisted(() => ({

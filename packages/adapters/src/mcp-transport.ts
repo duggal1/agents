@@ -8,7 +8,7 @@ import {
 import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
 import type { Transport } from "@modelcontextprotocol/sdk/shared/transport.js";
 import type { CallToolResult, ListToolsResult } from "@modelcontextprotocol/sdk/types.js";
-import { isLocalMcpHost } from "@rakazo/contracts";
+import { isLocalMcpHost } from "@sapphire/contracts";
 import { combineSignals } from "./connector-safety.js";
 import {
   createSafeRemoteFetch,

@@ -1,4 +1,4 @@
-import { Button } from "@rakazo/ui-web";
+import { Button } from "@sapphire/ui-web";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   type DemoBot,

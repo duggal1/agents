@@ -1,4 +1,4 @@
-import { BOT_AVATAR_SHAPE_COUNT } from "@rakazo/contracts";
+import { BOT_AVATAR_SHAPE_COUNT } from "@sapphire/contracts";
 import { describe, expect, it } from "vitest";
 import {
   SHIPPED_BOT_AVATAR_SHAPE_KEYS,

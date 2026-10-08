@@ -1,4 +1,4 @@
-import { BotAvatar } from "@rakazo/ui-web";
+import { BotAvatar } from "@sapphire/ui-web";
 import { createRoot } from "react-dom/client";
 
 createRoot(document.getElementById("root")!).render(

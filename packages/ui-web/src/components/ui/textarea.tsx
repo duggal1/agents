@@ -1,4 +1,4 @@
-import { cn } from "@rakazo/ui-web/lib/utils";
+import { cn } from "@sapphire/ui-web/lib/utils";
 import type * as React from "react";
 
 function Textarea({ className, ...props }: React.ComponentProps<"textarea">) {

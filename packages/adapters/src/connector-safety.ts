@@ -1,4 +1,4 @@
-import { redactSecrets } from "@rakazo/core";
+import { redactSecrets } from "@sapphire/core";
 
 export function combineSignals(...signals: Array<AbortSignal | undefined>): AbortSignal {
   return AbortSignal.any(signals.filter((signal): signal is AbortSignal => Boolean(signal)));

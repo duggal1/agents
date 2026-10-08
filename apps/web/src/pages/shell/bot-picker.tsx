@@ -6,7 +6,7 @@ import {
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { Trans, useLingui } from "@lingui/react/macro";
-import type { Bot } from "@rakazo/contracts";
+import type { Bot } from "@sapphire/contracts";
 import {
   BotAvatar,
   Command,
@@ -15,7 +15,7 @@ import {
   CommandItem,
   CommandList,
   CommandSeparator,
-} from "@rakazo/ui-web";
+} from "@sapphire/ui-web";
 import { useMemo, useState } from "react";
 
 export function BotCreatePicker({

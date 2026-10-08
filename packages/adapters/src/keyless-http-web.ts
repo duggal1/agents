@@ -6,7 +6,7 @@ import type {
   WebProvider,
   WebSearchHit,
   WebSearchRequest,
-} from "@rakazo/adapter-kit";
+} from "@sapphire/adapter-kit";
 import { JSDOM } from "jsdom";
 import { clampMaxChars, clampMaxResults } from "./web-limits.js";
 import { fetchSafeWebText, type ResolveHostname } from "./web-ssrf.js";

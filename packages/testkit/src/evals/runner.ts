@@ -1,9 +1,9 @@
 import { randomUUID } from "node:crypto";
-import { type AgentRuntime, type JobPublisher, runJobKey } from "@rakazo/adapter-kit";
-import { MessagingTeamChatEmulator } from "@rakazo/adapters";
-import type { ModelConnectInput, RunStatus } from "@rakazo/contracts";
-import { ACTIVE_RUN_STATUSES, isTerminal } from "@rakazo/core";
-import type { createDb } from "@rakazo/db";
+import { type AgentRuntime, type JobPublisher, runJobKey } from "@sapphire/adapter-kit";
+import { MessagingTeamChatEmulator } from "@sapphire/adapters";
+import type { ModelConnectInput, RunStatus } from "@sapphire/contracts";
+import { ACTIVE_RUN_STATUSES, isTerminal } from "@sapphire/core";
+import type { createDb } from "@sapphire/db";
 import { discardBotIntroRun } from "../discard-bot-intro.js";
 import { sessionCookieHeader } from "../index.js";
 import type { EvalCase, Evidence } from "./cases.js";

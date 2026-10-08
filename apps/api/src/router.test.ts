@@ -4,12 +4,12 @@ import {
   CodexCatalogCache,
   ComputerScreenUnavailableError,
   screenLeaseIdForRun,
-} from "@rakazo/adapters";
-import type { Actor, Bot } from "@rakazo/contracts";
-import { REPLY_QUOTE_MAX_LENGTH } from "@rakazo/contracts";
-import { openScreenCapability } from "@rakazo/core/node/screen-capability";
-import type { PrismaClient } from "@rakazo/db";
-import { createLogger, createTestSink, installLogger } from "@rakazo/logging";
+} from "@sapphire/adapters";
+import type { Actor, Bot } from "@sapphire/contracts";
+import { REPLY_QUOTE_MAX_LENGTH } from "@sapphire/contracts";
+import { openScreenCapability } from "@sapphire/core/node/screen-capability";
+import type { PrismaClient } from "@sapphire/db";
+import { createLogger, createTestSink, installLogger } from "@sapphire/logging";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { createRouter, enqueueBotIntroRun, type RouterDeps } from "./router.js";
 

@@ -3,7 +3,7 @@ import type {
   ConnectorCall,
   ConnectorEvent,
   ConnectorTool,
-} from "@rakazo/adapter-kit";
+} from "@sapphire/adapter-kit";
 import type { ComposioCatalogItem, ComposioProvider } from "./composio-connector.js";
 import { expandComposioMultiExecute, filterCatalog } from "./composio-connector.js";
 import {

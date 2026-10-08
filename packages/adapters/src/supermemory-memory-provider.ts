@@ -8,8 +8,8 @@ import type {
   SemanticMemoryResponse,
   SemanticMemoryResult,
   SemanticMemorySaveRequest,
-} from "@rakazo/adapter-kit";
-import { isCloudMetadataHost, isLocalMcpHost } from "@rakazo/contracts";
+} from "@sapphire/adapter-kit";
+import { isCloudMetadataHost, isLocalMcpHost } from "@sapphire/contracts";
 import type { ResolvedAddress, ResolveHostname } from "./network-address.js";
 import { isCloudMetadataAddress, isLinkLocalAddress, isPrivateAddress } from "./network-address.js";
 import { isPrivateRemoteMcpHostname } from "./remote-mcp.js";

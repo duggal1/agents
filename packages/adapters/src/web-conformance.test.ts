@@ -1,4 +1,4 @@
-import type { AdapterContext, WebProvider } from "@rakazo/adapter-kit";
+import type { AdapterContext, WebProvider } from "@sapphire/adapter-kit";
 import { describe, expect, it } from "vitest";
 import { FakeWebProvider } from "./fake-web.js";
 import { KeylessHttpWebProvider, parseDuckDuckGoResults } from "./keyless-http-web.js";

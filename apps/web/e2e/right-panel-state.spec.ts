@@ -1,6 +1,6 @@
 import type { Page } from "@playwright/test";
 import { expect, test } from "@playwright/test";
-import type { Bot, Routine } from "@rakazo/contracts";
+import type { Bot, Routine } from "@sapphire/contracts";
 import { activeBotId, captureScreenshot, completeOnboarding, rpc, signup } from "./helpers";
 
 async function waitForStoredPanel(page: Page, panel: string | null) {

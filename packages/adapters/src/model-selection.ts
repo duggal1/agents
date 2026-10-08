@@ -1,12 +1,12 @@
-import type { AgentRunRequest } from "@rakazo/adapter-kit";
-import type { Actor } from "@rakazo/contracts";
-import { usableModelId } from "@rakazo/contracts";
+import type { AgentRunRequest } from "@sapphire/adapter-kit";
+import type { Actor } from "@sapphire/contracts";
+import { usableModelId } from "@sapphire/contracts";
 import {
   chooseModelCredential,
   type findDefaultModelCredential,
   findModelCredential,
   type PrismaClient,
-} from "@rakazo/db";
+} from "@sapphire/db";
 import type { ModelCredentialAuthKind } from "./pi-catalog-availability.js";
 import {
   catalogModelAvailableForAuth,

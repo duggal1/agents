@@ -1,4 +1,4 @@
-import { ensureAiDataConsent, readBoundedResponseBytes, toUtterances } from "@rakazo/core";
+import { ensureAiDataConsent, readBoundedResponseBytes, toUtterances } from "@sapphire/core";
 import { File, Paths } from "expo-file-system";
 import type * as ExpoSpeech from "expo-speech";
 import { promptAiConsent } from "./ai-consent";

@@ -1,4 +1,4 @@
-import { stuckWorkStatusMessage } from "@rakazo/core";
+import { stuckWorkStatusMessage } from "@sapphire/core";
 import { describe, expect, it, vi } from "vitest";
 import type { Prisma } from "./client.js";
 import { expireStuckRun } from "./expire-stuck-run.js";

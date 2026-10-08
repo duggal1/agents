@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import type { RoutineRun } from "@rakazo/contracts";
+import type { RoutineRun } from "@sapphire/contracts";
 import type { ComponentProps, ReactNode } from "react";
 import { act } from "react";
 import { createRoot } from "react-dom/client";
@@ -15,7 +15,7 @@ vi.mock("@lingui/react/macro", () => ({
   useLingui: () => ({ i18n: { locale: "en" } }),
   Trans: ({ children }: { children: ReactNode }) => children,
 }));
-vi.mock("@rakazo/ui-web", () => ({
+vi.mock("@sapphire/ui-web", () => ({
   Button: ({
     size: _size,
     variant: _variant,

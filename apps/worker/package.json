@@ -1,5 +1,5 @@
 {
-  "name": "@rakazo/worker",
+  "name": "@sapphire/worker",
   "version": "0.1.0",
   "license": "Apache-2.0",
   "type": "module",
@@ -10,12 +10,12 @@
     "test": "vitest run --passWithNoTests"
   },
   "dependencies": {
-    "@rakazo/adapter-kit": "workspace:*",
-    "@rakazo/adapters": "workspace:*",
-    "@rakazo/core": "workspace:*",
-    "@rakazo/db": "workspace:*",
-    "@rakazo/logging": "workspace:*",
-    "@rakazo/memory": "workspace:*"
+    "@sapphire/adapter-kit": "workspace:*",
+    "@sapphire/adapters": "workspace:*",
+    "@sapphire/core": "workspace:*",
+    "@sapphire/db": "workspace:*",
+    "@sapphire/logging": "workspace:*",
+    "@sapphire/memory": "workspace:*"
   },
   "devDependencies": {
     "typescript": "7.0.2",

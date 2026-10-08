@@ -1,4 +1,4 @@
-import type { RakazoDesktopOAuthCallback } from "@rakazo/contracts";
+import type { RakazoDesktopOAuthCallback } from "@sapphire/contracts";
 
 export type OAuthCallbackFromOptions = {
   /** App renderer origins — their `/callback` routes must not be treated as paste-flow codes. */

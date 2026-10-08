@@ -1,7 +1,7 @@
 import { copyFile, lstat, mkdir, readFile } from "node:fs/promises";
 import { createServer } from "node:net";
 import path from "node:path";
-import type { DesktopLocalStackState } from "@rakazo/contracts";
+import type { DesktopLocalStackState } from "@sapphire/contracts";
 import {
   classifyDockerFailure,
   composeSupportsWaitTimeout,

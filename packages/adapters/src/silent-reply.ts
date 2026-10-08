@@ -1,4 +1,4 @@
-import type { MessageBlock } from "@rakazo/contracts";
+import type { MessageBlock } from "@sapphire/contracts";
 
 /** Exact token a silent routine must emit as its entire final assistant reply. */
 export const NO_RESPONSE = "NO_RESPONSE";

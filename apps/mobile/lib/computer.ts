@@ -1,4 +1,4 @@
-import type { ComputerMode, ComputerStatus as ContractComputerStatus } from "@rakazo/contracts";
+import type { ComputerMode, ComputerStatus as ContractComputerStatus } from "@sapphire/contracts";
 import { t } from "./i18n";
 
 export const COMPUTER_HEARTBEAT_MS = 60_000;

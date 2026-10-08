@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import { darkTokens, lightTokens } from "@rakazo/ui-tokens";
+import { darkTokens, lightTokens } from "@sapphire/ui-tokens";
 import { describe, expect, it } from "vitest";
 
 // index.html sets theme-color before any module loads, so it cannot import the

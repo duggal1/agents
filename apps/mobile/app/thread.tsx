@@ -1,17 +1,17 @@
-import { ChatMarkdown, LinkifiedText } from "@rakazo/chat-ui/native";
+import { ChatMarkdown, LinkifiedText } from "@sapphire/chat-ui/native";
 import type {
   AgentSkillCatalogEntry,
   Connection,
   ConnectionCatalogItem,
   MessageBlock,
   Routine,
-} from "@rakazo/contracts";
+} from "@sapphire/contracts";
 import {
   canReactToThreadMessage,
   MESSAGE_REACTIONS,
   type MessageReaction,
-} from "@rakazo/contracts";
-import type { ThreadItem } from "@rakazo/core";
+} from "@sapphire/contracts";
+import type { ThreadItem } from "@sapphire/core";
 import {
   abortableDelay,
   attachmentsForThread,
@@ -36,7 +36,7 @@ import {
   truncateSlashDescription,
   userVisibleMessages,
   withLiveStreamingProgress,
-} from "@rakazo/core";
+} from "@sapphire/core";
 import * as Clipboard from "expo-clipboard";
 import {
   useFocusEffect,

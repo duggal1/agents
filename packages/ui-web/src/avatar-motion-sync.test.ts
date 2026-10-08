@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { WORKING_AVATAR_DURATIONS_MS } from "@rakazo/core";
+import { WORKING_AVATAR_DURATIONS_MS } from "@sapphire/core";
 import { describe, expect, it } from "vitest";
 
 /** CSS `data-shape-family` → expected duration seconds (mirrors styles.css). */

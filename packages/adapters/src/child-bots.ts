@@ -6,11 +6,11 @@ import type {
   ArtifactStore,
   JobPublisher,
   SandboxProvider,
-} from "@rakazo/adapter-kit";
-import { routineJobKey, runContinueJob, runJobKey } from "@rakazo/adapter-kit";
-import { type Actor, type Bot, type ComputerMode, GROUP_MEMBER_MIN } from "@rakazo/contracts";
-import { ACTIVE_RUN_STATUSES } from "@rakazo/core";
-import { browserProfilePathForScreen } from "@rakazo/core/node/desktop-runtime";
+} from "@sapphire/adapter-kit";
+import { routineJobKey, runContinueJob, runJobKey } from "@sapphire/adapter-kit";
+import { type Actor, type Bot, type ComputerMode, GROUP_MEMBER_MIN } from "@sapphire/contracts";
+import { ACTIVE_RUN_STATUSES } from "@sapphire/core";
+import { browserProfilePathForScreen } from "@sapphire/core/node/desktop-runtime";
 import {
   cancelRunsInTransaction,
   computerScopeKey,
@@ -20,8 +20,8 @@ import {
   type Prisma,
   type PrismaClient,
   withTransactionRetry,
-} from "@rakazo/db";
-import { getLogger } from "@rakazo/logging";
+} from "@sapphire/db";
+import { getLogger } from "@sapphire/logging";
 import { BrowserStoppedReleaseError } from "./computer-screens.js";
 import { toComputerRef } from "./computer-support.js";
 import { checkpointAndRecordComputerWorkspace } from "./computer-workspace.js";

@@ -1,8 +1,8 @@
 import { CornerDownLeftIcon as CornerDownLeft } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { Trans, useLingui } from "@lingui/react/macro";
-import type { TaughtSkill } from "@rakazo/contracts";
-import { Button, Input } from "@rakazo/ui-web";
+import type { TaughtSkill } from "@sapphire/contracts";
+import { Button, Input } from "@sapphire/ui-web";
 import type { FormEvent } from "react";
 import { useEffect, useRef, useState } from "react";
 import { rpc } from "../../lib/rpc";

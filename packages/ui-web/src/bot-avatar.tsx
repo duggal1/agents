@@ -1,4 +1,4 @@
-import type { GrokColorDef } from "@rakazo/core";
+import type { GrokColorDef } from "@sapphire/core";
 import {
   ACTIVE_RUN_STATUSES,
   avatarIdentitySeed,
@@ -13,8 +13,8 @@ import {
   SHIPPED_BOT_AVATAR_VIEWBOX,
   shippedBotAvatarShapePath,
   shippedHash,
-} from "@rakazo/core";
-import { tokens } from "@rakazo/ui-tokens";
+} from "@sapphire/core";
+import { tokens } from "@sapphire/ui-tokens";
 import type { CSSProperties } from "react";
 import { memo, useId, useMemo, useSyncExternalStore } from "react";
 import type { AvatarStyle } from "./avatar-style.js";

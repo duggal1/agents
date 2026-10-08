@@ -10,13 +10,13 @@ import type {
   RealtimeFanout,
   SandboxProvider,
   TransactionalEmailProvider,
-} from "@rakazo/adapter-kit";
+} from "@sapphire/adapter-kit";
 import type {
   ComposioProvider,
   ConnectorRegistry,
   DestinationEmulator,
   RemoteConnectorDependencies,
-} from "@rakazo/adapters";
+} from "@sapphire/adapters";
 import {
   applyMessagingOutboundStatus,
   ChatSdkMessagingSurface,
@@ -64,10 +64,10 @@ import {
   SpaceMemoryProviderResolver,
   sandboxProviderOptionsFromEnv,
   toTeamChatInbound,
-} from "@rakazo/adapters";
-import { createAuth, isBlockedAuthPath, loopbackTwinOrigins } from "@rakazo/auth";
-import { signupAllowlistBootUpdate, signupPolicyFromEnv } from "@rakazo/core";
-import type { Pool, PrismaClient } from "@rakazo/db";
+} from "@sapphire/adapters";
+import { createAuth, isBlockedAuthPath, loopbackTwinOrigins } from "@sapphire/auth";
+import { signupAllowlistBootUpdate, signupPolicyFromEnv } from "@sapphire/core";
+import type { Pool, PrismaClient } from "@sapphire/db";
 import {
   createDb,
   createPool,
@@ -75,17 +75,17 @@ import {
   parsePositiveInteger,
   provisionMessagingIdentity,
   requireMembership,
-} from "@rakazo/db";
-import type { Logger } from "@rakazo/logging";
+} from "@sapphire/db";
+import type { Logger } from "@sapphire/logging";
 import {
   createServiceLogger,
   enrichLogContext,
   getLogger,
   installLogger,
   SERVICE_NAMES,
-} from "@rakazo/logging";
-import { requestLogging } from "@rakazo/logging/hono";
-import { MarkdownMemoryStore } from "@rakazo/memory";
+} from "@sapphire/logging";
+import { requestLogging } from "@sapphire/logging/hono";
+import { MarkdownMemoryStore } from "@sapphire/memory";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import type { AppEnv } from "./env.js";

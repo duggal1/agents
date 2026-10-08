@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 import path from "node:path";
-import { MAX_DESKTOP_DISPLAY, screenPorts } from "@rakazo/core/node/desktop-runtime";
+import { MAX_DESKTOP_DISPLAY, screenPorts } from "@sapphire/core/node/desktop-runtime";
 import type Docker from "dockerode";
 
 export const COMPUTER_IMAGE = process.env.RAKAZO_COMPUTER_IMAGE ?? "rakazo/computer:local";

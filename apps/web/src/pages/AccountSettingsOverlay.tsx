@@ -1,8 +1,17 @@
 import { ChevronDownIcon as ChevronDown } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { Trans, useLingui } from "@lingui/react/macro";
-import type { AvatarStyle } from "@rakazo/contracts";
-import { BotAvatar, Button, Field, FieldLabel, Input, Label, Switch, Toggle } from "@rakazo/ui-web";
+import type { AvatarStyle } from "@sapphire/contracts";
+import {
+  BotAvatar,
+  Button,
+  Field,
+  FieldLabel,
+  Input,
+  Label,
+  Switch,
+  Toggle,
+} from "@sapphire/ui-web";
 import {
   type KeyboardEvent as ReactKeyboardEvent,
   type RefObject,

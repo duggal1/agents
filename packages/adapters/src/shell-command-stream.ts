@@ -1,5 +1,5 @@
-import type { ProcessEvent } from "@rakazo/adapter-kit";
-import { redactSecrets } from "@rakazo/core";
+import type { ProcessEvent } from "@sapphire/adapter-kit";
+import { redactSecrets } from "@sapphire/core";
 import { clipToolResultText } from "./pi-runtime-limits.js";
 
 /**

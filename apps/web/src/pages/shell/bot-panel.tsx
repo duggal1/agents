@@ -10,18 +10,18 @@ import type {
   ModelCredential,
   ThinkingLevel,
   VoiceInfo,
-} from "@rakazo/contracts";
+} from "@sapphire/contracts";
 import {
   BOT_DESCRIPTION_MAX_LENGTH,
   BOT_NAME_MAX_LENGTH,
   BOT_TITLE_MAX_LENGTH,
-} from "@rakazo/contracts";
+} from "@sapphire/contracts";
 import {
   connectedModelChoices,
   modelOptionKey,
   parseModelOptionKey,
   resolveSelectableModelId,
-} from "@rakazo/core";
+} from "@sapphire/core";
 import {
   Button,
   Input,
@@ -30,7 +30,7 @@ import {
   Switch,
   Textarea,
   Toggle,
-} from "@rakazo/ui-web";
+} from "@sapphire/ui-web";
 import { lazy, Suspense, useEffect, useId, useRef, useState } from "react";
 import { botProfilePatch } from "../../lib/bot-profile-patch";
 import { thinkingLevelLabel } from "../../lib/model-catalog";

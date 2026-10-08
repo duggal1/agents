@@ -1,4 +1,4 @@
-import type { ThreadMessage } from "@rakazo/contracts";
+import type { ThreadMessage } from "@sapphire/contracts";
 import { messageProviderLabel } from "./messaging";
 
 /** Plain message text for clipboard copy — text/ask/progress only, no chrome. */

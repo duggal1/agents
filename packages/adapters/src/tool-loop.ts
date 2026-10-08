@@ -1,4 +1,4 @@
-import { type ToolCallStreak, trackToolCallStreak } from "@rakazo/core";
+import { type ToolCallStreak, trackToolCallStreak } from "@sapphire/core";
 
 // Same tool, same arguments, this many times in a row means the agent is stuck, not paginating.
 const MAX_CONSECUTIVE_IDENTICAL_TOOL_CALLS = 6;

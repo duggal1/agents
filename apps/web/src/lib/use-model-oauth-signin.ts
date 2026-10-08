@@ -1,5 +1,5 @@
-import type { ModelOAuthBegin, ThinkingLevel } from "@rakazo/contracts";
-import { cancelModelOAuthAttempt, finishModelOAuthAttempt } from "@rakazo/core";
+import type { ModelOAuthBegin, ThinkingLevel } from "@sapphire/contracts";
+import { cancelModelOAuthAttempt, finishModelOAuthAttempt } from "@sapphire/core";
 import { useEffect, useRef, useState } from "react";
 import { desktopBridge, oauthStateOf, onDesktopOAuthCallback } from "./desktop";
 import { waitForModelOAuth } from "./model-auth";

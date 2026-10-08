@@ -1,10 +1,10 @@
-import type { ConnectorTool } from "@rakazo/adapter-kit";
+import type { ConnectorTool } from "@sapphire/adapter-kit";
 import {
   BotSecretName,
   botSecretDestinationSchema,
   SecretAskPurpose,
   SecretHttpRequest,
-} from "@rakazo/contracts";
+} from "@sapphire/contracts";
 import { z } from "zod";
 import { allowPrivateHttpSecretOrigins } from "./bot-secrets.js";
 

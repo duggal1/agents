@@ -1,4 +1,4 @@
-import { ACTIVE_RUN_STATUSES, plainTextFromMarkdown } from "@rakazo/core";
+import { ACTIVE_RUN_STATUSES, plainTextFromMarkdown } from "@sapphire/core";
 
 export const activeRunStatuses = [...ACTIVE_RUN_STATUSES];
 

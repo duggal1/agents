@@ -1,4 +1,4 @@
-import { ATTACHMENT_MAX_BASE64_LENGTH } from "@rakazo/contracts";
+import { ATTACHMENT_MAX_BASE64_LENGTH } from "@sapphire/contracts";
 import { Hono } from "hono";
 import { describe, expect, it, vi } from "vitest";
 import {

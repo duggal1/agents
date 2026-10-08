@@ -8,8 +8,8 @@ import {
   type CronPreset,
   type CronUnit,
   cronFromPreset,
-} from "@rakazo/core";
-import { Input, NativeSelect, NativeSelectOption } from "@rakazo/ui-web";
+} from "@sapphire/core";
+import { Input, NativeSelect, NativeSelectOption } from "@sapphire/ui-web";
 
 const UNITS: CronUnit[] = ["minutes", "hours", "days"];
 const NUMBERS = [1, 2, 3, 5, 10, 15, 30, 45];

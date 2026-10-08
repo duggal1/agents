@@ -7,7 +7,7 @@ import type {
   TeamChatMessageKind,
   TeamChatSendRequest,
   TeamChatSendResult,
-} from "@rakazo/adapter-kit";
+} from "@sapphire/adapter-kit";
 
 /** Map a Chat SDK inbound message into a team-chat event, or null if empty. */
 export function toTeamChatInbound(event: MessagingInboundMessage): TeamChatInboundMessage | null {

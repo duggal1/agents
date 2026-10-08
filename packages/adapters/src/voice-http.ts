@@ -1,4 +1,4 @@
-import type { VoiceVerifyResult } from "@rakazo/adapter-kit";
+import type { VoiceVerifyResult } from "@sapphire/adapter-kit";
 import { readBodyCapped } from "./web-ssrf.js";
 
 /** A 2,000-character utterance should stay far below this, even at high MP3 bitrates. */

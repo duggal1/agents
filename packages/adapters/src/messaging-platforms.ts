@@ -1,7 +1,7 @@
 import { createSlackAdapter } from "@chat-adapter/slack";
 import { createTelegramAdapter } from "@chat-adapter/telegram";
 import { createWhatsAppAdapter } from "@chat-adapter/whatsapp";
-import type { MessagingInboundMessage, MessagingOutboundStatus } from "@rakazo/adapter-kit";
+import type { MessagingInboundMessage, MessagingOutboundStatus } from "@sapphire/adapter-kit";
 import type { Adapter } from "chat";
 import { createLarkAdapter, Domain } from "chat-adapter-lark";
 import { createSendblueAdapter } from "chat-adapter-sendblue";

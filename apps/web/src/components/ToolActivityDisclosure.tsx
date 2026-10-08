@@ -1,7 +1,7 @@
 import { ChevronRightIcon as ChevronRight } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { Plural } from "@lingui/react/macro";
-import type { ThreadMessage } from "@rakazo/contracts";
+import type { ThreadMessage } from "@sapphire/contracts";
 import type { ReactNode } from "react";
 import { formatToolActivityDuration, toolStepCount } from "../lib/tool-activity-view";
 

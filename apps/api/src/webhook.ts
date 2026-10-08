@@ -1,4 +1,4 @@
-import { hasValidBearerToken } from "@rakazo/core";
+import { hasValidBearerToken } from "@sapphire/core";
 import type { Hono } from "hono";
 import { mountGithubWebhookRoute } from "./github-webhook.js";
 import { readBoundedBody } from "./http-body.js";

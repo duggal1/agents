@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-import type { ComputerCommand, ProductEvent } from "@rakazo/contracts";
+import type { ComputerCommand, ProductEvent } from "@sapphire/contracts";
 import { act } from "react";
 import { createRoot } from "react-dom/client";
 import { afterEach, expect, it, vi } from "vitest";

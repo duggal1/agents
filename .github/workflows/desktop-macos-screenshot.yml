@@ -37,11 +37,11 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm --filter @rakazo/desktop build
+      - run: pnpm --filter @sapphire/desktop build
       - name: Verify packaged Tahoe icon and legacy fallback
         run: |
-          pnpm --filter @rakazo/web build
-          CSC_IDENTITY_AUTO_DISCOVERY=false pnpm --filter @rakazo/desktop exec electron-builder --mac --dir --publish never -c.mac.identity=null -c.mac.notarize=false
+          pnpm --filter @sapphire/web build
+          CSC_IDENTITY_AUTO_DISCOVERY=false pnpm --filter @sapphire/desktop exec electron-builder --mac --dir --publish never -c.mac.identity=null -c.mac.notarize=false
           xcrun assetutil --info apps/desktop/out/mac-arm64/Rakazo.app/Contents/Resources/Assets.car > "$RUNNER_TEMP/icon-assets.json"
           jq -e 'any(.[]; .Name == "Icon" and .AssetType == "IconImageStack") and any(.[]; .Name == "Icon_Assets/orange-bot" and .AssetType == "Image")' "$RUNNER_TEMP/icon-assets.json"
           iconutil -c iconset apps/desktop/out/mac-arm64/Rakazo.app/Contents/Resources/icon.icns -o "$RUNNER_TEMP/fallback.iconset"
@@ -54,7 +54,7 @@ jobs:
         env:
           RAKAZO_E2E_EXECUTABLE: out/mac-arm64/Rakazo.app/Contents/MacOS/Rakazo
         run: >-
-          pnpm --filter @rakazo/desktop exec playwright test
+          pnpm --filter @sapphire/desktop exec playwright test
           --config e2e/playwright.config.ts setup.spec.ts
           --grep "first run asks whether to use a local or existing instance"
       - name: Upload native macOS setup screenshot

@@ -1,4 +1,4 @@
-import type { TransactionalEmail, TransactionalEmailProvider } from "@rakazo/adapter-kit";
+import type { TransactionalEmail, TransactionalEmailProvider } from "@sapphire/adapter-kit";
 import {
   allowlistedSignupAdmission,
   emailAllowed,
@@ -6,8 +6,8 @@ import {
   isMessagingEmail,
   parseAllowlist,
   signupPolicyFromEnv,
-} from "@rakazo/core";
-import { bootstrapUserSpace, type PrismaClient } from "@rakazo/db";
+} from "@sapphire/core";
+import { bootstrapUserSpace, type PrismaClient } from "@sapphire/db";
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { APIError, createAuthMiddleware } from "better-auth/api";

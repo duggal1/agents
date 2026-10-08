@@ -2,7 +2,7 @@ import { createHash, randomUUID } from "node:crypto";
 import http from "node:http";
 import type { AddressInfo } from "node:net";
 import type { Duplex } from "node:stream";
-import { TERMINAL_INPUT, TERMINAL_RESIZE } from "@rakazo/contracts";
+import { TERMINAL_INPUT, TERMINAL_RESIZE } from "@sapphire/contracts";
 
 const WEBSOCKET_GUID = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
 

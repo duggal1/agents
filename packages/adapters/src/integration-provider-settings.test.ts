@@ -1,5 +1,5 @@
-import type { AdapterContext, ManagedConnectorProvider } from "@rakazo/adapter-kit";
-import type { PrismaClient } from "@rakazo/db";
+import type { AdapterContext, ManagedConnectorProvider } from "@sapphire/adapter-kit";
+import type { PrismaClient } from "@sapphire/db";
 import { describe, expect, it, vi } from "vitest";
 import { IntegrationProviderSettings } from "./integration-provider-settings.js";
 import { EncryptedSecretStore } from "./secrets.js";

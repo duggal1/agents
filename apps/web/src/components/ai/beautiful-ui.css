@@ -1,7 +1,7 @@
 /* Beautiful UI primitives — hand-ported from beautifului.dev
    (github.com/TurboKach/ai-native-react-components, MIT © 2026 Turbo).
    Colours come from the shared semantic tokens. The loading pattern now lives
-   in the terminal loader (`@rakazo/ui-web`); what remains here is the success
+   in the terminal loader (`@sapphire/ui-web`); what remains here is the success
    beat, ported onto the same luxe blur-in as every other surface. */
 
 @keyframes bui-pop-in {

@@ -11,7 +11,7 @@ import {
 import { HugeiconsIcon } from "@hugeicons/react";
 import { t } from "@lingui/core/macro";
 import { Trans, useLingui } from "@lingui/react/macro";
-import type { Routine } from "@rakazo/contracts";
+import type { Routine } from "@sapphire/contracts";
 import {
   type CronFreq,
   type CronPreset,
@@ -20,7 +20,7 @@ import {
   formatCron,
   isOneShotRoutineCrons,
   presetFromCron,
-} from "@rakazo/core";
+} from "@sapphire/core";
 import {
   Button,
   DropdownMenu,
@@ -32,7 +32,7 @@ import {
   DropdownMenuTrigger,
   Input,
   Textarea,
-} from "@rakazo/ui-web";
+} from "@sapphire/ui-web";
 import { useId } from "react";
 import { RoutineRunHistory } from "./RoutineRunHistory";
 import { RoutineSchedule } from "./RoutineSchedule";

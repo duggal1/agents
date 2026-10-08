@@ -3,8 +3,8 @@ import type { LookupFunction } from "node:net";
 import { isIP } from "node:net";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
-import type { ConnectorTool } from "@rakazo/adapter-kit";
-import { isCloudMetadataHost, isLocalMcpHost, isPrivateNetworkHost } from "@rakazo/contracts";
+import type { ConnectorTool } from "@sapphire/adapter-kit";
+import { isCloudMetadataHost, isLocalMcpHost, isPrivateNetworkHost } from "@sapphire/contracts";
 import { Agent } from "undici";
 import { combineSignals } from "./connector-safety.js";
 import {

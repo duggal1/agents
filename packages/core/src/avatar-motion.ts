@@ -1,6 +1,6 @@
 /**
  * Shared working-avatar choreography used by mobile (Reanimated) and mirrored
- * by web CSS in `@rakazo/ui-web` (`styles.css` organic working keyframes).
+ * by web CSS in `@sapphire/ui-web` (`styles.css` organic working keyframes).
  *
  * Duration families and transform midpoints must stay aligned across surfaces.
  */

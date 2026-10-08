@@ -1,6 +1,6 @@
-import type { MessageBlock, ThreadMessage, ThreadMessagePage } from "@rakazo/contracts";
-import { callIdFromClientNonce, isPeerReceiptBlocks } from "@rakazo/core";
-import type { Prisma, PrismaClient } from "@rakazo/db";
+import type { MessageBlock, ThreadMessage, ThreadMessagePage } from "@sapphire/contracts";
+import { callIdFromClientNonce, isPeerReceiptBlocks } from "@sapphire/core";
+import type { Prisma, PrismaClient } from "@sapphire/db";
 
 type MessageDb = PrismaClient | Prisma.TransactionClient;
 

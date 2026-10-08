@@ -1,7 +1,7 @@
-import type { JobPublisher, MessagingInboundMessage } from "@rakazo/adapter-kit";
-import { messagingDeliverJob, runContinueJob } from "@rakazo/adapter-kit";
-import type { MessageBlock } from "@rakazo/contracts";
-import { parseMessagingCommand, sanitizeMessagingLabel } from "@rakazo/core";
+import type { JobPublisher, MessagingInboundMessage } from "@sapphire/adapter-kit";
+import { messagingDeliverJob, runContinueJob } from "@sapphire/adapter-kit";
+import type { MessageBlock } from "@sapphire/contracts";
+import { parseMessagingCommand, sanitizeMessagingLabel } from "@sapphire/core";
 import type {
   MessagingIdentityRequest,
   Prisma,
@@ -9,13 +9,13 @@ import type {
   ProvisionedMessagingIdentity,
   SignupPolicyEnv,
   ThreadEvents,
-} from "@rakazo/db";
+} from "@sapphire/db";
 import {
   createThreadMessage,
   normalizeMessagingLinkCode,
   redeemMessagingLinkCode,
-} from "@rakazo/db";
-import { getLogger } from "@rakazo/logging";
+} from "@sapphire/db";
+import { getLogger } from "@sapphire/logging";
 import {
   MESSAGE_ROUTING_REARMED_REASON,
   MESSAGE_ROUTING_REASON,

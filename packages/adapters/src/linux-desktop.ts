@@ -8,7 +8,7 @@ import type {
   ScreenRequest,
   ScreenSession,
   TerminalRequest,
-} from "@rakazo/adapter-kit";
+} from "@sapphire/adapter-kit";
 import {
   BROWSER_APPLICATIONS,
   browserLauncherPath,
@@ -22,7 +22,7 @@ import {
   screenPorts,
   shellQuote,
   stopAllDesktopBrowsersCommand,
-} from "@rakazo/core/node/desktop-runtime";
+} from "@sapphire/core/node/desktop-runtime";
 import {
   BrowserStoppedReleaseError,
   ComputerScreenUnavailableError,

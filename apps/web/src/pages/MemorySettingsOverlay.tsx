@@ -1,7 +1,7 @@
 import { XIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { Trans, useLingui } from "@lingui/react/macro";
-import type { SpaceMemoryConfig } from "@rakazo/contracts";
+import type { SpaceMemoryConfig } from "@sapphire/contracts";
 import {
   Button,
   Dialog,
@@ -14,7 +14,7 @@ import {
   NativeSelect,
   NativeSelectOption,
   Toggle,
-} from "@rakazo/ui-web";
+} from "@sapphire/ui-web";
 import { useEffect, useId, useState } from "react";
 import { rpc } from "../lib/rpc";
 import { SpaceMemorySection } from "./KnowledgeSection";

@@ -46,7 +46,7 @@ services:
       args:
         GIT_SHA: ${GIT_SHA:-}
     restart: unless-stopped
-    command: ["pnpm", "--filter", "@rakazo/sandbox-supervisor", "start"]
+    command: ["pnpm", "--filter", "@sapphire/sandbox-supervisor", "start"]
     init: true
     user: root
     security_opt:

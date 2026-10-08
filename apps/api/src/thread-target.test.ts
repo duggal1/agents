@@ -1,8 +1,8 @@
-import type { SandboxProvider } from "@rakazo/adapter-kit";
-import type { Actor, MessageBlock } from "@rakazo/contracts";
-import { callClientNonce } from "@rakazo/core";
-import type * as MessageQuoteModule from "@rakazo/core/message-quote";
-import type { PrismaClient } from "@rakazo/db";
+import type { SandboxProvider } from "@sapphire/adapter-kit";
+import type { Actor, MessageBlock } from "@sapphire/contracts";
+import { callClientNonce } from "@sapphire/core";
+import type * as MessageQuoteModule from "@sapphire/core/message-quote";
+import type { PrismaClient } from "@sapphire/db";
 import { describe, expect, it, vi } from "vitest";
 import {
   cancelSupersededQueuedRuns,
@@ -16,7 +16,7 @@ import {
 
 // Passthrough mock: every hint derives for real except the sentinel that
 // exercises the "derivation must never cost the send" path.
-vi.mock("@rakazo/core/message-quote", async (importOriginal) => {
+vi.mock("@sapphire/core/message-quote", async (importOriginal) => {
   const actual = await importOriginal<typeof MessageQuoteModule>();
   return {
     ...actual,

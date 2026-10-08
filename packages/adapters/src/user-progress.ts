@@ -1,5 +1,5 @@
-import type { MessageBlock } from "@rakazo/contracts";
-import { isToolActivityBlock } from "@rakazo/core";
+import type { MessageBlock } from "@sapphire/contracts";
+import { isToolActivityBlock } from "@sapphire/core";
 
 /** Keep mid-turn progress beats short; prefer a few high-signal updates. */
 export const USER_PROGRESS_MESSAGE_MAX_LENGTH = 500;

@@ -5,7 +5,7 @@ import type {
   WebProvider,
   WebSearchHit,
   WebSearchRequest,
-} from "@rakazo/adapter-kit";
+} from "@sapphire/adapter-kit";
 
 /** In-memory web provider for offline tests. Never hits the network. */
 export class FakeWebProvider implements WebProvider {

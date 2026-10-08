@@ -1,4 +1,4 @@
-import { LOCAL_SETTINGS_RPC, LOCAL_SETTINGS_TOKEN_HEADER } from "@rakazo/contracts";
+import { LOCAL_SETTINGS_RPC, LOCAL_SETTINGS_TOKEN_HEADER } from "@sapphire/contracts";
 import { Hono } from "hono";
 import { describe, expect, it, vi } from "vitest";
 import { mountLocalSettings, validLocalSettingsToken } from "./local-settings.js";

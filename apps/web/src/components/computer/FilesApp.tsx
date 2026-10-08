@@ -7,8 +7,8 @@ import {
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { useLingui } from "@lingui/react/macro";
-import { ATTACHMENT_MAX_BYTES } from "@rakazo/contracts";
-import { Button } from "@rakazo/ui-web";
+import { ATTACHMENT_MAX_BYTES } from "@sapphire/contracts";
+import { Button } from "@sapphire/ui-web";
 import { type DragEvent, useCallback, useEffect, useRef, useState } from "react";
 import { decodeArtifactBase64, downloadArtifactBytes } from "../../lib/artifact-open";
 import {

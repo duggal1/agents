@@ -1,7 +1,12 @@
 import { XIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { Trans, useLingui } from "@lingui/react/macro";
-import type { VoiceCatalogEntry, VoiceCredential, VoiceInfo, VoiceStatus } from "@rakazo/contracts";
+import type {
+  VoiceCatalogEntry,
+  VoiceCredential,
+  VoiceInfo,
+  VoiceStatus,
+} from "@sapphire/contracts";
 import {
   Badge,
   Button,
@@ -14,7 +19,7 @@ import {
   Input,
   NativeSelect,
   NativeSelectOption,
-} from "@rakazo/ui-web";
+} from "@sapphire/ui-web";
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { rpc } from "../lib/rpc";
 

@@ -1,4 +1,4 @@
-import type { RunActivityRow } from "@rakazo/contracts";
+import type { RunActivityRow } from "@sapphire/contracts";
 import { rpc } from "../lib/api";
 import { dateLocaleForUi, t } from "./i18n";
 

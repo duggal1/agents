@@ -1,5 +1,5 @@
-import type { MessageBlock } from "@rakazo/contracts";
-import { isToolActivityBlock } from "@rakazo/core";
+import type { MessageBlock } from "@sapphire/contracts";
+import { isToolActivityBlock } from "@sapphire/core";
 
 /**
  * Compact human duration for a tool-activity card summary.

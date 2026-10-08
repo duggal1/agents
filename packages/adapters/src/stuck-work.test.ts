@@ -1,9 +1,9 @@
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import type { JobPublisher, NotificationProvider } from "@rakazo/adapter-kit";
-import { STUCK_WORK_NOTICE, stuckWorkStatusMessage } from "@rakazo/core";
-import type { PrismaClient, ThreadEvents } from "@rakazo/db";
+import type { JobPublisher, NotificationProvider } from "@sapphire/adapter-kit";
+import { STUCK_WORK_NOTICE, stuckWorkStatusMessage } from "@sapphire/core";
+import type { PrismaClient, ThreadEvents } from "@sapphire/db";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { deletePushToken, ExpoPushProvider, savePushToken } from "./expo-push.js";
 import { createJobReconciler } from "./job-reconciler.js";

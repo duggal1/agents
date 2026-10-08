@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-import type { VoiceChatGroup } from "@rakazo/core";
+import type { VoiceChatGroup } from "@sapphire/core";
 import type { ReactNode } from "react";
 import { act } from "react";
 import type { Root } from "react-dom/client";

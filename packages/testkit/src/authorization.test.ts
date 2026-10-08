@@ -1,14 +1,14 @@
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import { ComposioEmulator } from "@rakazo/adapters";
-import type { appContract, Space, SpaceNavigation } from "@rakazo/contracts";
+import { ComposioEmulator } from "@sapphire/adapters";
+import type { appContract, Space, SpaceNavigation } from "@sapphire/contracts";
 import {
   claimEmptySpaceDeletionForMember,
   deleteEmptySpaceForMember,
   releaseSpaceDeletionClaim,
   renewSpaceDeletionClaim,
-} from "@rakazo/db";
+} from "@sapphire/db";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import type { createApp } from "../../../apps/api/src/app.ts";
 import type { BotIntroHarness } from "./discard-bot-intro.js";

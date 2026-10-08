@@ -6,8 +6,8 @@ import {
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { Trans, useLingui } from "@lingui/react/macro";
-import { COMPUTER_UPDATE_STAGES, type ComputerUpdate } from "@rakazo/contracts";
-import { computerUpdateNeedsAttention, computerUpdateStages } from "@rakazo/core";
+import { COMPUTER_UPDATE_STAGES, type ComputerUpdate } from "@sapphire/contracts";
+import { computerUpdateNeedsAttention, computerUpdateStages } from "@sapphire/core";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -22,7 +22,7 @@ import {
   Dialog,
   DialogContent,
   DialogTitle,
-} from "@rakazo/ui-web";
+} from "@sapphire/ui-web";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { computerUpdates } from "../lib/computer-updates";
 import { LoadingState } from "./ai/primitives";

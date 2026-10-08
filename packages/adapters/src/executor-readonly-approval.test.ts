@@ -3,10 +3,10 @@ import type {
   AutoReviewProvider,
   ConnectorCall,
   ConnectorTool,
-} from "@rakazo/adapter-kit";
-import { MEMORY_REVISION_CONFLICT_ERROR } from "@rakazo/adapter-kit";
-import type { ActionApprovalRule } from "@rakazo/core";
-import { approvalEffectKey, toolEffectIdempotencyKey } from "@rakazo/core/node/approval-effect-key";
+} from "@sapphire/adapter-kit";
+import { MEMORY_REVISION_CONFLICT_ERROR } from "@sapphire/adapter-kit";
+import type { ActionApprovalRule } from "@sapphire/core";
+import { approvalEffectKey, toolEffectIdempotencyKey } from "@sapphire/core/node/approval-effect-key";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { isApprovalPausedResult } from "./approval-effect.js";
 import { MAX_SHARED_MEMORY_CHARS } from "./builtin-tools.js";

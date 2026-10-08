@@ -1,5 +1,5 @@
 import { execFileSync } from "node:child_process";
-import { LOCAL_SETTINGS_RPC, LOCAL_SETTINGS_TOKEN_HEADER } from "@rakazo/contracts";
+import { LOCAL_SETTINGS_RPC, LOCAL_SETTINGS_TOKEN_HEADER } from "@sapphire/contracts";
 import { describe, expect, it, vi } from "vitest";
 import { requestLocalSettings } from "./local-settings.js";
 
@@ -14,7 +14,7 @@ describe("local settings transport", () => {
           "--no-experimental-strip-types",
           "--input-type=module",
           "-e",
-          'import { LOCAL_SETTINGS_PAGE, isLocalSettingsProcedure } from "@rakazo/contracts/local-settings"; if (LOCAL_SETTINGS_PAGE !== "/desktop-settings" || !isLocalSettingsProcedure("/api/desktop-settings/rpc/me")) throw new Error("Invalid runtime contract");',
+          'import { LOCAL_SETTINGS_PAGE, isLocalSettingsProcedure } from "@sapphire/contracts/local-settings"; if (LOCAL_SETTINGS_PAGE !== "/desktop-settings" || !isLocalSettingsProcedure("/api/desktop-settings/rpc/me")) throw new Error("Invalid runtime contract");',
         ],
         { cwd: import.meta.dirname, env: { ...process.env, NODE_OPTIONS: "" }, stdio: "pipe" },
       ),

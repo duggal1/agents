@@ -27,8 +27,8 @@ import type {
   SandboxProvider,
   ScreenRequest,
   ScreenSession,
-} from "@rakazo/adapter-kit";
-import { boundedSandboxCommandTimeoutMs } from "@rakazo/core";
+} from "@sapphire/adapter-kit";
+import { boundedSandboxCommandTimeoutMs } from "@sapphire/core";
 import {
   applyPlaceholderAction,
   boundedComputerActions,

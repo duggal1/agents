@@ -1,4 +1,4 @@
-import type { MessageBlock } from "@rakazo/contracts";
+import type { MessageBlock } from "@sapphire/contracts";
 import { t } from "./i18n";
 
 export type AppConnectBlock = Extract<MessageBlock, { kind: "app_connect" }>;

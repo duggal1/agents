@@ -1,7 +1,7 @@
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import type { ComputerRef, SandboxProvider } from "@rakazo/adapter-kit";
+import type { ComputerRef, SandboxProvider } from "@sapphire/adapter-kit";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import type { createApp } from "../../../apps/api/src/app.ts";
 import { computerTestSandbox } from "./computer-test-config.js";

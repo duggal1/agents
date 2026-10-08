@@ -1,9 +1,9 @@
 import { createHash } from "node:crypto";
-import type { JobPublisher } from "@rakazo/adapter-kit";
-import { runContinueJob } from "@rakazo/adapter-kit";
-import type { EncryptedSecretStore } from "@rakazo/adapters";
-import type { PrismaClient } from "@rakazo/db";
-import { getLogger } from "@rakazo/logging";
+import type { JobPublisher } from "@sapphire/adapter-kit";
+import { runContinueJob } from "@sapphire/adapter-kit";
+import type { EncryptedSecretStore } from "@sapphire/adapters";
+import type { PrismaClient } from "@sapphire/db";
+import { getLogger } from "@sapphire/logging";
 
 export const WEBHOOK_MAX_BODY_BYTES = 64 * 1024;
 export const WEBHOOK_SECRET_KIND = "webhook";

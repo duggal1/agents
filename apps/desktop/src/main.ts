@@ -2,8 +2,8 @@ import { randomBytes } from "node:crypto";
 import { existsSync } from "node:fs";
 import { readFile, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
-import type { DesktopReachability, DesktopSetup } from "@rakazo/contracts";
-import { LOCAL_SETTINGS_PAGE } from "@rakazo/contracts/local-settings";
+import type { DesktopReachability, DesktopSetup } from "@sapphire/contracts";
+import { LOCAL_SETTINGS_PAGE } from "@sapphire/contracts/local-settings";
 import {
   app,
   BrowserWindow,

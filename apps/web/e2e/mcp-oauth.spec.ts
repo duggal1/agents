@@ -1,5 +1,5 @@
 import { expect, type Route, test } from "@playwright/test";
-import type { McpServer } from "@rakazo/contracts";
+import type { McpServer } from "@sapphire/contracts";
 import { MCP_OAUTH_CHANNEL } from "../src/lib/mcp-connect";
 import { captureScreenshot, completeOnboarding, signup } from "./helpers";
 

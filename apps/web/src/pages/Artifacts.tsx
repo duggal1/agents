@@ -12,9 +12,9 @@ import {
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { Trans, useLingui } from "@lingui/react/macro";
-import { ChatMarkdown } from "@rakazo/chat-ui/web";
-import type { Artifact, ArtifactVersion, Bot } from "@rakazo/contracts";
-import { isAttachmentImageMimeType } from "@rakazo/contracts";
+import { ChatMarkdown } from "@sapphire/chat-ui/web";
+import type { Artifact, ArtifactVersion, Bot } from "@sapphire/contracts";
+import { isAttachmentImageMimeType } from "@sapphire/contracts";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -31,7 +31,7 @@ import {
   parseBotAvatar,
   RakazoMark,
   resolvePersonaColorDef,
-} from "@rakazo/ui-web";
+} from "@sapphire/ui-web";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { PdfViewer } from "../components/PdfViewer";

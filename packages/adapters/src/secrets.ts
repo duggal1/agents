@@ -1,5 +1,5 @@
 import { createCipheriv, createDecipheriv, createHash, randomBytes, scryptSync } from "node:crypto";
-import type { AdapterContext, SecretRecord, SecretStore } from "@rakazo/adapter-kit";
+import type { AdapterContext, SecretRecord, SecretStore } from "@sapphire/adapter-kit";
 
 const VERSION_PREFIX = "v2:";
 const SALT_BYTES = 16;

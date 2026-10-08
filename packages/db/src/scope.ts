@@ -1,4 +1,4 @@
-import type { Actor } from "@rakazo/contracts";
+import type { Actor } from "@sapphire/contracts";
 import type { PrismaClient } from "./client.js";
 
 export class IsolationError extends Error {

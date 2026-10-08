@@ -1,4 +1,4 @@
-import type { MessagingSurface } from "@rakazo/adapter-kit";
+import type { MessagingSurface } from "@sapphire/adapter-kit";
 import { Hono } from "hono";
 import { describe, expect, it, vi } from "vitest";
 import { MESSAGING_WEBHOOK_BASE_PATH, mountMessagingWebhookRoutes } from "./messaging-webhook.js";

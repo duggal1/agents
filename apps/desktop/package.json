@@ -1,5 +1,5 @@
 {
-  "name": "@rakazo/desktop",
+  "name": "@sapphire/desktop",
   "productName": "Sapphire",
   "version": "0.1.6",
   "license": "Apache-2.0",
@@ -8,21 +8,21 @@
   "scripts": {
     "dev": "bun run build && electron .",
     "build": "tsc -p tsconfig.json && node scripts/copy-static.mjs",
-    "pack": "bun --filter @rakazo/web build && bun run build && electron-builder --mac --win --linux",
-    "pack:dir": "bun --filter @rakazo/web build && bun run build && electron-builder --dir",
-    "pack:run": "rm -rf out && bun --filter @rakazo/web build && bun run build && electron-builder --dir && open out/mac-arm64/Sapphire.app",
+    "pack": "bun --filter @sapphire/web build && bun run build && electron-builder --mac --win --linux",
+    "pack:dir": "bun --filter @sapphire/web build && bun run build && electron-builder --dir",
+    "pack:run": "rm -rf out && bun --filter @sapphire/web build && bun run build && electron-builder --dir && open out/mac-arm64/Sapphire.app",
     "check": "tsc --noEmit -p tsconfig.json",
     "test": "vitest run --root ../.. apps/desktop/src",
     "test:e2e": "bun run build && playwright test --config e2e/playwright.config.ts",
-    "release": "bun --filter @rakazo/web build && bun run build && electron-builder --publish never"
+    "release": "bun --filter @sapphire/web build && bun run build && electron-builder --publish never"
   },
   "dependencies": {
-    "@rakazo/contracts": "workspace:*",
+    "@sapphire/contracts": "workspace:*",
     "electron-updater": "6.8.9"
   },
   "devDependencies": {
     "@playwright/test": "1.63.0",
-    "@rakazo/ui-tokens": "workspace:*",
+    "@sapphire/ui-tokens": "workspace:*",
     "electron": "44.5.1",
     "electron-builder": "26.15.3",
     "typescript": "7.0.2",
@@ -72,7 +72,7 @@
       "verifyUpdateCodeSignature": true
     },
     "linux": {
-      "executableName": "rakazo",
+      "executableName": "sapphire",
       "icon": "assets/icon.png",
       "target": [
         "AppImage"

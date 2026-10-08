@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 import { isIP } from "node:net";
-import type { DesktopSetup, DesktopStackProbeResponse } from "@rakazo/contracts";
+import type { DesktopSetup, DesktopStackProbeResponse } from "@sapphire/contracts";
 
 /** Managed desktop origin; development keeps its usual web/API ports. */
 export const DEFAULT_LOCAL_WEB_URL = "http://127.0.0.1:45173";

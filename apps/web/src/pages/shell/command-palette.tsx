@@ -1,6 +1,6 @@
 import { t } from "@lingui/core/macro";
 import { Trans } from "@lingui/react/macro";
-import type { Bot } from "@rakazo/contracts";
+import type { Bot } from "@sapphire/contracts";
 import {
   Badge,
   BotAvatar,
@@ -13,7 +13,7 @@ import {
   CommandList,
   CommandShortcut,
   Kbd,
-} from "@rakazo/ui-web";
+} from "@sapphire/ui-web";
 import { useEffect, useMemo, useState } from "react";
 
 function isApplePlatform() {

@@ -3,12 +3,12 @@ import type {
   AdapterContext,
   BackgroundJobPayloads,
   CloudAgentSnapshot,
-} from "@rakazo/adapter-kit";
-import { CloudAgentRequestRejected, runContinueJob } from "@rakazo/adapter-kit";
-import type { MessageBlock } from "@rakazo/contracts";
-import { cloudAgentHttpsUrl } from "@rakazo/core";
-import { appendEventInTransaction, type CloudAgent, Prisma } from "@rakazo/db";
-import { getLogger } from "@rakazo/logging";
+} from "@sapphire/adapter-kit";
+import { CloudAgentRequestRejected, runContinueJob } from "@sapphire/adapter-kit";
+import type { MessageBlock } from "@sapphire/contracts";
+import { cloudAgentHttpsUrl } from "@sapphire/core";
+import { appendEventInTransaction, type CloudAgent, Prisma } from "@sapphire/db";
+import { getLogger } from "@sapphire/logging";
 import { cloudAgentsEnabled } from "./cloud-agent-factory.js";
 import { type CloudAgentDeps, cloudAgentBlock, enqueueCloudAgent } from "./cloud-agent-service.js";
 import { cloudAgentLaunchSchema, cloudAgentPromptSchema } from "./cloud-agent-tools.js";

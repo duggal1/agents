@@ -1,5 +1,5 @@
-import type { ConnectorTool } from "@rakazo/adapter-kit";
-import { approvalEffectKey } from "@rakazo/core/node/approval-effect-key";
+import type { ConnectorTool } from "@sapphire/adapter-kit";
+import { approvalEffectKey } from "@sapphire/core/node/approval-effect-key";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
   approvalPausedToolResult,

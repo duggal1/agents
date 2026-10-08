@@ -1,4 +1,4 @@
-import type { AvatarStyle, Me } from "@rakazo/contracts";
+import type { AvatarStyle, Me } from "@sapphire/contracts";
 import { usePathname } from "expo-router";
 import { createContext, type ReactNode, useContext, useEffect, useRef, useState } from "react";
 import { AppState } from "react-native";

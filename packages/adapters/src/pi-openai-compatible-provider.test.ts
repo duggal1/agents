@@ -1,5 +1,5 @@
 import { builtinModels } from "@earendil-works/pi-ai/providers/all";
-import { OPENAI_COMPATIBLE_PROVIDER_ID } from "@rakazo/contracts";
+import { OPENAI_COMPATIBLE_PROVIDER_ID } from "@sapphire/contracts";
 import { fetch as undiciFetch } from "undici";
 import { describe, expect, it } from "vitest";
 import { buildModelConnectPlaintext } from "./model-connect.js";

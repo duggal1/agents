@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
-import type { AdapterContext, BackgroundJob, JobPublisher } from "@rakazo/adapter-kit";
-import { clearThread, createDb, type PrismaClient } from "@rakazo/db";
+import type { AdapterContext, BackgroundJob, JobPublisher } from "@sapphire/adapter-kit";
+import { clearThread, createDb, type PrismaClient } from "@sapphire/db";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import type { CloudAgentConnection } from "./cloud-agent-factory.js";
 import { pollCloudAgent } from "./cloud-agent-poll.js";

@@ -1,9 +1,9 @@
-import type { JobPublisher, NotificationProvider } from "@rakazo/adapter-kit";
-import { messagingDeliverJob, routineWakeupJob, runContinueJob } from "@rakazo/adapter-kit";
-import type { MessageBlock } from "@rakazo/contracts";
-import { stuckWorkStatusMessages } from "@rakazo/core";
-import type { Pool, PrismaClient, ThreadEvents } from "@rakazo/db";
-import { getLogger } from "@rakazo/logging";
+import type { JobPublisher, NotificationProvider } from "@sapphire/adapter-kit";
+import { messagingDeliverJob, routineWakeupJob, runContinueJob } from "@sapphire/adapter-kit";
+import type { MessageBlock } from "@sapphire/contracts";
+import { stuckWorkStatusMessages } from "@sapphire/core";
+import type { Pool, PrismaClient, ThreadEvents } from "@sapphire/db";
+import { getLogger } from "@sapphire/logging";
 import type { PoolClient } from "pg";
 import { returnBotMessageOutcome } from "./bot-messages.js";
 import { scheduleComputerControlExpiry } from "./computer-control.js";

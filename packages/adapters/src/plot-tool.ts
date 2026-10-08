@@ -1,4 +1,4 @@
-export * from "@rakazo/core/plot";
+export * from "@sapphire/core/plot";
 
 /** Rasterize a rendered plot SVG to an opaque PNG. The SVG's CSS background is
     not honored by all rasterizers, and a transparent chart is unreadable on

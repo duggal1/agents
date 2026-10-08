@@ -1,5 +1,5 @@
 import { createCipheriv, createHash } from "node:crypto";
-import type { AdapterContext, MessagingInboundEvent } from "@rakazo/adapter-kit";
+import type { AdapterContext, MessagingInboundEvent } from "@sapphire/adapter-kit";
 import type * as LarkAdapterModule from "chat-adapter-lark";
 import type { HttpInstance } from "chat-adapter-lark";
 import { beforeEach, describe, expect, it, vi } from "vitest";

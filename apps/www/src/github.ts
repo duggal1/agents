@@ -1,4 +1,4 @@
-import { readBoundedJsonResponse } from "@rakazo/core";
+import { readBoundedJsonResponse } from "@sapphire/core";
 import { GITHUB_API_REPO } from "./site";
 
 export const GITHUB_STARS_TIMEOUT_MS = 5_000;

@@ -1,6 +1,6 @@
 import type { OAuthCredential } from "@earendil-works/pi-ai";
 import { builtinModels } from "@earendil-works/pi-ai/providers/all";
-import type { ModelCredentialFailedState, ModelCredentialRetireReason } from "@rakazo/adapter-kit";
+import type { ModelCredentialFailedState, ModelCredentialRetireReason } from "@sapphire/adapter-kit";
 import { describe, expect, it, vi } from "vitest";
 import { PiRuntimeCredentialStore } from "./pi-credentials.js";
 import {

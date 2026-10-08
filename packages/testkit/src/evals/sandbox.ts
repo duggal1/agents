@@ -3,8 +3,8 @@ import type {
   CommandRequest,
   ComputerRef,
   ProcessEvent,
-} from "@rakazo/adapter-kit";
-import { FakeSandboxProvider } from "@rakazo/adapters";
+} from "@sapphire/adapter-kit";
+import { FakeSandboxProvider } from "@sapphire/adapters";
 
 /** A model must not receive successful shell results for commands the fixture never ran. */
 export class EvalSandboxProvider extends FakeSandboxProvider {

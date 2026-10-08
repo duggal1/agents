@@ -1,4 +1,4 @@
-import type { AdapterContext } from "@rakazo/adapter-kit";
+import type { AdapterContext } from "@sapphire/adapter-kit";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { ResolveHostname } from "./network-address.js";
 import { MemoryProviderDeploymentOwnerRequiredError } from "./serenity-memory-provider.js";

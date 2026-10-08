@@ -1,4 +1,4 @@
-import type { ComputerMode } from "@rakazo/contracts";
+import type { ComputerMode } from "@sapphire/contracts";
 import { Pressable, Text, View } from "react-native";
 import { useI18n } from "../lib/i18n";
 import { useMobileTokens } from "../lib/native";
