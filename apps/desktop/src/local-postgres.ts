@@ -342,8 +342,17 @@ export class LocalPostgresController {
   private logLines: string[] = [];
   private running: Promise<PostgresState> | null = null;
   private serverRunning = false;
+  private listeners: ((state: PostgresState) => void)[] = [];
 
   constructor(private readonly deps: LocalPostgresDeps) {}
+
+  /** Observes phase changes in addition to the constructor's `onState` callback. */
+  subscribe(listener: (state: PostgresState) => void): () => void {
+    this.listeners.push(listener);
+    return () => {
+      this.listeners = this.listeners.filter((candidate) => candidate !== listener);
+    };
+  }
 
   state(): PostgresState {
     return this.current;
@@ -658,5 +667,6 @@ export class LocalPostgresController {
     if (next.phase === this.current.phase && next.message === this.current.message) return;
     this.current = next;
     this.deps.onState?.(next);
+    for (const listener of this.listeners) listener(next);
   }
 }

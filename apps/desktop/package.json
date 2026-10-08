@@ -8,6 +8,7 @@
   "scripts": {
     "dev": "bun run build && electron .",
     "build": "tsc -p tsconfig.json && node scripts/copy-static.mjs",
+    "runtime:build": "node scripts/build-runtime.mjs",
     "pack": "bun --filter @sapphire/web build && bun run build && electron-builder --mac --win --linux",
     "pack:dir": "bun --filter @sapphire/web build && bun run build && electron-builder --dir",
     "pack:run": "rm -rf out && bun --filter @sapphire/web build && bun run build && electron-builder --dir && open out/mac-arm64/Sapphire.app",

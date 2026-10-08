@@ -55,6 +55,10 @@ export interface LocalRuntimeManifest {
   /** The desktop app version this runtime was packaged for. */
   appVersion: string;
   services: LocalServiceManifest[];
+  /** The PostgreSQL distribution shipped beside the services. */
+  postgres: { minimumMacos: string; major: number };
+  /** koffi architectures staged for a universal build. */
+  koffiArches: string[];
 }
 
 /** Ordered phases of the whole local backend, exposed to the setup UI. */
@@ -73,6 +77,8 @@ export interface LocalRuntimeState {
   phase: LocalRuntimePhase;
   /** One actionable sentence; null while the backend is progressing normally. */
   message: string | null;
+  /** Bounded, redacted, prefixed log tail across every managed process, oldest first. */
+  output: string[];
 }
 
 /**
@@ -443,5 +449,263 @@ function safeRegExp(pattern: string): RegExp {
   } catch {
     // A malformed packaged pattern must never match and never throw mid-supervision.
     return /$.^/;
+  }
+}
+
+/**
+ * Readiness is the log line each service already writes when it can serve traffic.
+ * Nothing else in these services emits it, so a packaged pattern stays unambiguous.
+ */
+export const SERVICE_READINESS: Record<LocalServiceId, LocalReadiness> = {
+  api: { kind: "log", pattern: "api listening" },
+  worker: { kind: "log", pattern: "worker ready" },
+};
+
+export const RUNTIME_OUTPUT_LINES = 400;
+/** Prefixes keep one merged log readable without leaking which process said what. */
+export const RUNTIME_LOG_PREFIX: Record<LocalServiceId | "database", string> = {
+  database: "[database]",
+  api: "[api]",
+  worker: "[worker]",
+};
+
+/** The native runtime consumes a PostgreSQL controller through this narrow surface. */
+export type DatabasePhase =
+  | "stopped"
+  | "starting-database"
+  | "migrating"
+  | "ready"
+  | "stopping"
+  | "failed";
+
+export interface DatabaseControllerState {
+  phase: DatabasePhase;
+  message: string | null;
+}
+
+export interface DatabaseController {
+  start(signal?: AbortSignal): Promise<DatabaseControllerState>;
+  stop(): Promise<DatabaseControllerState>;
+  state(): DatabaseControllerState;
+  /** Null until the cluster's connection URL is known. */
+  url(): string | null;
+  output(): string[];
+  subscribe(listener: (state: DatabaseControllerState) => void): () => void;
+}
+
+/** The narrow surface a supervised service exposes; satisfied by `LocalProcess`. */
+export interface RuntimeProcess {
+  start(): void;
+  stop(): Promise<void>;
+  whenReady(): Promise<void>;
+  current(): LocalProcessState;
+  output(): string[];
+}
+
+export interface LocalRuntimeDeps {
+  database: DatabaseController;
+  /** Runtime resource root the service entry points resolve under. */
+  runtimeRoot: string;
+  /** The Node runtime binary that launches the service entry points. */
+  execPath: string;
+  platform: string;
+  manifests: Record<LocalServiceId, LocalServiceManifest>;
+  /** Resolved per-service environment; `DATABASE_URL` is injected by the orchestrator. */
+  serviceEnv: Record<LocalServiceId, Record<string, string>>;
+  inheritedEnv: NodeJS.ProcessEnv;
+  secrets?: readonly string[];
+  logLimit?: number;
+  onState?: (state: LocalRuntimeState) => void;
+  onOutput?: (line: string) => void;
+  createProcess?: (options: LocalProcessOptions) => RuntimeProcess;
+}
+
+const DATABASE_FAILED = "The local database did not become ready. Check the log below, then retry.";
+
+/**
+ * Boots the whole local backend in dependency order: PostgreSQL (which migrates),
+ * then API, then worker. It never starts a service before the database is ready and
+ * never starts the worker before the API. Only an unexpected exit degrades or fails it.
+ */
+export class LocalRuntimeController {
+  private current: LocalRuntimeState = { phase: "stopped", message: null, output: [] };
+  private api: RuntimeProcess | null = null;
+  private worker: RuntimeProcess | null = null;
+  private running: Promise<LocalRuntimeState> | null = null;
+  private unsubscribeDatabase: (() => void) | null = null;
+  private databaseUrlValue: string | null = null;
+  private outputLines: string[] = [];
+
+  constructor(private readonly deps: LocalRuntimeDeps) {}
+
+  state(): LocalRuntimeState {
+    return this.current;
+  }
+
+  /** The connection URL both services received, once the cluster is known. */
+  databaseUrl(): string | null {
+    return this.databaseUrlValue;
+  }
+
+  /** Merged, prefixed log tail; database lines arrive through `recordDatabaseOutput`. */
+  output(): string[] {
+    return [...this.outputLines];
+  }
+
+  /** Wired to the PostgreSQL controller's `onOutput` so its log shares one surface. */
+  recordDatabaseOutput(line: string) {
+    this.record("database", line);
+  }
+
+  /** Idempotent while starting; a later call joins the in-flight boot. */
+  start(): Promise<LocalRuntimeState> {
+    if (this.running !== null) return this.running;
+    const attempt = this.boot().finally(() => {
+      if (this.running === attempt) this.running = null;
+    });
+    this.running = attempt;
+    return attempt;
+  }
+
+  /** Stops worker, then API, then the database. Safe to call at any phase. */
+  async stop(): Promise<LocalRuntimeState> {
+    this.setState({ phase: "stopping", message: null });
+    await this.worker?.stop().catch(() => undefined);
+    await this.api?.stop().catch(() => undefined);
+    this.worker = null;
+    this.api = null;
+    this.unsubscribeDatabase?.();
+    this.unsubscribeDatabase = null;
+    await this.deps.database.stop().catch(() => undefined);
+    this.setState({ phase: "stopped", message: null });
+    return this.current;
+  }
+
+  /** Controlled restart for a runtime-policy change; used at the next safe boundary. */
+  async restart(): Promise<LocalRuntimeState> {
+    await this.stop();
+    return this.start();
+  }
+
+  private async boot(): Promise<LocalRuntimeState> {
+    this.setState({ phase: "starting-database", message: null });
+    this.unsubscribeDatabase = this.deps.database.subscribe((state) => this.onDatabase(state));
+    const database = await this.deps.database.start();
+    if (database.phase !== "ready") {
+      this.setState({ phase: "failed", message: database.message ?? DATABASE_FAILED });
+      return this.current;
+    }
+    const url = this.deps.database.url();
+    if (url === null) {
+      this.setState({ phase: "failed", message: DATABASE_FAILED });
+      return this.current;
+    }
+    this.databaseUrlValue = url;
+    if (!(await this.startService("api", url))) return this.current;
+    if (!(await this.startService("worker", url))) return this.current;
+    this.setState({ phase: "ready", message: null });
+    return this.current;
+  }
+
+  private async startService(id: LocalServiceId, databaseUrl: string): Promise<boolean> {
+    this.setState({ phase: id === "api" ? "starting-api" : "starting-worker", message: null });
+    const process = this.createService(id, databaseUrl);
+    if (id === "api") this.api = process;
+    else this.worker = process;
+    process.start();
+    try {
+      await process.whenReady();
+    } catch (error) {
+      await process.stop().catch(() => undefined);
+      this.setState({
+        phase: "failed",
+        message: error instanceof Error ? error.message : `${id} failed to start.`,
+      });
+      return false;
+    }
+    return true;
+  }
+
+  private createService(id: LocalServiceId, databaseUrl: string): RuntimeProcess {
+    const create =
+      this.deps.createProcess ?? ((options: LocalProcessOptions) => new LocalProcess(options));
+    return create({
+      manifest: this.deps.manifests[id],
+      root: this.deps.runtimeRoot,
+      execPath: this.deps.execPath,
+      env: {
+        ...this.deps.serviceEnv[id],
+        DATABASE_URL: databaseUrl,
+        REALTIME_DATABASE_URL: databaseUrl,
+      },
+      inheritedEnv: this.deps.inheritedEnv,
+      platform: this.deps.platform,
+      secrets: this.deps.secrets ?? [],
+      logLimit: this.deps.logLimit ?? DEFAULT_LOG_LINES,
+      onOutput: (line) => this.record(id, line),
+      onState: (state) => this.onServiceState(id, state),
+    });
+  }
+
+  private onServiceState(id: LocalServiceId, state: LocalProcessState) {
+    if (
+      this.current.phase === "failed" ||
+      this.current.phase === "stopping" ||
+      this.current.phase === "stopped"
+    ) {
+      return;
+    }
+    if (state.phase === "failed") {
+      this.setState({ phase: "failed", message: state.message ?? `${id} stopped unexpectedly.` });
+      return;
+    }
+    if (state.phase === "starting" && state.restarts > 0) {
+      if (this.current.phase === "ready" || this.current.phase === "degraded") {
+        this.setState({
+          phase: "degraded",
+          message: `${id} stopped unexpectedly and is restarting.`,
+        });
+      }
+      return;
+    }
+    if (state.phase === "running" && this.current.phase === "degraded") {
+      this.setState({ phase: "ready", message: null });
+    }
+  }
+
+  private onDatabase(state: DatabaseControllerState) {
+    if (this.current.phase === "failed") return;
+    if (state.phase === "starting-database") {
+      this.setState({ phase: "starting-database", message: null });
+      return;
+    }
+    if (state.phase === "migrating") {
+      this.setState({ phase: "migrating", message: null });
+      return;
+    }
+    if (state.phase === "failed") {
+      this.setState({ phase: "failed", message: state.message ?? DATABASE_FAILED });
+    }
+  }
+
+  private record(source: LocalServiceId | "database", line: string) {
+    this.outputLines = [...this.outputLines, `${RUNTIME_LOG_PREFIX[source]} ${line}`].slice(
+      -RUNTIME_OUTPUT_LINES,
+    );
+    this.deps.onOutput?.(line);
+    this.setState({ output: this.outputLines });
+  }
+
+  private setState(next: Partial<LocalRuntimeState>) {
+    const merged: LocalRuntimeState = { ...this.current, ...next };
+    if (
+      merged.phase === this.current.phase &&
+      merged.message === this.current.message &&
+      merged.output === this.current.output
+    ) {
+      return;
+    }
+    this.current = merged;
+    this.deps.onState?.(merged);
   }
 }
