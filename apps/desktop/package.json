@@ -1,0 +1,88 @@
+{
+  "name": "@rakazo/desktop",
+  "productName": "Rakazo",
+  "version": "0.1.6",
+  "license": "Apache-2.0",
+  "type": "module",
+  "main": "dist/main.js",
+  "scripts": {
+    "dev": "bun build && electron .",
+    "build": "tsc -p tsconfig.json && node scripts/copy-static.mjs",
+    "pack": "bun --filter @rakazo/web build && bun build && electron-builder --mac --win --linux",
+    "pack:dir": "bun --filter @rakazo/web build && bun build && electron-builder --dir",
+    "check": "tsc --noEmit -p tsconfig.json",
+    "test": "vitest run --root ../.. apps/desktop/src",
+    "test:e2e": "bun build && playwright test --config e2e/playwright.config.ts",
+    "release": "bun --filter @rakazo/web build && bun build && electron-builder --publish never"
+  },
+  "dependencies": {
+    "@rakazo/contracts": "workspace:*",
+    "electron-updater": "6.8.9"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.63.0",
+    "@rakazo/ui-tokens": "workspace:*",
+    "electron": "44.5.1",
+    "electron-builder": "26.15.3",
+    "typescript": "7.0.2",
+    "vitest": "5.0.3"
+  },
+  "build": {
+    "appId": "dev.rakazo.desktop",
+    "directories": {
+      "output": "out",
+      "buildResources": "assets"
+    },
+    "files": [
+      "dist/**/*",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "../web/dist",
+        "to": "web"
+      },
+      {
+        "from": "../../infra/compose/docker-compose.images.yml",
+        "to": "stack/docker-compose.images.yml"
+      },
+      {
+        "from": "../../infra/compose/.env.images.example",
+        "to": "stack/.env.images.example"
+      }
+    ],
+    "extraMetadata": {
+      "main": "dist/main.js"
+    },
+    "mac": {
+      "icon": "../../packages/ui-tokens/assets/Rakazo.icon",
+      "category": "public.app-category.productivity",
+      "target": [
+        "dmg",
+        "zip"
+      ],
+      "notarize": true
+    },
+    "win": {
+      "icon": "assets/icon.ico",
+      "target": [
+        "nsis"
+      ],
+      "verifyUpdateCodeSignature": true
+    },
+    "linux": {
+      "executableName": "rakazo",
+      "icon": "assets/icon.png",
+      "target": [
+        "AppImage"
+      ]
+    },
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "elie222",
+        "repo": "rakazo"
+      }
+    ]
+  }
+}

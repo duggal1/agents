@@ -1,0 +1,631 @@
+/* Setup window — DESIGN.MD (Sapphire dark) applied 1:1.
+ *
+ * Surface scale: page neutral-900 #171717 → card neutral-850 #1f1f1f →
+ * hover/fill neutral-800 #262626. Borders are 1px neutral-800 hairlines.
+ * (tokens.css loads first; this file re-declares the slots DESIGN.MD owns so the
+ * setup surface matches the editorial system even though the shared ui-tokens
+ * ramp has not been remapped.)
+ * Type: always font-normal, tight tracking, small sizes. The web app renders
+ * Figtree/Geist via next/font; this offline window mirrors its metrics with the
+ * system stack. Motion: everything blurs in/out on EASE_LUXE, never springs.
+ */
+
+:root {
+  color-scheme: dark;
+  --background: #171717; /* neutral-900 — page canvas */
+  --card: #1f1f1f; /* neutral-850 — cards, rows, inputs */
+  --card-hover: #262626; /* neutral-800 — hover / fill / icon slots */
+  --foreground: #fafafa; /* neutral-50 — headings, CTA text inverse */
+  --body: #d4d4d4; /* neutral-300 — labels */
+  --muted-foreground: #a3a3a3; /* neutral-400 — body/meta, must-read minimum */
+  --faint: #737373; /* neutral-500 — timestamps, placeholders only */
+  --border: #262626; /* neutral-800 hairline */
+  --border-strong: #404040; /* neutral-700 — hover border */
+  --input: #262626;
+  --ring: #525252; /* neutral-600 — 1px focus ring, never a fat brand ring */
+  --radius: 0.625rem;
+  --ok: #4ade80; /* green-400 — success */
+  --error: #fb923c; /* orange-400 — errors, attention */
+  --ease: cubic-bezier(0.22, 1, 0.36, 1); /* EASE_LUXE */
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--background);
+  color: var(--foreground);
+  font-family:
+    -apple-system, BlinkMacSystemFont, "SF Pro Text", Inter, "Segoe UI", Roboto, Helvetica,
+    Arial, sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.5;
+  display: flex;
+  flex-direction: column;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Blur in on mount. Exits are faster (150ms); hidden panels re-run this when
+ * they are shown again because display:none → block restarts the animation. */
+@keyframes rk-in {
+  from {
+    opacity: 0;
+    filter: blur(6px);
+    transform: translateY(6px);
+  }
+}
+
+@keyframes rk-swap {
+  from {
+    opacity: 0;
+    filter: blur(4px);
+  }
+}
+
+.titlebar {
+  -webkit-app-region: drag;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  flex: none;
+}
+
+html[data-platform="darwin"] .titlebar {
+  padding-left: 88px;
+}
+
+/* Wordmark, not a label: normal case, tight tracking, must-read neutral. */
+.titlebar-name {
+  font-size: 14px;
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  color: var(--foreground);
+  -webkit-font-smoothing: antialiased;
+}
+
+.titlebar-quit {
+  -webkit-app-region: no-drag;
+  background: none;
+  border: 0;
+  color: var(--muted-foreground);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 400;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: color 150ms var(--ease), background-color 150ms var(--ease);
+}
+
+.titlebar-quit:hover {
+  color: #e5e5e5;
+  background: var(--card-hover);
+}
+
+.titlebar-quit:focus-visible {
+  outline: 1px solid var(--ring);
+  outline-offset: 2px;
+}
+
+.shell {
+  flex: 1;
+  width: 100%;
+  max-width: 36rem;
+  margin: 0 auto;
+  padding: 24px 28px 32px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  animation: rk-in 350ms var(--ease) backwards;
+}
+
+/* Avatar lockup. The mark itself is untouched (same two-bar avatar as the
+ * product Wordmark); only the slot follows DESIGN.MD: 40px rounded-full on a
+ * neutral-800 fill. */
+.brand {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 9999px;
+  background: var(--card-hover);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+}
+
+.avatar svg {
+  width: 22px;
+  height: 22px;
+}
+
+.avatar-bar {
+  fill: var(--foreground);
+}
+
+.heading {
+  margin: 0 0 8px;
+  font-size: 24px;
+  font-weight: 400;
+  letter-spacing: -0.025em;
+  color: var(--foreground);
+  -webkit-font-smoothing: antialiased;
+}
+
+.subheading {
+  margin: 0 0 20px;
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--muted-foreground);
+}
+
+.choices {
+  border: 0;
+  margin: 0 0 18px;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+}
+
+.choice {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--card);
+  cursor: pointer;
+  transition: border-color 150ms var(--ease), background-color 150ms var(--ease);
+  animation: rk-in 350ms var(--ease) backwards;
+}
+
+.choice:hover {
+  border-color: var(--border-strong);
+  background: var(--card-hover);
+}
+
+.choice:has(input:checked) {
+  border-color: var(--ring);
+  background: var(--card-hover);
+}
+
+.choice:has(input:focus-visible) {
+  outline: 1px solid var(--ring);
+  outline-offset: 2px;
+}
+
+.choice input {
+  margin: 0;
+  accent-color: var(--foreground);
+  flex: none;
+}
+
+.choice-title {
+  font-size: 15px;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  color: var(--foreground);
+}
+
+.choice-hint {
+  display: block;
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--muted-foreground);
+}
+
+.panel {
+  margin-bottom: 4px;
+}
+
+.panel:not([hidden]) {
+  animation: rk-in 200ms var(--ease) backwards;
+}
+
+.field-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--body);
+  margin-bottom: 6px;
+}
+
+.field {
+  width: 100%;
+  height: 40px;
+  padding: 0 16px;
+  border-radius: var(--radius);
+  border: 1px solid rgb(64 64 64 / 0.7);
+  background: rgb(31 31 31 / 0.8);
+  color: #f5f5f5;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 400;
+  box-shadow: none;
+  transition: border-color 150ms var(--ease);
+}
+
+.field::placeholder {
+  color: var(--faint);
+}
+
+.field:focus-visible {
+  outline: 1px solid var(--ring);
+  outline-offset: 0;
+  border-color: var(--ring);
+}
+
+.stack-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.stack-phase {
+  margin: 0;
+  min-height: 20px;
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--foreground);
+}
+
+.stack-phase.swap {
+  animation: rk-swap 200ms var(--ease);
+}
+
+.icon-button {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius);
+  background: var(--card-hover);
+  color: var(--muted-foreground);
+  cursor: pointer;
+  transition: color 150ms var(--ease), background-color 150ms var(--ease);
+}
+
+.icon-button:hover,
+.icon-button[aria-expanded="true"] {
+  color: #e5e5e5;
+  background: rgb(64 64 64 / 0.65);
+}
+
+.icon-button:focus-visible {
+  outline: 1px solid var(--ring);
+  outline-offset: 2px;
+}
+
+.icon-button:active {
+  opacity: 0.9;
+}
+
+.icon-button svg {
+  width: 14px;
+  height: 14px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.progress {
+  margin-top: 10px;
+  height: 4px;
+  border-radius: 999px;
+  background: var(--border);
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  width: 0;
+  border-radius: inherit;
+  background: var(--foreground);
+  transition: width 250ms var(--ease);
+}
+
+.stack-detail {
+  margin: 8px 0 0;
+  min-height: 18px;
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--faint);
+  font-variant-numeric: tabular-nums;
+}
+
+/* No size to report (a failure, or before the first layer): take no room. */
+.stack-detail:empty {
+  margin: 0;
+  min-height: 0;
+}
+
+.stack-phase[data-tone="error"] {
+  color: var(--error);
+}
+
+.stack-phase[data-tone="ok"] {
+  color: var(--ok);
+}
+
+.stack-output {
+  margin: 10px 0 0;
+  max-height: 160px;
+  overflow: auto;
+  padding: 10px 12px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: rgb(23 23 23 / 0.6);
+  color: var(--muted-foreground);
+  font-family: ui-monospace, "SF Mono", "Geist Mono", Menlo, Consolas, monospace;
+  font-size: 12px;
+  line-height: 1.45;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.stack-help {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  margin-top: 10px;
+}
+
+/* Small utility link: dotted underline, neutral — never a blue text link. */
+.link {
+  background: none;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--body);
+  cursor: pointer;
+  text-decoration: underline;
+  text-decoration-style: dotted;
+  text-underline-offset: 2px;
+  transition: color 150ms var(--ease);
+}
+
+.link:hover {
+  color: var(--foreground);
+}
+
+.link:focus-visible {
+  outline: 1px solid var(--ring);
+  outline-offset: 2px;
+  border-radius: 3px;
+}
+
+.status-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 14px 0 0;
+  min-height: 20px;
+}
+
+.status {
+  margin: 0;
+  min-height: 20px;
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--muted-foreground);
+}
+
+.status.swap {
+  animation: rk-swap 200ms var(--ease);
+}
+
+.status[data-tone="ok"] {
+  color: var(--ok);
+}
+
+.status[data-tone="error"] {
+  color: var(--error);
+}
+
+/* Terminal loader — the one loading pattern (DESIGN.MD). Spinner and label
+ * shimmer share a timeline (shimmer = exactly 2× the spinner cycle) so they
+ * cannot drift. No JS, no re-renders. */
+.term-loader {
+  --term-cycle: 800ms;
+  --term-fg: #a3a3a3;
+  --term-hi: #fafafa;
+  --term-accent: #fafafa;
+  --term-lh: 1.35em;
+
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6em;
+  font-family: ui-monospace, "SF Mono", "Geist Mono", Menlo, Consolas, monospace;
+  font-size: 13px;
+  line-height: var(--term-lh);
+  letter-spacing: -0.02em;
+  color: var(--term-fg);
+  user-select: none;
+  animation: rk-in 200ms var(--ease) backwards;
+}
+
+.term-spinner {
+  display: inline-block;
+  width: 1ch;
+  height: var(--term-lh);
+  overflow: hidden;
+  color: var(--term-accent);
+}
+
+.term-strip {
+  display: flex;
+  flex-direction: column;
+  animation: term-steps var(--term-cycle) steps(10, end) infinite;
+  will-change: transform;
+}
+
+.term-strip > span {
+  height: var(--term-lh);
+  line-height: var(--term-lh);
+}
+
+@keyframes term-steps {
+  to {
+    transform: translateY(-100%);
+  }
+}
+
+.term-label {
+  background-image: linear-gradient(
+    100deg,
+    var(--term-fg) 0%,
+    var(--term-fg) 40%,
+    var(--term-hi) 50%,
+    var(--term-fg) 60%,
+    var(--term-fg) 100%
+  );
+  background-size: 250% 100%;
+  background-repeat: no-repeat;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  animation: term-shimmer calc(var(--term-cycle) * 2) linear infinite;
+}
+
+@keyframes term-shimmer {
+  from {
+    background-position: 150% 0;
+  }
+  to {
+    background-position: -50% 0;
+  }
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+/* One CTA per view: the inverted light chip. Everything else is neutral. */
+.button {
+  font: inherit;
+  font-size: 14px;
+  font-weight: 400;
+  padding: 6px 24px;
+  border-radius: var(--radius);
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: background-color 150ms var(--ease), color 150ms var(--ease);
+}
+
+.button:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.button:focus-visible {
+  outline: 1px solid var(--ring);
+  outline-offset: 2px;
+}
+
+.button:active:not(:disabled) {
+  opacity: 0.9;
+}
+
+.button-primary {
+  background: var(--foreground);
+  color: var(--background);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.8),
+    inset 0 -1px 0 rgb(0 0 0 / 0.15);
+}
+
+.button-primary:hover:not(:disabled) {
+  background: #e5e5e5;
+}
+
+.button-secondary {
+  background: rgb(38 38 38 / 0.8);
+  color: var(--body);
+  border-color: transparent;
+}
+
+.button-secondary:hover:not(:disabled) {
+  background: rgb(64 64 64 / 0.65);
+  color: var(--foreground);
+}
+
+/* Last so it wins over the flex layouts above at equal specificity. */
+[hidden] {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shell,
+  .choice,
+  .panel:not([hidden]),
+  .status.swap,
+  .stack-phase.swap,
+  .term-loader {
+    animation: none;
+  }
+
+  .progress-fill {
+    transition: none;
+  }
+
+  .term-strip,
+  .term-label {
+    animation: none;
+  }
+
+  .term-label {
+    background: none;
+    -webkit-text-fill-color: currentColor;
+    color: var(--term-fg);
+  }
+
+  .button,
+  .choice,
+  .icon-button,
+  .link,
+  .titlebar-quit,
+  .field {
+    transition: none;
+  }
+}

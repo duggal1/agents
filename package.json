@@ -1,0 +1,62 @@
+{
+  "name": "rakazo",
+  "private": true,
+  "type": "module",
+  "version": "0.1.0",
+  "license": "Apache-2.0",
+  "packageManager": "bun@1.4.2",
+  "workspaces": [
+    "apps/*",
+    "packages/*",
+    "infra/sandboxes/supervisor",
+    "infra/updater"
+  ],
+  "engines": {
+    "node": "^22.22.2 || ^24.0.0 || >=26.0.0"
+  },
+  "scripts": {
+    "dev": "cross-env COREPACK_ENABLE_DOWNLOAD_PROMPT=0 turbo dev --filter=@rakazo/api --filter=@rakazo/worker --filter=@rakazo/web --filter=@rakazo/sandbox-supervisor",
+    "build": "turbo build",
+    "check": "turbo check",
+    "lint": "biome check .",
+    "format": "biome check --write .",
+    "db:generate": "bun --filter @rakazo/db generate",
+    "db:migrate": "bun --filter @rakazo/db migrate",
+    "sandbox:build": "docker build -t rakazo/computer:local infra/sandboxes/computer",
+    "test": "vitest run",
+    "test:compose-smoke": "bash infra/compose/run-smokes.sh",
+    "test:integration": "tsx packages/testkit/src/cli/harness.ts --integration",
+    "test:e2e": "tsx packages/testkit/src/cli/harness.ts --e2e",
+    "test:mobile-screenshots": "bun --filter @rakazo/db generate && tsx packages/testkit/src/cli/mobile-screenshots.ts",
+    "test:topology": "tsx packages/testkit/src/cli/topology.ts",
+    "test:canary": "tsx packages/testkit/src/cli/canary.ts",
+    "test:pi": "vitest run packages/testkit/src/model-emulator.test.ts packages/testkit/src/pi-offline.test.ts",
+    "test:evals": "tsx packages/testkit/src/cli/evals.ts",
+    "test:computer-replay": "tsx packages/testkit/src/cli/computer-replay.ts",
+    "test:computer": "tsx packages/testkit/src/cli/computer.ts",
+    "perf:desktop": "tsx packages/testkit/src/cli/desktop-performance.ts",
+    "perf:compare": "tsx packages/testkit/src/cli/compare-performance.ts",
+    "compose:up": "docker compose --env-file .env -f infra/compose/docker-compose.yml up --build",
+    "compose:down": "docker compose --env-file .env -f infra/compose/docker-compose.yml down -v"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.5.15",
+    "@hugeicons/core-free-icons": "4.3.5",
+    "@hugeicons/react": "1.1.10",
+    "@types/node": "26.6.4",
+    "cross-env": "10.1.0",
+    "tsx": "4.23.15",
+    "turbo": "2.11.7",
+    "typescript": "7.0.2",
+    "vitest": "5.0.3"
+  },
+  "overrides": {
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "proxy-addr@<2.0.8": "2.0.8",
+    "e2b>undici8": "npm:undici@8.10.2"
+  },
+  "patchedDependencies": {
+    "app-builder-lib@26.15.3": "patches/app-builder-lib@26.15.3.patch"
+  }
+}

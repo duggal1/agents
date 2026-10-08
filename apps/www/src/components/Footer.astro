@@ -1,0 +1,80 @@
+---
+import {
+  DEFAULT_LOCALE,
+  LOCALE_HTML_LANG,
+  LOCALE_LABELS,
+  LOCALES,
+  isLocale,
+  localeHomePath,
+  type Locale,
+} from "../i18n/locales";
+import { CHANGELOG_URL, DOCS_URL, GITHUB_URL, INBOX_ZERO_URL } from "../site";
+import Logo from "./Logo.astro";
+
+type Props = {
+  locale?: Locale;
+  languagesLabel?: string;
+  navLabel?: string;
+  homeHref?: string;
+  homeLabel?: string;
+  linkLabels?: {
+    docs: string;
+    changelog: string;
+    about: string;
+    support: string;
+    privacy: string;
+  };
+};
+
+const currentLocale: Locale = isLocale(Astro.currentLocale)
+  ? Astro.currentLocale
+  : (Astro.props.locale ?? DEFAULT_LOCALE);
+
+const {
+  languagesLabel = "Language",
+  navLabel = "Footer",
+  homeHref = localeHomePath(currentLocale),
+  homeLabel = "Rakazo home",
+  linkLabels = {
+    docs: "Docs",
+    changelog: "Changelog",
+    about: "About",
+    support: "Support",
+    privacy: "Privacy",
+  },
+} = Astro.props;
+---
+
+<footer class="site-footer">
+  <div class="site-footer__brand">
+    <Logo href={homeHref} label={homeLabel} />
+    <span class="site-footer__legal">
+      © 2026 ·
+      <a href={INBOX_ZERO_URL} target="_blank" rel="noreferrer">Inbox Zero Inc.</a>
+      · Apache-2.0
+    </span>
+  </div>
+  <div class="site-footer__nav">
+    <nav class="site-footer__languages" aria-label={languagesLabel}>
+      {
+        LOCALES.map((locale) => (
+          <a
+            href={localeHomePath(locale)}
+            hreflang={LOCALE_HTML_LANG[locale]}
+            aria-current={locale === currentLocale ? "page" : undefined}
+          >
+            {LOCALE_LABELS[locale]}
+          </a>
+        ))
+      }
+    </nav>
+    <nav class="site-footer__links" aria-label={navLabel}>
+      <a href={GITHUB_URL} target="_blank" rel="noreferrer">GitHub</a>
+      <a href={DOCS_URL} target="_blank" rel="noreferrer">{linkLabels.docs}</a>
+      <a href={CHANGELOG_URL} target="_blank" rel="noreferrer">{linkLabels.changelog}</a>
+      <a href="/about/">{linkLabels.about}</a>
+      <a href="/support/">{linkLabels.support}</a>
+      <a href="/privacy/">{linkLabels.privacy}</a>
+    </nav>
+  </div>
+</footer>
