@@ -557,7 +557,7 @@ export function Wordmark({ className, size = 20 }: { className?: string; size?: 
   return (
     <div className={cn("flex items-center gap-2", className)}>
       <RakazoMark size={size} />
-      <span className="text-[17px] tracking-tighter text-foreground">Rakazo</span>
+      <span className="text-[17px] tracking-tighter text-foreground">Sapphire</span>
     </div>
   );
 }

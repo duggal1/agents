@@ -259,8 +259,8 @@ export function stackFailureMessage(
       return "Docker Compose is missing. Install Docker Desktop or the docker-compose-plugin, then retry.";
     case "other":
       return phase === "pulling"
-        ? "Downloading Rakazo images failed. Check the output below, then retry."
-        : "Rakazo services did not start. Check the output below, then retry.";
+        ? "Downloading Sapphire images failed. Check the output below, then retry."
+        : "Sapphire services did not start. Check the output below, then retry.";
   }
 }
 

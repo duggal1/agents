@@ -17,7 +17,7 @@ export function WelcomePage() {
             <RakazoMark className="text-foreground" size={44} />
           </div>
           <div className="text-[76px] leading-none font-normal tracking-[-0.03em] text-foreground antialiased">
-            Rakazo
+            Sapphire
           </div>
         </div>
         <p className="max-w-[600px] text-center text-[27px] leading-[1.4] font-normal text-foreground/75">

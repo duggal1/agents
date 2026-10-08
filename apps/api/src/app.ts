@@ -91,6 +91,7 @@ import { cors } from "hono/cors";
 import type { AppEnv } from "./env.js";
 import { loadEnv } from "./env.js";
 import { healthRoutes } from "./health.js";
+import { resolveLocalActor } from "./local-actor.js";
 import { mountLocalSettings } from "./local-settings.js";
 import {
   createMessagingInboundHandler,
@@ -543,6 +544,8 @@ export async function createApp(
   mountApiRequestBodyLimits(app);
   mountScreenTarget(app, prisma, env.screenProxySecret);
   app.on(["GET", "POST"], "/api/auth/*", async (c) => {
+    // Local mode has no login: the auth surface does not exist on the Mac path.
+    if (env.localMode) return c.json({ error: "Not available in local mode" }, 404);
     const path = new URL(c.req.url).pathname.replace("/api/auth", "");
     if (isBlockedAuthPath(path)) {
       return c.json({ error: "Not available in version 1" }, 404);
@@ -550,12 +553,19 @@ export async function createApp(
     return auth.handler(c.req.raw);
   });
   mountLocalSettings(app, { token: env.desktopStackToken, prisma, rpc });
-  app.use("/rpc/*", async (c, next) => {
+  const sessionActor = async (c: {
+    req: { raw: Request; header: (name: string) => string | undefined };
+  }) => {
     const session = await auth.api.getSession({ headers: sessionHeaders(c.req.raw) });
     const requestedSpaceId = c.req.header("x-rakazo-space-id");
-    const actor = session?.user
+    return session?.user
       ? await requireMembership(prisma, session.user.id, requestedSpaceId).catch(() => null)
       : null;
+  };
+  app.use("/rpc/*", async (c, next) => {
+    const actor = env.localMode
+      ? await resolveLocalActor(prisma).catch(() => null)
+      : await sessionActor(c);
     if (actor) {
       enrichLogContext({ "user.id": actor.userId, "space.id": actor.spaceId });
     }
@@ -567,13 +577,9 @@ export async function createApp(
     await next();
   });
   mountVoiceHttpRoutes(app, { prisma, secrets }, async (c) => {
-    const session = await auth.api.getSession({ headers: sessionHeaders(c.req.raw) });
-    if (!session?.user) return null;
-    const actor = await requireMembership(
-      prisma,
-      session.user.id,
-      c.req.header("x-rakazo-space-id"),
-    ).catch(() => null);
+    const actor = env.localMode
+      ? await resolveLocalActor(prisma).catch(() => null)
+      : await sessionActor(c);
     if (actor) enrichLogContext({ "user.id": actor.userId, "space.id": actor.spaceId });
     return actor;
   });

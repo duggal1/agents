@@ -37,6 +37,8 @@ export interface AppEnv {
   cloudAgentSpaceId: string | undefined;
   cursorApiKey: string | undefined;
   agentRuntime: string;
+  /** Single-user Mac path: fixed owner actor, no sessions, no login. Default off. */
+  localMode: boolean;
   deploymentModelKey: string | undefined;
   e2bApiKey: string | undefined;
   daytonaApiKey: string | undefined;
@@ -127,6 +129,7 @@ export function loadEnv(source: NodeJS.ProcessEnv = process.env): AppEnv {
     cloudAgentSpaceId: optional(source.CLOUD_AGENT_SPACE_ID),
     cursorApiKey: optional(source.CURSOR_API_KEY),
     agentRuntime: source.AGENT_RUNTIME ?? "pi",
+    localMode: source.RAKAZO_LOCAL_MODE === "1",
     // Provider, model and key resolve together: see resolveDeploymentModel.
     deploymentModelKey: deploymentModel.key,
     e2bApiKey: source.E2B_API_KEY,

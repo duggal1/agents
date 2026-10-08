@@ -5,6 +5,7 @@ import { lazy, Suspense, useEffect, useLayoutEffect, useRef, useState } from "re
 import { Navigate, Route, Routes, useSearchParams } from "react-router-dom";
 import { LoadingState } from "./components/ai/primitives";
 import { authClient } from "./lib/auth";
+import { takeInitialBootstrap } from "./lib/bootstrap";
 import { markAfterPaint, markOnce } from "./lib/performance";
 import {
   holdUnreachableGate,
@@ -71,62 +72,80 @@ function SessionApp() {
   }
 
   const user = session.data?.user;
+  // Local mode (no login on the Mac path): the API serves every request as the
+  // fixed owner actor, so a reachable bootstrap means "signed in" — no session
+  // cookie needed. Anywhere else the bootstrap rejects and auth routes stay.
+  const [localReady, setLocalReady] = useState(false);
+  const localProbe = useRef(false);
+  useEffect(() => {
+    if (session.isPending || session.data?.user || localProbe.current) return;
+    localProbe.current = true;
+    void takeInitialBootstrap()
+      .then(() => setLocalReady(true))
+      .catch(() => undefined);
+  }, [session.isPending, session.data?.user]);
+  const authed = Boolean(user) || localReady;
+  // Local mode skips onboarding-into-signup loops: no account exists to create.
+  const signInTarget = localReady ? "/app" : "/sign-in";
   return (
     <div className="h-full" data-rakazo-app-state="ready">
       <Suspense fallback={<div className="h-full bg-background" />}>
         <Routes>
-          <Route path="/" element={user ? <Navigate to="/app" replace /> : <WelcomePage />} />
+          <Route path="/" element={authed ? <Navigate to="/app" replace /> : <WelcomePage />} />
           <Route
             path="/sign-in"
             element={
-              user ? <Navigate to={signInDestination} replace /> : <AuthPage key="in" mode="in" />
+              authed ? <Navigate to={signInDestination} replace /> : <AuthPage key="in" mode="in" />
             }
           />
           <Route
             path="/sign-up"
-            element={user ? <Navigate to="/onboarding" replace /> : <AuthPage key="up" mode="up" />}
+            element={authed ? <Navigate to="/app" replace /> : <AuthPage key="up" mode="up" />}
           />
           <Route
             path="/forgot-password"
             element={
-              user ? <Navigate to="/app" replace /> : <AuthPage key="forgot" mode="forgot" />
+              authed ? <Navigate to="/app" replace /> : <AuthPage key="forgot" mode="forgot" />
             }
           />
           <Route path="/reset-password" element={<PasswordResetPage />} />
           <Route
             path="/onboarding"
-            element={user ? <OnboardingPage /> : <Navigate to="/sign-in" replace />}
+            element={authed ? <OnboardingPage /> : <Navigate to={signInTarget} replace />}
           />
           <Route
             path="/mcp/oauth/callback"
-            element={user ? <McpOAuthCallbackPage /> : <Navigate to="/sign-in" replace />}
+            element={authed ? <McpOAuthCallbackPage /> : <Navigate to={signInTarget} replace />}
           />
           <Route
             path="/integrations/setup"
             element={
-              user ? (
+              authed ? (
                 <IntegrationSetupPage />
               ) : (
                 <Navigate to="/sign-in?next=/integrations/setup" replace />
               )
             }
           />
-          <Route path="/app" element={user ? <ShellPage /> : <Navigate to="/sign-in" replace />} />
+          <Route
+            path="/app"
+            element={authed ? <ShellPage /> : <Navigate to="/sign-in" replace />}
+          />
           <Route
             path="/app/g/:groupId"
-            element={user ? <ShellPage /> : <Navigate to="/sign-in" replace />}
+            element={authed ? <ShellPage /> : <Navigate to="/sign-in" replace />}
           />
           <Route
             path="/app/artifacts"
-            element={user ? <ArtifactsPage /> : <Navigate to="/sign-in" replace />}
+            element={authed ? <ArtifactsPage /> : <Navigate to="/sign-in" replace />}
           />
           <Route
             path="/app/artifacts/:artifactId"
-            element={user ? <ArtifactsPage /> : <Navigate to="/sign-in" replace />}
+            element={authed ? <ArtifactsPage /> : <Navigate to="/sign-in" replace />}
           />
           <Route
             path="/app/:botId"
-            element={user ? <ShellPage /> : <Navigate to="/sign-in" replace />}
+            element={authed ? <ShellPage /> : <Navigate to="/sign-in" replace />}
           />
         </Routes>
       </Suspense>

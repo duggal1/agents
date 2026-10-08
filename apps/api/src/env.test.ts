@@ -16,6 +16,11 @@ describe("loadEnv", () => {
     expect(env.nodeEnv).toBe("test");
   });
 
+  it("defaults local mode to off unless RAKAZO_LOCAL_MODE=1", () => {
+    expect(loadEnv(base).localMode).toBe(false);
+    expect(loadEnv({ ...base, RAKAZO_LOCAL_MODE: "1" }).localMode).toBe(true);
+  });
+
   it("defaults Pi JSONL session recording to off", () => {
     expect(loadEnv(base).piSessionRecording).toBe(false);
     expect(loadEnv({ ...base, PI_SESSION_RECORDING: "false" }).piSessionRecording).toBe(false);
@@ -43,13 +48,23 @@ describe("loadEnv", () => {
     ).toBe("https://catalog.example.test/feed");
   });
 
-  it("falls back to none when a remote provider key is missing", () => {
+  it("falls back to docker when e2b is requested without a key", () => {
     expect(
       loadEnv({
         ...base,
         SANDBOX_PROVIDER: "e2b",
       }).sandboxProvider,
-    ).toBe("none");
+    ).toBe("docker");
+    expect(
+      loadEnv({
+        ...base,
+        SANDBOX_PROVIDER: "e2b",
+        E2B_API_KEY: "test-e2b-key",
+      }).sandboxProvider,
+    ).toBe("e2b");
+  });
+
+  it("falls back to none when a remote provider key is missing", () => {
     expect(
       loadEnv({
         ...base,
