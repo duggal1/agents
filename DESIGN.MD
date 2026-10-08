@@ -11,7 +11,11 @@ This is the light system converted 1:1: same layout, spacing, radii, typography,
   `packages/ui-web` — the source of truth for every primitive below
 - Design tokens: `@rakazo/ui-tokens` (single TypeScript source generating
   `tokens.css`); never hardcode a product hex
-- Icons: **lucide-react**, `size-3.5`–`size-4` inline, `size-5` logo
+- Icons: hugeicons + Phosphor (`@hugeicons/react`, `@phosphor-icons/react` in
+  `packages/ui-web`). Never pick from memory — the full catalog lives on disk;
+  see `.agents/skills/icons/SKILL.md` (this is the entire icon documentation —
+  it is referenced here, not copied here). Sizes: `size-3.5`–`size-4` inline,
+  `size-5` logo. Existing `lucide-react` usage stays where it is.
 - Motion: CSS `cubic-bezier(0.22, 1, 0.36, 1)` (`EASE_LUXE`) via Base UI
   `data-starting-style` / `data-ending-style` — never springs
 - Fonts: Geist Variable via fontsource; headings add `tracking-tight`,
@@ -352,8 +356,11 @@ Account "Sign out" button: the standard CTA chip, `disabled:opacity-60`, while p
 Sticky, `px-6 py-3 text-[13px] font-normal text-neutral-50`; transparent, gains `bg-neutral-850/70 backdrop-blur-lg` after 16px scroll; logo `size-5` + wordmark `text-[17px] tracking-tighter`. Right cluster is `flex items-center gap-2`. **Post Job** is the single CTA (`bg-neutral-50 px-3 py-1 text-[13px] text-neutral-900`). **Dashboard** is a *neutral* chip, not the CTA: `bg-neutral-800 px-3 py-1 text-[13px] text-neutral-50 hover:bg-neutral-700/70`, no border. **Applicants** stays a plain `neutral-300` link.
 
 ### App header (macOS + web) — top-left is only the logo
-The top-left of every app surface carries exactly one identity: the Rakazo mark,
+The top-left of every app surface carries exactly one identity: the Sapphire mark,
 and nothing else. No second avatar, no duplicate wordmark, no decorative icon.
+The setup wizard is the exception that proves the rule: its titlebar is bare
+drag space (see "macOS shell" anti-bloat), and the mark appears once in the
+body hero slot.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="14" viewBox="0 0 20 14" fill="#fff"><path d="M18.51.671 14.99 2.156a13.58 13.58 0 0 1-10.552 0L.916.671A.66.66 0 0 0 0 1.283v11.156c0 .473.48.795.916.611l3.52-1.485a13.58 13.58 0 0 1 10.553 0l3.521 1.485a.66.66 0 0 0 .916-.611V1.283A.66.66 0 0 0 18.51.67m-1.28 7.372c-.54.97-1.682 1.423-2.751 1.136a4 4 0 0 1-.41-.135 2 2 0 0 1-.27-.13c-1.202-.66-2.538-1.034-3.91-1.034h-.353c-1.371 0-2.708.374-3.91 1.035a2 2 0 0 1-.27.129q-.2.08-.41.135c-1.069.286-2.21-.166-2.75-1.136a2.44 2.44 0 0 1-.06-2.253c.503-1.031 1.675-1.538 2.783-1.255q.245.063.479.157.14.058.271.135c1.182.677 2.534 1.006 3.898 1.006h.292c1.363 0 2.714-.329 3.897-1.006q.131-.077.272-.135.234-.095.479-.157c1.108-.282 2.28.224 2.783 1.255a2.44 2.44 0 0 1-.06 2.253"/></svg>
@@ -366,8 +373,8 @@ and nothing else. No second avatar, no duplicate wordmark, no decorative icon.
 - Lockup: `flex items-center gap-3`, mark + optional `text-[17px] tracking-tighter
   text-neutral-50` wordmark. In the running app (Shell sidebar, thread header,
   artifacts header, welcome/auth top-left) the mark alone is enough; the setup
-  wizard pairs mark + "Rakazo" once in the titlebar and once in the 40px
-  `rounded-full bg-neutral-800` hero slot.
+  wizard pairs mark + "Sapphire" once in the 40px `rounded-full bg-neutral-800`
+  hero slot, and "Welcome to Sapphire" is the only heading that names the app.
 - Order on macOS is always traffic lights → mark. The mark sits in the draggable
   header with `app-no-drag` on the mark itself only when it must stay clickable;
   otherwise it rides the drag region. Never put window controls anywhere else.
@@ -376,8 +383,20 @@ and nothing else. No second avatar, no duplicate wordmark, no decorative icon.
 - Window: `frame: true`, `titleBarStyle: hiddenInset`, traffic lights at `16,16`
   on darwin; framed windows elsewhere. Background `#171717` so the native chrome
   never flashes a different color behind the canvas.
-- Drag: the header row is `app-drag` (`-webkit-app-region: drag`); every control
-  inside it (buttons, triggers, the mark when clickable) is `app-no-drag`.
+- Anti-bloat: the titlebar is drag space plus traffic lights — nothing else. No
+  brand mark, no wordmark, no Quit button in the window. The OS already names
+  the app (menu bar, Dock) and quits it (menu, ⌘Q, Dock). Restating either
+  inside the window is bloat. Same for every Mac screen header: traffic
+  lights → content, no redundant identity.
+- Icons render raw: inline SVG with no wrapper chip, no circle, no overlay.
+  Slightly larger than the label text (14px label → 16px icon), `currentColor`,
+  `aria-hidden`. Selected cards go one step darker (`#1a1a1a`) with the border
+  kept one step darker (`neutral-700`) — no glow, no ring.
+- Buttons stay tight: label `text-[14px]`, vertical padding one step below the
+  default (5px, not 6px), `inline-flex` label + icon with an 8px gap.
+- Drag: the header row is `app-drag` (`-webkit-app-region: drag`,
+  `cursor: grab`, `:active` → `grabbing`); every control inside it (buttons,
+  triggers, the mark when clickable) is `app-no-drag` with `cursor: pointer`.
   Window close hides (warm window, 15-minute TTL) instead of quitting;
   `window-all-closed` quits only off-darwin.
 - Motion and pointer rules apply inside Electron exactly as on web: color-only
@@ -642,6 +661,14 @@ Color-only transitions (`transition-colors duration-150`). No transform on hover
 8. If it clicks, it points: `cursor-pointer` on every trigger, item, option, tab,
    toggle, select, disclosure header and link — including dropdown triggers and
    dropdown headers that open something. Section labels inside a list stay
-   `cursor-default`. Disabled stays `cursor-default` at `opacity-60`.
-9. Top-left is only the logo: traffic lights → Rakazo mark, every app surface,
-   web and macOS alike. One mark, monochrome, correct aspect ratio, no duplicates.
+   `cursor-default`. Disabled stays `cursor-default` at `opacity-60`. Drag
+   regions show `cursor: grab` (`grabbing` while held). Cursor is a state
+   signal: pointer = acts, grab = moves, default = reads. Small detail, large
+   effect — never ship an interactive element with an undecided cursor.
+9. Top-left is only the logo: traffic lights → Sapphire mark, every app surface.
+   One mark, monochrome, correct aspect ratio, no duplicates. Window chrome
+   itself carries no brand and no Quit — that is the OS's job.
+10. No bloat, ever: restate nothing the OS or the context already says (no app
+    name in the titlebar, no Quit button in the window, no icon wrapper chips,
+    no placeholder copy with a stale brand). Clean and minimal beats complete
+    and noisy. When in doubt, remove.

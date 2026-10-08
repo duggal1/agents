@@ -19,7 +19,6 @@
   const loaderLabel = document.getElementById("loader-label");
   const checkButton = document.getElementById("check");
   const continueButton = document.getElementById("continue");
-  const quitButton = document.getElementById("quit");
 
   const STACK_POLL_MS = 1000;
   const PHASE_LABELS = {
@@ -326,14 +325,6 @@
   stackDockerHelp.addEventListener("click", (event) => {
     const link = event.target instanceof HTMLElement ? event.target.dataset.link : undefined;
     if (link) void bridge.openLink(link);
-  });
-
-  quitButton.addEventListener("click", () => {
-    if (bridge === undefined) {
-      window.close();
-      return;
-    }
-    void bridge.quit();
   });
 
   form.addEventListener("submit", (event) => {
