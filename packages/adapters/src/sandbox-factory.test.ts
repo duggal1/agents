@@ -55,4 +55,19 @@ describe("createSandboxProvider", () => {
       'Unknown SANDBOX_PROVIDER "bogus". Use none | docker | e2b | daytona | createos | box | e2b-emulator | daytona-emulator | box-emulator | desktop | fake.',
     );
   });
+
+  it("keeps docker unsupervised unless an explicit token is required", async () => {
+    expect(createSandboxProvider("docker", {}).describe().id).toBe("docker");
+    const gated = createSandboxProvider("docker", { requireExplicitSupervisorToken: true });
+    expect(gated.describe().id).toBe("none");
+    await expect(
+      gated.provision({ botId: "b", homePath: "/tmp" }, ctx),
+    ).rejects.toThrow(/not supervised/);
+    expect(
+      createSandboxProvider("docker", {
+        requireExplicitSupervisorToken: true,
+        supervisorToken: "local-supervisor-token-with-enough-length",
+      }).describe().id,
+    ).toBe("docker");
+  });
 });

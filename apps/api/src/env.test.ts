@@ -226,8 +226,36 @@ describe("loadEnv", () => {
     expect(loadEnv({ ...base, NODE_ENV: "development" }).nodeEnv).toBe("development");
   });
 
-  it("defaults the remote MCP private-endpoint escape to off", () => {
-    expect(loadEnv(base).mcpAllowPrivateEndpoint).toBe(false);
+  it("reads the Electron-owned runtime policy through one settings path", async () => {
+    const { mkdtemp, rm, writeFile } = await import("node:fs/promises");
+    const { tmpdir } = await import("node:os");
+    const { default: path } = await import("node:path");
+    const dir = await mkdtemp(path.join(tmpdir(), "rakazo-env-"));
+    try {
+      // No settings path outside packaged local mode: fallback stays off.
+      expect(loadEnv(base).localRuntime).toEqual({
+        settingsPath: undefined,
+        allowDockerComputerFallback: false,
+      });
+      const file = path.join(dir, "local-runtime-settings.json");
+      await writeFile(file, JSON.stringify({ version: 1, allowDockerComputerFallback: true }));
+      expect(
+        loadEnv({ ...base, RAKAZO_LOCAL_RUNTIME_SETTINGS_PATH: file }).localRuntime,
+      ).toEqual({ settingsPath: file, allowDockerComputerFallback: true });
+      // Packaged local mode without a key selects none, never implicit Docker.
+      expect(
+        loadEnv({ ...base, RAKAZO_LOCAL_RUNTIME_SETTINGS_PATH: file }).sandboxProvider,
+      ).toBe("none");
+      await writeFile(file, "{ corrupt");
+      expect(
+        loadEnv({ ...base, RAKAZO_LOCAL_RUNTIME_SETTINGS_PATH: file }).localRuntime,
+      ).toEqual({ settingsPath: file, allowDockerComputerFallback: false });
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
+
+  it("defaults the remote MCP private-endpoint escape to off", () => {    expect(loadEnv(base).mcpAllowPrivateEndpoint).toBe(false);
     expect(loadEnv({ ...base, MCP_ALLOW_PRIVATE_ENDPOINT: "true" }).mcpAllowPrivateEndpoint).toBe(
       true,
     );

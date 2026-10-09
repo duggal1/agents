@@ -18,6 +18,13 @@ import {
 export interface SandboxProviderOptions {
   supervisorUrl?: string;
   supervisorToken?: string;
+  /**
+   * Packaged local mode sets this: a Docker provider without an explicitly
+   * supplied supervisor token becomes `none` (computers unavailable) instead
+   * of falling back to a development placeholder or throwing at boot. The
+   * desktop supervisor controller always supplies the token it generated.
+   */
+  requireExplicitSupervisorToken?: boolean;
   e2bApiKey?: string;
   daytonaApiKey?: string;
   daytonaApiUrl?: string;
@@ -68,6 +75,11 @@ export function createSandboxProvider(kind: string, opts: SandboxProviderOptions
       if (!opts.boxApiKey?.trim()) return missingRemoteKey("box", "BOX_API_KEY");
       return new BoxSandboxProvider({ apiKey: opts.boxApiKey, apiUrl: opts.boxApiUrl });
     case "docker":
+      if (opts.requireExplicitSupervisorToken === true && !opts.supervisorToken?.trim()) {
+        return new NoneSandboxProvider(
+          "Computers unavailable: Docker fallback is not supervised in this session.",
+        );
+      }
       return new DockerSandboxProvider(
         opts.supervisorUrl ?? "http://127.0.0.1:7091",
         opts.supervisorToken,

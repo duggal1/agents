@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
+import { LOCAL_RUNTIME_SETTINGS_PATH_ENV } from "@sapphire/contracts";
 import { resolveSandboxProvider, sandboxProviderOptionsFromEnv } from "./sandbox-provider-env.js";
+
+const PACKAGED_LOCAL = { [LOCAL_RUNTIME_SETTINGS_PATH_ENV]: "/tmp/local-runtime-settings.json" };
 
 describe("resolveSandboxProvider", () => {
   it("defaults to e2b when its key is set, docker otherwise", () => {
@@ -12,6 +15,32 @@ describe("resolveSandboxProvider", () => {
     expect(resolveSandboxProvider({ SANDBOX_PROVIDER: "e2b", E2B_API_KEY: "test-e2b-key" })).toBe(
       "e2b",
     );
+  });
+
+  it("selects none instead of docker in packaged local mode without a key", () => {
+    expect(resolveSandboxProvider({ ...PACKAGED_LOCAL })).toBe("none");
+    expect(resolveSandboxProvider({ ...PACKAGED_LOCAL, SANDBOX_PROVIDER: "e2b" })).toBe("none");
+    expect(
+      resolveSandboxProvider({ ...PACKAGED_LOCAL, E2B_API_KEY: "test-e2b-key" }),
+    ).toBe("e2b");
+    expect(
+      resolveSandboxProvider({
+        ...PACKAGED_LOCAL,
+        SANDBOX_PROVIDER: "e2b",
+        E2B_API_KEY: "test-e2b-key",
+      }),
+    ).toBe("e2b");
+  });
+
+  it("keeps an explicitly supervised docker fallback in packaged local mode", () => {
+    expect(
+      resolveSandboxProvider({
+        ...PACKAGED_LOCAL,
+        NODE_ENV: "production",
+        SANDBOX_PROVIDER: "docker",
+        SANDBOX_SUPERVISOR_TOKEN: "prod-supervisor-token-with-enough-length",
+      }),
+    ).toBe("docker");
   });
 
   it("keeps explicit none", () => {

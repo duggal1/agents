@@ -1,4 +1,6 @@
 import {
+  localRuntimeSettingsPath,
+  readLocalRuntimeSettingsFile,
   resolveCloudAgentProvider,
   resolveDeploymentModel,
   resolveSandboxProvider,
@@ -89,6 +91,15 @@ export interface AppEnv {
   mcpAllowPrivateEndpoint: boolean;
   port: number;
   gitSha: string | undefined;
+  /**
+   * Electron-owned local runtime policy both processes read from the same
+   * schema. `settingsPath` is present only in packaged local mode; the
+   * fallback flag is never duplicated in DeploymentSettings or provider env.
+   */
+  localRuntime: {
+    settingsPath: string | undefined;
+    allowDockerComputerFallback: boolean;
+  };
   /** Private Compose control-network URL for the opt-in updater sidecar. */
   updaterUrl: string | undefined;
   /** Bearer shared with the updater; never sent to the browser. */
@@ -104,6 +115,8 @@ export function loadEnv(source: NodeJS.ProcessEnv = process.env): AppEnv {
   const deploymentModel = resolveDeploymentModel(source);
   const updaterUrl = optional(source.RAKAZO_UPDATER_URL);
   const updaterToken = optional(source.RAKAZO_UPDATER_TOKEN);
+  const runtimeSettingsPath = localRuntimeSettingsPath(source);
+  const runtimeSettings = readLocalRuntimeSettingsFile(runtimeSettingsPath);
   return {
     nodeEnv: source.NODE_ENV ?? "",
     databaseUrl: required(source, "DATABASE_URL"),
@@ -183,6 +196,10 @@ export function loadEnv(source: NodeJS.ProcessEnv = process.env): AppEnv {
     updaterUrl,
     updaterToken,
     imageTag: optional(source.RAKAZO_IMAGE_TAG),
+    localRuntime: {
+      settingsPath: runtimeSettingsPath,
+      allowDockerComputerFallback: runtimeSettings.allowDockerComputerFallback,
+    },
   };
 }
 

@@ -29,6 +29,7 @@ import {
   isPipedreamEnabled,
   LocalAgentHomeStore,
   LocalArtifactStore,
+  localRuntimeSettingsPath,
   McpConnector,
   McpOAuthBroker,
   messagingEnvFromProcess,
@@ -38,6 +39,7 @@ import {
   PipedreamConnector,
   PostgresRealtimeFanout,
   pipedreamConfigFromEnv,
+  readLocalRuntimeSettingsFile,
   reconcileCloudAgents,
   reconcileComputerUpdates,
   resolveDeploymentModel,
@@ -91,11 +93,21 @@ async function main() {
         : new PiAgentRuntime({ sessionRoot: resolvePiSessionRoot(dataDir) });
   // Same resolver the API uses, so both processes agree on provider, model and key.
   const { key: deploymentModelKey } = resolveDeploymentModel();
+  // Electron-owned policy both processes read from the same schema; corrupt or
+  // missing files fail closed to defaults (Docker fallback disabled).
+  const runtimeSettingsPath = localRuntimeSettingsPath(process.env);
+  const localRuntimeSettings = readLocalRuntimeSettingsFile(runtimeSettingsPath);
   const sandboxProvider = resolveSandboxProvider(process.env);
+  logger.info("worker sandbox policy", {
+    provider: sandboxProvider,
+    packagedLocal: runtimeSettingsPath !== undefined,
+    dockerFallback: localRuntimeSettings.allowDockerComputerFallback,
+  });
   const sandbox = createRunSandbox(sandboxProvider, {
     ...sandboxProviderOptionsFromEnv(process.env),
     supervisorUrl: process.env.SANDBOX_SUPERVISOR_URL ?? "http://127.0.0.1:7091",
     supervisorToken: sandboxProvider === "docker" ? resolveSupervisorToken(process.env) : undefined,
+    requireExplicitSupervisorToken: runtimeSettingsPath !== undefined,
     dataDir,
     prisma,
   });
@@ -197,6 +209,7 @@ async function main() {
       process.env.COMPOSIO_API_KEY ?? "",
       process.env.CURSOR_API_KEY ?? "",
       process.env.TYPESAFE_API_KEY ?? "",
+      process.env.E2B_API_KEY ?? "",
     ].filter(Boolean),
     secretStore: secrets,
     mcpAllowPrivateEndpoint: process.env.MCP_ALLOW_PRIVATE_ENDPOINT === "true",

@@ -1,19 +1,26 @@
+import { isPackagedLocalMode } from "@sapphire/contracts";
 import type { SandboxProviderOptions } from "./sandbox-factory.js";
 
 /**
- * E2B first, Docker fallback. Empty or remote provider without a key becomes
- * none so services can boot for signup. An explicit `e2b` without a key falls
- * back to Docker (then through Docker's own gates) instead of failing closed.
+ * E2B primary, Docker fallback disabled by default, `none` when unconfigured.
+ * Empty or remote provider without a key becomes `none` so services can boot
+ * for signup. Packaged local mode (the Electron app's native backend, signalled
+ * by `RAKAZO_LOCAL_RUNTIME_SETTINGS_PATH`) never implies Docker: with no key
+ * the provider is `none` and computers stay unavailable unless the user has
+ * explicitly enabled Docker fallback — the main process then selects `docker`
+ * explicitly with a supervised token. Server and dev flows keep the historical
+ * Docker default when nothing is configured.
  */
 export function resolveSandboxProvider(source: NodeJS.ProcessEnv = process.env): string {
   const configured = source.SANDBOX_PROVIDER;
   if (configured !== undefined && !configured.trim()) return "none";
   let requested = configured?.trim();
   if (requested === "none") return "none";
+  const packagedLocal = isPackagedLocalMode(source);
   if (requested === undefined) {
-    requested = optional(source.E2B_API_KEY) ? "e2b" : "docker";
+    requested = optional(source.E2B_API_KEY) ? "e2b" : packagedLocal ? "none" : "docker";
   } else if (requested === "e2b" && !optional(source.E2B_API_KEY)) {
-    requested = "docker";
+    requested = packagedLocal ? "none" : "docker";
   }
   if (requested === "daytona" && !optional(source.DAYTONA_API_KEY)) return "none";
   if (requested === "createos" && !optional(source.CREATEOS_SANDBOX_API_KEY)) return "none";
