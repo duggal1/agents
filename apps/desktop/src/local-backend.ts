@@ -97,6 +97,15 @@ export interface LocalBackendDeps {
     manifests: Record<LocalServiceId, LocalServiceManifest>;
     serviceEnv: BackendServiceEnv;
   }) => BackendRuntime;
+  /**
+   * Sandbox policy env (E2B key, explicit provider, settings path, supervisor
+   * wiring) merged into both service envs. Absent keeps E2B-primary defaults.
+   * Invoked before API/worker boot so an enabled Docker fallback can start its
+   * supervisor first; a failed supervisor still boots the backend.
+   */
+  resolveSandboxServiceEnv?: (context: { appDataDir: string }) => Promise<Record<string, string>>;
+  /** Runs after API/worker/database stop (fallback supervisor shutdown). */
+  afterServicesStop?: () => Promise<void>;
   onState?: (state: DesktopLocalRuntimeState) => void;
 }
 
@@ -144,6 +153,11 @@ export function buildServiceManifests(input: {
   stackToken: string;
   appDataDir: string;
   nodeEnv: string;
+  /**
+   * Sandbox policy env merged into both services after the shared base. Core
+   * fields below still win on collision; sandbox keys are distinct by design.
+   */
+  sandboxEnv?: Record<string, string>;
 }): { manifests: Record<LocalServiceId, LocalServiceManifest>; serviceEnv: BackendServiceEnv } {
   const base = {
     args: [] as string[],
@@ -155,6 +169,7 @@ export function buildServiceManifests(input: {
     NODE_ENV: input.nodeEnv,
     [RUNTIME_EXEC_PATH_ENV]: "1",
     DATA_DIR: input.appDataDir,
+    ...input.sandboxEnv,
   };
   const manifests: Record<LocalServiceId, LocalServiceManifest> = {
     api: {
@@ -300,6 +315,10 @@ export class LocalBackend {
     this.abortController = null;
     await this.runtime?.stop().catch(() => undefined);
     this.runtime = null;
+    // The fallback supervisor stops after the services it served: its shutdown
+    // stops managed containers without deleting them, then itself. The database
+    // already stopped inside the runtime; the supervisor never touches it.
+    await this.deps.afterServicesStop?.().catch(() => undefined);
     this.setState({ phase: "idle", message: null });
     return this.current;
   }
@@ -467,6 +486,7 @@ export class LocalBackend {
       stackToken: token,
       appDataDir,
       nodeEnv: this.deps.packaged ? "production" : (this.deps.env.NODE_ENV ?? "development"),
+      sandboxEnv: await this.deps.resolveSandboxServiceEnv?.({ appDataDir }).catch(() => ({})),
     });
     const runtime = this.createRuntime(database, manifests, serviceEnv);
     this.runtime = runtime;
@@ -507,6 +527,7 @@ export class LocalBackend {
       stackToken: token,
       appDataDir,
       nodeEnv: this.deps.packaged ? "production" : (this.deps.env.NODE_ENV ?? "development"),
+      sandboxEnv: await this.deps.resolveSandboxServiceEnv?.({ appDataDir }).catch(() => ({})),
     });
     // The staging cluster is already running under the migration's controller;
     // this adapter only lends its URL to a throwaway supervisor that must not

@@ -22,11 +22,18 @@ import {
   LAUNCH_CHECK_DELAY_MS,
 } from "./auto-update.js";
 import { openBrowserAuth } from "./browser-auth.js";
+import { resolveDockerBinary, runDocker } from "./docker-cli.js";
 import { LocalBackend } from "./local-backend.js";
+import { LocalDockerSupervisor } from "./local-docker-supervisor.js";
 import { requestLocalSettings } from "./local-settings.js";
+import { runtimeResourceDir } from "./local-runtime.js";
 import {
   clearE2BKey,
+  loadE2BKey,
   localRuntimeStatus,
+  localSandboxServiceEnv,
+  readLocalRuntimeSettings,
+  runtimeSettingsFilePath,
   storeE2BKey,
   writeLocalRuntimeSettings,
 } from "./local-runtime-settings.js";
@@ -104,6 +111,8 @@ const desktopUpdater = new DesktopUpdateController(
 let launchUpdateCheckScheduled = false;
 /** Native PostgreSQL + API + worker supervised by the main process for mode `new`. */
 let localBackend: LocalBackend;
+/** Optional Docker fallback supervisor; null unless fallback is enabled. Main process only. */
+let dockerSupervisor: LocalDockerSupervisor | null = null;
 
 markOnce("rk:main:module-evaluated");
 if (PERFORMANCE_USER_DATA) {
@@ -759,9 +768,75 @@ function installApplicationMenu() {
   Menu.setApplicationMenu(Menu.buildFromTemplate(template));
 }
 
+/**
+ * Sandbox policy env for API/worker launch (T5/T6). Reads the Electron-owned
+ * posture, starts the fallback supervisor only when the user enabled fallback
+ * and a daemon is present, and returns an explicit provider policy: E2B when a
+ * key is stored, Docker only when fallback serves, `none` otherwise. Never
+ * throws: a failed supervisor still boots the backend with E2B or no computers.
+ */
+async function resolveSandboxServiceEnv(
+  userDataDir: string,
+  appDataDir: string,
+): Promise<Record<string, string>> {
+  const settingsPath = runtimeSettingsFilePath(userDataDir);
+  try {
+    const [settings, e2bApiKey] = await Promise.all([
+      readLocalRuntimeSettings(userDataDir),
+      loadE2BKey(userDataDir, safeStorage),
+    ]);
+    if (!settings.allowDockerComputerFallback) {
+      await dockerSupervisor?.stop().catch(() => undefined);
+      dockerSupervisor = null;
+      return localSandboxServiceEnv({
+        settingsPath,
+        e2bApiKey,
+        allowDockerComputerFallback: false,
+        supervisor: null,
+      });
+    }
+    if (dockerSupervisor === null) {
+      dockerSupervisor = new LocalDockerSupervisor({
+        platform: process.platform,
+        env: process.env,
+        enabled: true,
+        runtimeRoot: runtimeResourceDir({
+          packaged: app.isPackaged,
+          resourcesPath: process.resourcesPath,
+          appPath: app.getAppPath(),
+        }),
+        execPath: process.execPath,
+        dataDir: appDataDir,
+        dockerBinary: resolveDockerBinary(process.platform, process.env, existsSync),
+        runDocker,
+      });
+    }
+    const state = await dockerSupervisor.start();
+    const connection = state.phase === "ready" ? dockerSupervisor.connection() : null;
+    return localSandboxServiceEnv({
+      settingsPath,
+      e2bApiKey,
+      allowDockerComputerFallback: true,
+      supervisor: connection,
+    });
+  } catch {
+    return localSandboxServiceEnv({
+      settingsPath,
+      e2bApiKey: null,
+      allowDockerComputerFallback: false,
+      supervisor: null,
+    });
+  }
+}
+
+/** Stops the fallback supervisor after the services it served. Safe anytime. */
+async function stopDockerSupervisor(): Promise<void> {
+  await dockerSupervisor?.stop().catch(() => undefined);
+  dockerSupervisor = null;
+}
+
 /** Setup IPC must only answer the setup window, never a connected Sapphire server. */
-function fromSetupWindow(event: Electron.IpcMainInvokeEvent) {
-  return (
+function fromSetupWindow(event: Electron.IpcMainInvokeEvent) {  return (
     setupWindow !== null && !setupWindow.isDestroyed() && event.sender === setupWindow.webContents
   );
 }
@@ -1003,6 +1078,9 @@ app.whenReady().then(async () => {
     appVersion: app.getVersion(),
     randomHex: (bytes) => randomBytes(bytes).toString("hex"),
     probeApi: async (url) => (await probeServer(url)).ok,
+    resolveSandboxServiceEnv: (context) =>
+      resolveSandboxServiceEnv(userDataDir, context.appDataDir),
+    afterServicesStop: () => stopDockerSupervisor(),
     onState: (state) => {
       if (setupWindow !== null && !setupWindow.isDestroyed()) {
         setupWindow.webContents.send("desktop.setup.stack.changed", state);

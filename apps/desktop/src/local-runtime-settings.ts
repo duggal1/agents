@@ -140,9 +140,7 @@ export interface LocalServiceSandboxInput {
   allowDockerComputerFallback: boolean;
   /** Present only when fallback is enabled and a supervised daemon is ready. */
   dockerFallbackReady: boolean;
-}
-
-/**
+}/**
  * Translates Electron-owned posture into the child-process environment. The
  * decrypted key is included only when present; Docker is selected only when
  * explicitly enabled and ready; otherwise the provider is `none` so computers
@@ -160,6 +158,36 @@ export function localServiceSandboxEnv(input: LocalServiceSandboxInput): Record<
     env.SANDBOX_PROVIDER = "docker";
   } else {
     env.SANDBOX_PROVIDER = "none";
+  }
+  return env;
+}
+
+export interface LocalSandboxSupervisorConnection {
+  url: string;
+  token: string;
+}
+
+/**
+ * Full sandbox env for both services: the explicit provider policy plus the
+ * supervisor wiring, which is included only when Docker fallback actually
+ * serves (enabled, daemon ready, provider selected as docker). E2B-primary
+ * launches never carry supervisor credentials.
+ */
+export function localSandboxServiceEnv(input: {
+  settingsPath: string;
+  e2bApiKey: string | null;
+  allowDockerComputerFallback: boolean;
+  supervisor: LocalSandboxSupervisorConnection | null;
+}): Record<string, string> {
+  const env = localServiceSandboxEnv({
+    settingsPath: input.settingsPath,
+    e2bApiKey: input.e2bApiKey,
+    allowDockerComputerFallback: input.allowDockerComputerFallback,
+    dockerFallbackReady: input.supervisor !== null,
+  });
+  if (env.SANDBOX_PROVIDER === "docker" && input.supervisor !== null) {
+    env.SANDBOX_SUPERVISOR_URL = input.supervisor.url;
+    env.SANDBOX_SUPERVISOR_TOKEN = input.supervisor.token;
   }
   return env;
 }
