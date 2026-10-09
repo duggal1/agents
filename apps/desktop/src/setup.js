@@ -138,7 +138,12 @@
       detailsOpen = true;
       detailsOpenedByFailure = true;
     }
-    stackDetails.hidden = !hasOutput;
+    // Progressive disclosure: the technical-details toggle appears only while
+    // it is useful — a failed or degraded run, or one the person opened
+    // themselves. A healthy run shows just the green phase, no chrome.
+    const showToggle =
+      hasOutput && (stack.phase === "failed" || stack.phase === "degraded" || detailsOpen);
+    stackDetails.hidden = !showToggle;
     stackDetails.setAttribute("aria-expanded", String(detailsOpen && hasOutput));
     stackOutput.hidden = !(detailsOpen && hasOutput);
     if (!stackOutput.hidden) {

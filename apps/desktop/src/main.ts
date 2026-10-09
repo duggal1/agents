@@ -353,6 +353,12 @@ function createWindow(url: string, partition: string | null) {
 async function probeDocument(url: string): Promise<string | null> {
   // Test/dev harnesses may load data: or file: documents; only probe real servers.
   if (!url.startsWith("http://") && !url.startsWith("https://")) return null;
+  // Packaged local mode serves the document from the bundled renderer through
+  // the session protocol handler, while net.fetch below bypasses session
+  // handlers and hits the API directly — which has no "/" route and
+  // legitimately answers 404. Probing it would reject every healthy local
+  // backend, so skip it: loadAppUrl verifies the real window load instead.
+  if (app.isPackaged && servesBundledRenderer(url, currentSetup?.mode === "new")) return null;
   try {
     const response = await net.fetch(url, {
       method: "GET",
