@@ -11,6 +11,7 @@ import {
   ipcMain,
   Menu,
   net,
+  safeStorage,
   type Session,
   session,
   shell,
@@ -23,6 +24,12 @@ import {
 import { openBrowserAuth } from "./browser-auth.js";
 import { LocalBackend } from "./local-backend.js";
 import { requestLocalSettings } from "./local-settings.js";
+import {
+  clearE2BKey,
+  localRuntimeStatus,
+  storeE2BKey,
+  writeLocalRuntimeSettings,
+} from "./local-runtime-settings.js";
 import { oauthCallbackFrom } from "./oauth-callback.js";
 import {
   bundledRendererCandidates,
@@ -759,6 +766,17 @@ function fromSetupWindow(event: Electron.IpcMainInvokeEvent) {
   );
 }
 
+/**
+ * Runtime-settings IPC answers the app window and the isolated local-settings
+ * window only, on their main frame. A connected server in the app window can
+ * reach this bridge, so responses stay boolean-safe by construction.
+ */
+function fromRuntimeWindow(event: Electron.IpcMainInvokeEvent) {
+  if (event.senderFrame !== event.sender.mainFrame) return false;
+  if (fromMainWindow(event)) return true;
+  return settingsWindow !== null && windowFrom(event) === settingsWindow;
+}
+
 async function probeServer(rawUrl: string, signal?: AbortSignal): Promise<DesktopReachability> {
   const url = normalizeServerUrl(rawUrl);
   if (url === null) return { ok: false, error: "Enter a valid http:// or https:// address." };
@@ -1249,6 +1267,51 @@ app.whenReady().then(async () => {
   ipcMain.handle("desktop.setup.stack.stop", (event) => {
     if (!fromSetupWindow(event)) return null;
     return localBackend.stop();
+  });
+  // E2B key and Docker-fallback posture (T5). All secret reads/writes stay in
+  // the main process; IPC returns booleans and ok/error shapes, never the key.
+  // A key or policy change takes effect through a controlled backend restart
+  // at the next safe task boundary (see LocalRuntimeController.restart).
+  ipcMain.handle("desktop.setup.runtime.status", (event) => {
+    if (!fromSetupWindow(event)) return null;
+    return localRuntimeStatus(userDataDir, safeStorage);
+  });
+  ipcMain.handle("desktop.setup.runtime.setKey", async (event, key: unknown) => {
+    if (!fromSetupWindow(event)) return { ok: false, error: "Setup is not active." };
+    try {
+      await storeE2BKey(userDataDir, safeStorage, key);
+      return { ok: true };
+    } catch (error) {
+      return { ok: false, error: error instanceof Error ? error.message : "Could not save the key." };
+    }
+  });
+  ipcMain.handle("desktop.runtime.status", (event) => {
+    if (!fromRuntimeWindow(event)) return null;
+    return localRuntimeStatus(userDataDir, safeStorage);
+  });
+  ipcMain.handle("desktop.runtime.setKey", async (event, key: unknown) => {
+    if (!fromRuntimeWindow(event)) return { ok: false, error: "Settings are not active." };
+    try {
+      await storeE2BKey(userDataDir, safeStorage, key);
+      return { ok: true };
+    } catch (error) {
+      return { ok: false, error: error instanceof Error ? error.message : "Could not save the key." };
+    }
+  });
+  ipcMain.handle("desktop.runtime.clearKey", async (event) => {
+    if (!fromRuntimeWindow(event)) return { ok: false, error: "Settings are not active." };
+    await clearE2BKey(userDataDir);
+    return { ok: true };
+  });
+  ipcMain.handle("desktop.runtime.setFallbackAllowed", async (event, allowed: unknown) => {
+    if (!fromRuntimeWindow(event) || typeof allowed !== "boolean") {
+      return { ok: false, error: "Settings are not active." };
+    }
+    await writeLocalRuntimeSettings(userDataDir, {
+      version: 1,
+      allowDockerComputerFallback: allowed,
+    });
+    return { ok: true };
   });
 
   // Register before startup awaits so macOS dock clicks during probe/open are handled.

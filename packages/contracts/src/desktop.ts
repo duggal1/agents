@@ -36,11 +36,35 @@ export interface RakazoDesktopOAuthCallback {
   state?: string;
 }
 
+export type { LocalRuntimeStatus } from "./local-runtime-settings.js";
+import type { LocalRuntimeStatus } from "./local-runtime-settings.js";
+
+/**
+ * Local runtime posture for the packaged native backend (T5/T6). Every method
+ * returns booleans or ok/error shapes — the E2B key itself never crosses IPC.
+ */
+export interface RakazoDesktopRuntime {
+  status: () => Promise<LocalRuntimeStatus>;
+  /** Stores (or replaces) the E2B key OS-encrypted in the main process. */
+  setKey: (key: string) => Promise<{ ok: boolean; error?: string }>;
+  clearKey: () => Promise<{ ok: boolean; error?: string }>;
+  /** Persists the per-install Docker fallback toggle. */
+  setFallbackAllowed: (allowed: boolean) => Promise<{ ok: boolean; error?: string }>;
+}
+
+export interface RakazoSetupRuntime {
+  status: () => Promise<LocalRuntimeStatus>;
+  /** First-run key entry for This computer; Existing instance never calls this. */
+  setKey: (key: string) => Promise<{ ok: boolean; error?: string }>;
+}
+
 export interface RakazoDesktop {
   /** Only the isolated local settings window is authorized to call this bridge. */
   localSettings?: {
     request: (pathname: string, body: string) => Promise<{ status: number; body: string }>;
   };
+  /** Present in the packaged desktop app; absent in browsers. */
+  runtime?: RakazoDesktopRuntime;
   platform: string;
   window: {
     close: () => Promise<void>;
@@ -173,6 +197,11 @@ export interface RakazoSetup {
   test: (url: string) => Promise<DesktopReachability>;
   save: (setup: DesktopSetup) => Promise<{ ok: boolean; error?: string }>;
   quit: () => Promise<void>;
+  /**
+   * Optional E2B key entry for the This-computer path. The Existing-instance
+   * path never calls this; with no key, computers stay unavailable.
+   */
+  runtime: RakazoSetupRuntime;
   /**
    * The app-managed native local backend for mode `new`. Status, start, and stop
    * only: the renderer never supplies paths, ports, or environment. Optional

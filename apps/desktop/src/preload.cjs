@@ -6,6 +6,14 @@ contextBridge.exposeInMainWorld("rakazoDesktop", {
     request: (pathname, body) =>
       ipcRenderer.invoke("desktop.localSettings.request", pathname, body),
   },
+  // Booleans and ok/error shapes only; the E2B key never crosses this bridge.
+  runtime: {
+    status: () => ipcRenderer.invoke("desktop.runtime.status"),
+    setKey: (key) => ipcRenderer.invoke("desktop.runtime.setKey", key),
+    clearKey: () => ipcRenderer.invoke("desktop.runtime.clearKey"),
+    setFallbackAllowed: (allowed) =>
+      ipcRenderer.invoke("desktop.runtime.setFallbackAllowed", allowed),
+  },
   window: {
     close: () => ipcRenderer.invoke("desktop.window.close"),
     minimize: () => ipcRenderer.invoke("desktop.window.minimize"),
