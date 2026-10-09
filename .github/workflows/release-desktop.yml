@@ -124,6 +124,12 @@ jobs:
         env:
           RAKAZO_ALLOW_DEV_SECRETS: "1"
 
+      - name: Build universal native runtime
+        # Needs SAPPHIRE_POSTGRES_DIR_ARM64 and SAPPHIRE_POSTGRES_DIR_X64:
+        # pinned PostgreSQL 16 builds against macOS 13.0 (see
+        # docs/desktop-release.md). Fails closed when either is missing.
+        run: SAPPHIRE_RUNTIME_UNIVERSAL=1 pnpm --filter @sapphire/desktop run runtime:build
+
       - name: Require macOS signing and notarization credentials
         if: runner.os == 'macOS'
         shell: bash
@@ -166,13 +172,33 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          app="apps/desktop/out/mac-universal/Rakazo.app"
+          app="apps/desktop/out/mac-universal/Sapphire.app"
           codesign --verify --deep --strict --verbose=2 "$app"
           xcrun stapler validate "$app"
           spctl --assess --type execute --verbose=2 "$app"
           grep -Fqx "provider: github" "$app/Contents/Resources/app-update.yml"
           grep -Fqx "owner: elie222" "$app/Contents/Resources/app-update.yml"
           grep -Fqx "repo: rakazo" "$app/Contents/Resources/app-update.yml"
+          manifest="$app/Contents/Resources/runtime/runtime-manifest.json"
+          test -f "$manifest"
+          node -e "
+            const manifest = require('$app/Contents/Resources/runtime/runtime-manifest.json');
+            const assert = require('node:assert/strict');
+            assert.deepEqual(manifest.postgresArches, ['arm64', 'x64']);
+            assert.equal(manifest.postgres.minimumMacos, '13.0');
+            assert.equal(manifest.postgres.major, 16);
+            assert.ok(manifest.services.some((service) => service.id === 'api'));
+            assert.ok(manifest.services.some((service) => service.id === 'worker'));
+          "
+          for arch in arm64 x64; do
+            for binary in postgres pg_ctl; do
+              target="$app/Contents/Resources/runtime/postgres/$arch/bin/$binary"
+              test -f "$target"
+              codesign --verify --strict --verbose=2 "$target"
+            done
+          done
+          echo "Installer sizes:"
+          du -sh apps/desktop/out/*.dmg apps/desktop/out/*.zip
 
       - name: Require Windows signing credentials
         if: runner.os == 'Windows'

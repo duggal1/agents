@@ -94,4 +94,20 @@ describe("desktop release workflow", () => {
     expect(workflow).toContain("--draft --generate-notes");
     expect(workflow).toContain("--draft=false --latest");
   });
+
+  it("builds the universal native runtime before packaging macOS", () => {
+    expect(workflow).toContain("Build universal native runtime");
+    expect(workflow).toContain("SAPPHIRE_RUNTIME_UNIVERSAL=1");
+    expect(workflow).toContain("run runtime:build");
+    expect(workflow).toContain("--mac --universal");
+  });
+
+  it("verifies both runtime architectures, native signatures, and installer size", () => {
+    expect(workflow).toContain("runtime-manifest.json");
+    expect(workflow).toContain("postgresArches");
+    expect(workflow).toContain("minimumMacos");
+    expect(workflow).toContain("postgres/$arch/bin/$binary");
+    expect(workflow).toContain('codesign --verify --strict --verbose=2 "$target"');
+    expect(workflow).toContain("du -sh apps/desktop/out/*.dmg");
+  });
 });
