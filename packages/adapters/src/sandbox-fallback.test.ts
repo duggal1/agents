@@ -25,7 +25,7 @@ function quotaError() {
  * and "e2b" to the primary.
  */
 function pair(options?: { primaryFailure?: unknown; fallbackAllowed?: boolean }) {
-  const primary = new FakeSandboxProvider() as SandboxProvider & {
+  const primary = new FakeSandboxProvider() as unknown as SandboxProvider & {
     provision: ReturnType<typeof vi.fn>;
   };
   if (options?.primaryFailure !== undefined) {

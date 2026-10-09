@@ -2,6 +2,7 @@ import type {
   AdapterContext,
   CommandRequest,
   ComputerActionRequest,
+  ComputerActionResult,
   ComputerFileEntry,
   ComputerInput,
   ComputerObservation,
