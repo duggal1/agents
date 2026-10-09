@@ -1,0 +1,171 @@
+name: desktop-native-acceptance
+
+# Opt-in acceptance for the Docker-free macOS local backend. Never runs on
+# push, pull requests, tags, or a schedule: dispatch it by hand before tagging
+# a desktop release. Billed live-provider steps run only when explicitly
+# enabled below AND their secret is configured; everything else is offline.
+on:
+  workflow_dispatch:
+    inputs:
+      live_e2b:
+        description: "Run the billed live E2B computer test (requires E2B_API_KEY secret)"
+        required: false
+        default: false
+        type: boolean
+      docker_fallback:
+        description: "Run the Docker fallback check (needs a Docker daemon on the runner)"
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+
+concurrency:
+  group: desktop-native-acceptance
+  cancel-in-progress: false
+
+jobs:
+  offline-acceptance:
+    name: Docker-absent offline acceptance
+    runs-on: macos-26
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
+      - run: pnpm install --frozen-lockfile
+      - name: Assert the packaged local backend needs no Docker
+        shell: bash
+        run: |
+          set -euo pipefail
+          node -e "
+            const pkg = require('./apps/desktop/package.json');
+            const destinations = pkg.build.extraResources.map((entry) => entry.to);
+            if (!destinations.includes('runtime')) throw new Error('native runtime is not packaged');
+            if (destinations.some((to) => to.startsWith('stack/'))) throw new Error('Compose stack assets are packaged');
+            for (const script of ['pack', 'release']) {
+              if (!pkg.scripts[script].includes('runtime:build')) throw new Error(script + ' skips runtime:build');
+            }
+          "
+          if grep -rin "docker-desktop\|orbstack\|docker-engine\|install docker" apps/desktop/src/setup.html apps/desktop/src/setup.js; then
+            echo "Setup UI still references Docker installation." >&2
+            exit 1
+          fi
+          if grep -rn "LocalStackController" apps/desktop/src/main.ts; then
+            echo "Electron main still boots the Compose stack." >&2
+            exit 1
+          fi
+      - name: Desktop unit tests
+        run: pnpm --filter @sapphire/desktop test
+      - name: Resource budget check (self-test with fixtures)
+        shell: bash
+        run: |
+          set -euo pipefail
+          node -e "
+            const fs = require('node:fs');
+            fs.writeFileSync('\$RUNNER_TEMP/within.json', JSON.stringify({
+              idle: [
+                { process: 'electron-main', rssBytes: 200 * 1024 * 1024 },
+                { process: 'electron-renderer', rssBytes: 300 * 1024 * 1024 },
+                { process: 'api', rssBytes: 350 * 1024 * 1024 },
+                { process: 'worker', rssBytes: 250 * 1024 * 1024 },
+                { process: 'postgres', rssBytes: 200 * 1024 * 1024 },
+              ],
+              activeWindowTotals: [2 * 1024 * 1024 * 1024],
+            }));
+            fs.writeFileSync('\$RUNNER_TEMP/over.json', JSON.stringify({
+              idle: [{ process: 'api', rssBytes: 2 * 1024 * 1024 * 1024 }],
+              activeWindowTotals: [3 * 1024 * 1024 * 1024],
+            }));
+          "
+          node apps/desktop/scripts/check-resource-budgets.mjs --measurements "$RUNNER_TEMP/within.json"
+          if node apps/desktop/scripts/check-resource-budgets.mjs --measurements "$RUNNER_TEMP/over.json"; then
+            echo "Budget check did not fail on over-budget input." >&2
+            exit 1
+          fi
+
+  provision-universal:
+    name: Provision and verify pinned PostgreSQL (universal)
+    runs-on: macos-26
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
+      - name: Provision pinned PostgreSQL 16 (fat arm64+x86_64)
+        run: node apps/desktop/scripts/provision-postgres.mjs --universal --out "$RUNNER_TEMP/pgdeps"
+      - name: Verify both slices, version, and macOS minimum
+        shell: bash
+        run: |
+          set -euo pipefail
+          for arch in arm64 x64; do
+            bin="$RUNNER_TEMP/pgdeps/$arch/bin/postgres"
+            test -x "$bin"
+            "$bin" --version | grep -F " 16."
+            slices="$(lipo -archs "$bin")"
+            echo "$bin slices: $slices"
+            test "$slices" = "arm64 x86_64"
+            minimum="$(vtool -show-build "$bin" | grep -Eo 'minos [0-9.]+' | head -n 1 | cut -d' ' -f2)"
+            echo "$bin minos: $minimum"
+            test "$minimum" = "13.0"
+          done
+
+  live-e2b:
+    name: Live E2B computer test (opt-in, billed)
+    needs: [offline-acceptance, provision-universal]
+    if: inputs.live_e2b == true
+    runs-on: macos-26
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
+      - run: pnpm install --frozen-lockfile
+      - name: Require the E2B key before any billed call
+        shell: bash
+        env:
+          E2B_API_KEY: ${{ secrets.E2B_API_KEY }}
+        run: |
+          set -euo pipefail
+          test -n "$E2B_API_KEY"
+      - name: Run the live computer E2E against E2B
+        env:
+          E2B_API_KEY: ${{ secrets.E2B_API_KEY }}
+          SANDBOX_PROVIDER: e2b
+        run: pnpm test:computer
+
+  docker-fallback:
+    name: Docker fallback supervisor check (opt-in)
+    needs: [offline-acceptance]
+    if: inputs.docker_fallback == true
+    runs-on: macos-26
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
+      - run: pnpm install --frozen-lockfile
+      - name: Require a Docker daemon before touching fallback
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker info
+      - name: Docker supervisor unit tests plus lazy image build
+        shell: bash
+        run: |
+          set -euo pipefail
+          pnpm --filter @sapphire/desktop test -- local-docker-supervisor
+          docker build -t rakazo/computer:acceptance infra/sandboxes/computer
