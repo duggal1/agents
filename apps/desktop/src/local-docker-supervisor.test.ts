@@ -1,4 +1,5 @@
 import { EventEmitter } from "node:events";
+import { readFileSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it, vi } from "vitest";
 import {
@@ -163,6 +164,21 @@ describe("supervisor environment", () => {
     expect(COMPUTER_CONTEXT_DIR).toBe("computer");
     expect(DOCKER_SUPERVISOR_ENTRY).toBe("services/supervisor/index.js");
     expect(SUPERVISOR_START_FAILED_MESSAGE).toContain("E2B computers are unaffected");
+  });
+
+  it("stages the supervisor bundle and computer context in the runtime build", () => {
+    const desktopDir = path.resolve(import.meta.dirname, "..");
+    const buildScript = readFileSync(path.join(desktopDir, "scripts", "build-runtime.mjs"), "utf8");
+    expect(buildScript).toContain("infra/sandboxes/supervisor/src/index.ts");
+    expect(buildScript).toContain('id: "supervisor"');
+    expect(buildScript).toContain("stageComputerContext");
+    for (const file of COMPUTER_CONTEXT_FILES) {
+      expect(buildScript).toContain(`"${file}"`);
+    }
+    // The service manifest keeps only api/worker; the fallback supervisor is
+    // launched explicitly by Electron, never by the service supervisor.
+    const servicesBlock = buildScript.match(/const SERVICES = \[[\s\S]*?\];/);
+    expect(servicesBlock?.[0]).not.toContain("supervisor");
   });
 });
 

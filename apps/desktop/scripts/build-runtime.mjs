@@ -37,6 +37,37 @@ const SERVICES = [
 ];
 
 /**
+ * The optional Docker sandbox supervisor (T6) is bundled beside the services
+ * but never started on E2B-only launches. Electron launches it only when the
+ * user enabled Docker fallback and a daemon is present.
+ */
+const SUPERVISOR_SERVICE = {
+  id: "supervisor",
+  entry: "infra/sandboxes/supervisor/src/index.ts",
+};
+/**
+ * Exact build-context files `ensureComputerImage` needs. Staged so the image
+ * builds lazily on the first Docker fallback; no image tar is ever bundled.
+ * Must match COMPUTER_CONTEXT_FILES in src/local-docker-supervisor.ts.
+ */
+const COMPUTER_CONTEXT_FILES = [
+  "Dockerfile",
+  "start.sh",
+  "user-env.sh",
+  "control.py",
+  "xcapture.c",
+  "rakazo-browser",
+  "rakazo-page-browser",
+  "rakazo-browser.desktop",
+  "embed.html",
+  "clipboard-bridge.js",
+  "mobile-keyboard.js",
+  "fluxbox.init",
+  "fluxbox.apps",
+  "fluxbox.menu",
+];
+
+/**
  * Packages whose shipped JavaScript `require`s data files at runtime. Bundlers inline the
  * JavaScript but not these assets, so the exact files each one reads are copied next to
  * the bundle. Verified against a real local run of the packaged services.
@@ -171,6 +202,22 @@ async function copyRuntimeAssets(outDir, arches) {
   return staged;
 }
 
+/** Stages the computer build context the supervisor image build needs. */
+async function stageComputerContext(outDir) {
+  const source = path.join(REPO_ROOT, "infra/sandboxes/computer");
+  const destination = path.join(outDir, "computer");
+  await rm(destination, { recursive: true, force: true });
+  await mkdir(destination, { recursive: true });
+  for (const file of COMPUTER_CONTEXT_FILES) {
+    const from = path.join(source, file);
+    if (!(await exists(from))) {
+      throw new Error(`Computer build context is missing ${file}; packaging is incomplete.`);
+    }
+    await cp(from, path.join(destination, file), { recursive: true });
+  }
+  return destination;
+}
+
 /** Reads the Mach-O minimum macOS version so a build can never silently raise it. */
 function minimumMacos(binary) {
   const output = execFileSync("vtool", ["-show-build", binary], { encoding: "utf8" });
@@ -271,6 +318,10 @@ async function verifyLayout(manifest) {
     [SERVICES_DIR, "package.json"],
     [SERVICES_DIR, "node_modules/koffi/package.json"],
     [SERVICES_DIR, "node_modules/mdn-data/css/at-rules.json"],
+    [SERVICES_DIR, "supervisor/index.js"],
+    [OUT_DIR, "computer/Dockerfile"],
+    [OUT_DIR, "computer/control.py"],
+    [OUT_DIR, "computer/start.sh"],
     ...manifest.services.map((service) => [OUT_DIR, service.entry]),
     ...manifest.koffiArches.map((stagedArch) => [
       SERVICES_DIR,
@@ -297,6 +348,10 @@ async function main() {
 
   console.log(`Bundling services...${universal ? " (universal)" : ` (${arch})`}`);
   for (const service of SERVICES) await bundleService(service, SERVICES_DIR);
+  console.log("Bundling Docker sandbox supervisor (fallback only)...");
+  await bundleService(SUPERVISOR_SERVICE, SERVICES_DIR);
+  console.log("Staging computer build context...");
+  await stageComputerContext(OUT_DIR);
   const arches = universal ? ["arm64", "x64"] : [arch];
   const koffiArches = await copyRuntimeAssets(SERVICES_DIR, arches);
 
