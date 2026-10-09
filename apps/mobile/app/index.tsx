@@ -1084,13 +1084,16 @@ function createHomeStyles() {
     headerActions: {
       flexDirection: "row",
       alignItems: "center",
-      gap: 12,
+      gap: 8,
     },
     circleButton: {
-      width: 40,
-      height: 40,
-      borderRadius: 20,
-      backgroundColor: native.fillPressed,
+      width: 44,
+      height: 44,
+      borderRadius: 22,
+      borderCurve: "continuous",
+      borderWidth: StyleSheet.hairlineWidth,
+      borderColor: tokens.border,
+      backgroundColor: tokens.card,
       alignItems: "center",
       justifyContent: "center",
       overflow: "hidden",
@@ -1104,7 +1107,7 @@ function createHomeStyles() {
     profileInitials: {
       color: native.label,
       fontSize: 15,
-      fontWeight: "600",
+      fontWeight: "400",
     },
     searchField: {
       marginHorizontal: 16,
@@ -1112,11 +1115,15 @@ function createHomeStyles() {
       minHeight: 44,
       paddingVertical: 10,
       textAlignVertical: "center",
-      borderRadius: 10,
-      backgroundColor: native.fill,
+      borderRadius: 12,
+      borderCurve: "continuous",
+      borderWidth: StyleSheet.hairlineWidth,
+      borderColor: tokens.border,
+      backgroundColor: tokens.card,
       color: native.label,
       paddingHorizontal: 12,
       fontSize: 17,
+      fontWeight: "400",
       writingDirection: "auto",
     },
     error: {
@@ -1138,7 +1145,7 @@ function createHomeStyles() {
       flexDirection: "row",
       alignItems: "center",
       paddingHorizontal: 16,
-      paddingVertical: 10,
+      paddingVertical: 12,
       gap: 12,
     },
     treeToggle: {
@@ -1149,7 +1156,8 @@ function createHomeStyles() {
       marginRight: -4,
     },
     rowPressed: {
-      opacity: 0.55,
+      backgroundColor: tokens.accent,
+      opacity: 0.85,
     },
     rowBody: {
       flex: 1,
@@ -1177,12 +1185,13 @@ function createHomeStyles() {
       flexShrink: 1,
       color: native.label,
       fontSize: 17,
-      fontWeight: "600",
+      fontWeight: "400",
       writingDirection: "auto",
     },
     tag: {
       flexShrink: 1,
       borderRadius: 999,
+      borderCurve: "continuous",
       backgroundColor: native.fill,
       paddingHorizontal: 7,
       paddingVertical: 2,
@@ -1190,7 +1199,7 @@ function createHomeStyles() {
     tagLabel: {
       color: native.secondaryLabel,
       fontSize: 11,
-      fontWeight: "500",
+      fontWeight: "400",
       writingDirection: "auto",
     },
     time: {
@@ -1205,7 +1214,7 @@ function createHomeStyles() {
     },
     unreadPreview: {
       color: native.label,
-      fontWeight: "600",
+      fontWeight: "400",
     },
     unreadDot: {
       width: 8,
@@ -1227,7 +1236,7 @@ function createHomeStyles() {
     spaceTitle: {
       color: native.label,
       fontSize: 14,
-      fontWeight: "600",
+      fontWeight: "400",
       writingDirection: "auto",
     },
     spaceActions: {
@@ -1243,8 +1252,8 @@ function createHomeStyles() {
     },
     sectionHeading: {
       color: native.secondaryLabel,
-      fontSize: 14,
-      fontWeight: "600",
+      fontSize: 13,
+      fontWeight: "400",
       paddingHorizontal: 16,
       paddingTop: 12,
       paddingBottom: 4,
@@ -1262,6 +1271,7 @@ function createHomeStyles() {
       width: 48,
       height: 48,
       borderRadius: 24,
+      borderCurve: "continuous",
       backgroundColor: native.fill,
       alignItems: "center",
       justifyContent: "center",
@@ -1269,7 +1279,7 @@ function createHomeStyles() {
     groupAvatarLabel: {
       color: native.secondaryLabel,
       fontSize: 16,
-      fontWeight: "600",
+      fontWeight: "400",
     },
   });
 }

@@ -87,11 +87,14 @@ export function WorkingIndicator({ compact = false, tint }: { compact?: boolean;
         alignSelf: "flex-start",
         flexDirection: "row",
         alignItems: "center",
-        gap: 6,
-        backgroundColor: tokens.muted,
-        paddingHorizontal: 14,
+        gap: 8,
+        backgroundColor: tokens.card,
+        borderWidth: 1,
+        borderColor: tokens.border,
+        paddingHorizontal: 16,
         paddingVertical: 12,
-        borderRadius: 20,
+        borderRadius: 16,
+        borderCurve: "continuous",
       }}
     >
       {DOTS.map((index) => (

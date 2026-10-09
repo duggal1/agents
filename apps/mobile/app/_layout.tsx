@@ -91,6 +91,8 @@ export default function Layout() {
                   headerTintColor: navigationTheme.colors.text,
                   headerShadowVisible: false,
                   headerBackButtonDisplayMode: "minimal",
+                  headerTitleStyle: { fontWeight: "400", fontSize: 17 },
+                  headerLargeTitleStyle: { fontWeight: "400" },
                   contentStyle: { backgroundColor: String(native.page) },
                 }}
               >

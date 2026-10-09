@@ -668,7 +668,7 @@ function Thread() {
           ) : null}
           <Text
             numberOfLines={1}
-            style={{ color: tokens.foreground, fontSize: 18, fontWeight: "600" }}
+            style={{ color: tokens.foreground, fontSize: 17, fontWeight: "400" }}
           >
             {displayName || t("Thread")}
           </Text>
@@ -1696,8 +1696,9 @@ function Thread() {
                     borderColor: tokens.border,
                     borderWidth: 1,
                     borderRadius: 16,
+                    borderCurve: "continuous",
                     paddingHorizontal: 8,
-                    paddingVertical: 2,
+                    paddingVertical: 4,
                     fontSize: 13,
                   }}
                 >
@@ -1786,7 +1787,7 @@ function Thread() {
     <KeyboardAvoidingView
       behavior="height"
       keyboardVerticalOffset={headerHeight}
-      style={{ flex: 1, backgroundColor: tokens.background, paddingHorizontal: 20 }}
+      style={{ flex: 1, backgroundColor: tokens.background, paddingHorizontal: 16 }}
     >
       {error ? <Text style={{ color: tokens.mutedForeground, marginTop: 12 }}>{error}</Text> : null}
       {runError ? (
@@ -1869,16 +1870,26 @@ function Thread() {
             style={{
               position: "absolute",
               left: "50%",
-              marginLeft: -21,
+              marginLeft: -22,
               bottom: 12,
-              width: 42,
-              height: 42,
-              borderRadius: 21,
+              width: 44,
+              height: 44,
+              borderRadius: 22,
+              borderCurve: "continuous",
               borderWidth: 1,
-              borderColor: native.fillPressed,
-              backgroundColor: native.fill,
+              borderColor: tokens.border,
+              backgroundColor: tokens.card,
               alignItems: "center",
               justifyContent: "center",
+              boxShadow: [
+                {
+                  offsetX: 0,
+                  offsetY: 8,
+                  blurRadius: 24,
+                  spreadDistance: -8,
+                  color: "rgba(0,0,0,0.45)",
+                },
+              ],
             }}
           >
             <NativeSymbol
@@ -1908,7 +1919,8 @@ function Thread() {
           <View
             style={{
               marginTop: 12,
-              borderRadius: 14,
+              borderRadius: 16,
+              borderCurve: "continuous",
               borderWidth: 1,
               borderColor: tokens.border,
               backgroundColor: tokens.card,
@@ -1919,7 +1931,7 @@ function Thread() {
               gap: 8,
             }}
           >
-            <View style={{ flex: 1 }}>
+            <View style={{ flex: 1, gap: 2 }}>
               <Text style={{ color: tokens.mutedForeground, fontSize: 12 }}>
                 {t("Replying to")}
               </Text>
@@ -1928,13 +1940,16 @@ function Thread() {
               </Text>
             </View>
             <Pressable
+              accessibilityRole="button"
               accessibilityLabel={t("Cancel reply")}
+              hitSlop={12}
               onPress={() => {
                 setReplyTarget(null);
                 setReplyQuote(null);
               }}
+              style={{ width: 44, height: 44, alignItems: "center", justifyContent: "center" }}
             >
-              <Text style={{ color: tokens.mutedForeground }}>✕</Text>
+              <NativeSymbol ios="xmark" android="close" size={14} color={tokens.mutedForeground} />
             </Pressable>
           </View>
         ) : null}
@@ -1960,6 +1975,7 @@ function Thread() {
                   alignItems: "center",
                   gap: 8,
                   borderRadius: 999,
+                  borderCurve: "continuous",
                   borderWidth: 1,
                   borderColor: tokens.border,
                   backgroundColor: tokens.card,
@@ -1973,7 +1989,12 @@ function Thread() {
                     style={{ width: 28, height: 28, borderRadius: 6 }}
                   />
                 ) : (
-                  <Text style={{ color: tokens.foreground }}>📎</Text>
+                  <NativeSymbol
+                    ios="paperclip"
+                    android="attach-outline"
+                    size={14}
+                    color={tokens.mutedForeground}
+                  />
                 )}
                 <Text style={{ color: tokens.foreground, maxWidth: 140 }} numberOfLines={1}>
                   {attachment.name}
@@ -2002,7 +2023,8 @@ function Thread() {
             testID="mention-picker"
             style={{
               marginTop: 12,
-              borderRadius: 14,
+              borderRadius: 16,
+              borderCurve: "continuous",
               borderWidth: 1,
               borderColor: tokens.border,
               backgroundColor: tokens.card,
@@ -2047,7 +2069,8 @@ function Thread() {
             testID="slash-picker"
             style={{
               marginTop: 12,
-              borderRadius: 14,
+              borderRadius: 16,
+              borderCurve: "continuous",
               borderWidth: 1,
               borderColor: tokens.border,
               backgroundColor: tokens.card,
@@ -2112,22 +2135,26 @@ function Thread() {
           style={{
             flexDirection: "row",
             gap: 8,
-            marginTop: 16,
+            marginTop: 12,
             alignItems: "flex-end",
           }}
         >
           <Pressable
             accessibilityLabel={t("Attach file")}
+            hitSlop={6}
             onPress={showAttachMenu}
-            style={{
+            style={({ pressed }) => ({
               width: 44,
               height: 44,
               borderRadius: 22,
+              borderCurve: "continuous",
               borderWidth: 1,
               borderColor: tokens.border,
+              backgroundColor: tokens.card,
               alignItems: "center",
               justifyContent: "center",
-            }}
+              opacity: pressed ? 0.7 : 1,
+            })}
           >
             <NativeSymbol ios="plus" android="add" size={18} color={tokens.mutedForeground} />
           </Pressable>
@@ -2137,10 +2164,13 @@ function Thread() {
               flexDirection: "row",
               flexWrap: "wrap",
               alignItems: "center",
-              gap: 6,
+              gap: 8,
               backgroundColor: tokens.card,
-              borderRadius: 20,
-              paddingHorizontal: 10,
+              borderWidth: 1,
+              borderColor: tokens.border,
+              borderRadius: 22,
+              borderCurve: "continuous",
+              paddingHorizontal: 12,
               paddingVertical: 8,
               minHeight: 44,
             }}
@@ -2268,16 +2298,20 @@ function Thread() {
           {botId && !onCall && draft.trim().length === 0 ? (
             <Pressable
               accessibilityLabel={t("Call")}
+              hitSlop={6}
               onPress={() => void startVoiceCall()}
-              style={{
+              style={({ pressed }) => ({
                 width: 44,
                 height: 44,
                 borderRadius: 22,
+                borderCurve: "continuous",
                 borderWidth: 1,
                 borderColor: tokens.border,
+                backgroundColor: tokens.card,
                 alignItems: "center",
                 justifyContent: "center",
-              }}
+                opacity: pressed ? 0.7 : 1,
+              })}
             >
               <NativeSymbol
                 ios="waveform"
@@ -2291,15 +2325,16 @@ function Thread() {
             accessibilityLabel={t("Send")}
             disabled={sending || !canSend}
             onPress={() => void send()}
-            style={{
+            style={({ pressed }) => ({
               backgroundColor: tokens.primary,
               borderRadius: 22,
+              borderCurve: "continuous",
               width: 44,
               height: 44,
               alignItems: "center",
               justifyContent: "center",
-              opacity: sending || !canSend ? 0.5 : 1,
-            }}
+              opacity: sending || !canSend ? 0.5 : pressed ? 0.85 : 1,
+            })}
           >
             <NativeSymbol
               ios="arrow.up"
@@ -2313,16 +2348,18 @@ function Thread() {
               accessibilityLabel={t("Stop")}
               disabled={sending}
               onPress={() => void stop()}
-              style={{
+              style={({ pressed }) => ({
                 borderColor: tokens.border,
                 borderWidth: 1,
                 borderRadius: 22,
+                borderCurve: "continuous",
+                backgroundColor: tokens.card,
                 width: 44,
                 height: 44,
                 alignItems: "center",
                 justifyContent: "center",
-                opacity: sending ? 0.5 : 1,
-              }}
+                opacity: sending ? 0.5 : pressed ? 0.7 : 1,
+              })}
             >
               <NativeSymbol ios="stop.fill" android="stop" size={15} color={tokens.foreground} />
             </Pressable>
@@ -2350,7 +2387,14 @@ function Thread() {
           />
           <View
             accessibilityViewIsModal
-            style={{ backgroundColor: tokens.popover, borderRadius: 24, paddingVertical: 12 }}
+            style={{
+              backgroundColor: tokens.popover,
+              borderRadius: 20,
+              borderCurve: "continuous",
+              borderWidth: 1,
+              borderColor: tokens.border,
+              paddingVertical: 8,
+            }}
           >
             {botActions.map((action) => (
               <Pressable
@@ -2515,13 +2559,12 @@ function QuoteSheet({
             hitSlop={8}
           >
             <Text
-              style={{
-                color: excerpt ? tokens.primary : tokens.mutedForeground,
-                fontSize: 17,
-                fontWeight: "600",
-              }}
-            >
-              {t("Quote")}
+            style={{
+              color: excerpt ? tokens.foreground : tokens.mutedForeground,
+              fontSize: 17,
+            }}
+          >
+            {t("Quote")}
             </Text>
           </Pressable>
         </View>
@@ -2815,7 +2858,8 @@ const MessageBubble = memo(function MessageBubble({
         {...actionProps}
         style={{
           width: "90%",
-          borderRadius: 18,
+          borderRadius: 16,
+          borderCurve: "continuous",
           borderWidth: 1,
           borderColor: tokens.border,
           backgroundColor: tokens.card,
@@ -2830,7 +2874,7 @@ const MessageBubble = memo(function MessageBubble({
             gap: 8,
           }}
         >
-          <Text style={{ color: tokens.foreground, fontSize: 15, fontWeight: "600" }}>
+          <Text style={{ color: tokens.foreground, fontSize: 15, fontWeight: "400" }}>
             {special.name || t("subagent")}
           </Text>
           <Text
@@ -2888,7 +2932,8 @@ const MessageBubble = memo(function MessageBubble({
         disabled={!href}
         style={{
           width: "90%",
-          borderRadius: 18,
+          borderRadius: 16,
+          borderCurve: "continuous",
           borderWidth: 1,
           borderColor: tokens.border,
           backgroundColor: tokens.card,
@@ -2897,7 +2942,7 @@ const MessageBubble = memo(function MessageBubble({
         }}
       >
         <View style={{ flexDirection: "row", justifyContent: "space-between", gap: 8 }}>
-          <Text style={{ color: tokens.cardForeground, fontSize: 15, fontWeight: "600" }}>
+          <Text style={{ color: tokens.cardForeground, fontSize: 15, fontWeight: "400" }}>
             {title}
           </Text>
           <Text
@@ -2931,7 +2976,8 @@ const MessageBubble = memo(function MessageBubble({
         }
         style={{
           width: "90%",
-          borderRadius: 18,
+          borderRadius: 16,
+          borderCurve: "continuous",
           borderWidth: 1,
           borderColor: tokens.border,
           backgroundColor: tokens.card,
@@ -2947,7 +2993,7 @@ const MessageBubble = memo(function MessageBubble({
             gap: 8,
           }}
         >
-          <Text style={{ color: tokens.foreground, fontSize: 15, fontWeight: "600" }}>
+          <Text style={{ color: tokens.foreground, fontSize: 15, fontWeight: "400" }}>
             {special.name || t("Bot")}
           </Text>
           <Text style={{ color: removed ? tokens.destructive : tokens.success, fontSize: 13 }}>
@@ -3010,7 +3056,8 @@ const MessageBubble = memo(function MessageBubble({
         <View
           style={{
             width: "90%",
-            borderRadius: 18,
+            borderRadius: 16,
+            borderCurve: "continuous",
             borderWidth: 1,
             borderColor: tokens.border,
             backgroundColor: tokens.card,
@@ -3021,7 +3068,7 @@ const MessageBubble = memo(function MessageBubble({
           {askBlock.text ? (
             <Text
               {...actionProps}
-              style={{ color: tokens.foreground, fontSize: 15.5, lineHeight: 23 }}
+              style={{ color: tokens.foreground, fontSize: 15, lineHeight: 22 }}
             >
               {askBlock.text}
             </Text>
@@ -3046,8 +3093,7 @@ const MessageBubble = memo(function MessageBubble({
               style={{
                 color: tokens.success,
                 marginTop: 12,
-                fontSize: 13.5,
-                fontWeight: "600",
+                fontSize: 13,
               }}
             >
               {formatApprovalAnswer(
@@ -3115,16 +3161,17 @@ const MessageBubble = memo(function MessageBubble({
         style={{
           maxWidth: "100%",
           borderRadius: 20,
+          borderCurve: "continuous",
           borderWidth: 1,
           borderColor: tokens.border,
-          backgroundColor: message.role === "user" ? tokens.secondary : tokens.muted,
+          backgroundColor: message.role === "user" ? tokens.secondary : tokens.card,
           paddingHorizontal: 14,
           paddingVertical: 12,
           gap: 8,
         }}
       >
         {speaker ? (
-          <Text style={{ color: tokens.mutedForeground, fontSize: 12.5, fontWeight: "600" }}>
+          <Text style={{ color: tokens.mutedForeground, fontSize: 12 }}>
             {speaker}
           </Text>
         ) : null}
@@ -3132,7 +3179,7 @@ const MessageBubble = memo(function MessageBubble({
           <Text
             style={{
               color: message.role === "user" ? tokens.secondaryForeground : tokens.mutedForeground,
-              fontSize: 12.5,
+              fontSize: 12,
             }}
             numberOfLines={2}
           >
@@ -3200,7 +3247,7 @@ const MessageBubble = memo(function MessageBubble({
                     fontSize: 15,
                   }}
                 >
-                  🖼 {attachment.name ?? t("Image")}
+                  {attachment.name ?? t("Image")}
                 </Text>
               </Pressable>
             )
@@ -3324,17 +3371,20 @@ function MessageTextCard({
         flexShrink: 1,
         minWidth: 0,
         maxWidth: "100%",
-        backgroundColor: message.role === "user" ? tokens.secondary : tokens.muted,
-        padding: 12,
+        backgroundColor: message.role === "user" ? tokens.secondary : tokens.card,
+        borderWidth: message.role === "user" ? 0 : 1,
+        borderColor: tokens.border,
+        paddingHorizontal: 14,
+        paddingVertical: 12,
         borderRadius: 20,
+        borderCurve: "continuous",
       }}
     >
       {speaker ? (
         <Text
           style={{
             color: tokens.mutedForeground,
-            fontSize: 12.5,
-            fontWeight: "600",
+            fontSize: 12,
             marginBottom: 4,
           }}
         >
@@ -3345,8 +3395,8 @@ function MessageTextCard({
         <Text
           style={{
             color: message.role === "user" ? tokens.secondaryForeground : tokens.mutedForeground,
-            fontSize: 12.5,
-            marginBottom: 6,
+            fontSize: 12,
+            marginBottom: 8,
           }}
           numberOfLines={2}
         >
@@ -3403,20 +3453,21 @@ function AgentEventLabel({
       accessibilityLabel={expanded ? t("Hide {label}", { label }) : t("Show {label}", { label })}
       style={{ width: "100%", paddingVertical: 4, alignItems: "center" }}
     >
-      <Text style={{ color: tokens.mutedForeground, fontSize: 13.5, textAlign: "center" }}>
-        ↔ {label}
+      <Text style={{ color: tokens.mutedForeground, fontSize: 13, textAlign: "center" }}>
+        {label}
       </Text>
       {expanded && detail ? (
         <View
           style={{
             width: "100%",
-            marginTop: 6,
-            borderRadius: 14,
+            marginTop: 8,
+            borderRadius: 16,
+            borderCurve: "continuous",
             borderWidth: 1,
             borderColor: tokens.border,
             backgroundColor: tokens.card,
             paddingHorizontal: 14,
-            paddingVertical: 10,
+            paddingVertical: 12,
           }}
         >
           <ChatMarkdown palette={tokens} colorScheme={colorScheme}>

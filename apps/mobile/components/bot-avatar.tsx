@@ -59,6 +59,7 @@ export const BotAvatar = memo(function BotAvatar({
           width: size,
           height: size,
           borderRadius: size / 2,
+          borderCurve: "continuous",
           overflow: "hidden",
         }}
       >
@@ -79,6 +80,7 @@ export const BotAvatar = memo(function BotAvatar({
           width: size,
           height: size,
           borderRadius: size / 2,
+          borderCurve: "continuous",
           backgroundColor: fillColor,
           alignItems: "center",
           justifyContent: "center",
@@ -89,6 +91,7 @@ export const BotAvatar = memo(function BotAvatar({
             width: visorW,
             height: visorH,
             borderRadius: Math.round(visorH * 0.52),
+            borderCurve: "continuous",
             backgroundColor: "#0C0C0E",
             flexDirection: "row",
             alignItems: "center",
@@ -103,6 +106,7 @@ export const BotAvatar = memo(function BotAvatar({
                 width: eyeW,
                 height: eyeH,
                 borderRadius: Math.max(2, Math.round(eyeW * 0.6)),
+                borderCurve: "continuous",
                 backgroundColor: "#fff",
               }}
             />
