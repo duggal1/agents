@@ -311,7 +311,7 @@ export class LocalBackend {
   private migrationStaging: DatabaseController | null = null;
 
   constructor(private readonly deps: LocalBackendDeps) {
-    this.webUrlValue = deps.env.RAKAZO_LOCAL_WEB_URL?.trim() || DEFAULT_LOCAL_WEB_URL;
+    this.webUrlValue = deps.env.SAPPHIRE_LOCAL_WEB_URL?.trim() || DEFAULT_LOCAL_WEB_URL;
   }
 
   /** The managed origin the app window opens; resolved to a free loopback port at start. */
@@ -673,7 +673,7 @@ export class LocalBackend {
 
   /** Keeps the saved origin across restarts; allocates a fresh loopback port when taken. */
   private async resolveWebUrl(): Promise<string> {
-    const override = this.deps.env.RAKAZO_LOCAL_WEB_URL?.trim();
+    const override = this.deps.env.SAPPHIRE_LOCAL_WEB_URL?.trim();
     if (override) {
       this.webUrlValue = assertLoopbackWebUrl(override);
       return this.webUrlValue;
