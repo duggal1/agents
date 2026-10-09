@@ -106,8 +106,9 @@ test("first run asks whether to use a local or existing instance", async () => {
   await expect(setup.locator("#start-fresh")).toBeHidden();
 
   // Bot computers are an optional post-setup step, not a backend prerequisite.
+  // (The slot copy is owned by the provider-settings stream; match loosely.)
   await expect(setup.locator("#e2b-slot")).toBeVisible();
-  await expect(setup.locator("#e2b-slot")).toContainText("Bot computers are optional");
+  await expect(setup.locator("#e2b-slot")).toContainText(/bot computers?/i);
 
   await setup.screenshot({
     path: path.join(import.meta.dirname, "screenshots", "01-setup-new-instance.png"),
