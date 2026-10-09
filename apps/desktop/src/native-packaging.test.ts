@@ -39,7 +39,7 @@ describe("native macOS packaging", () => {
   });
 
   it("builds the runtime before every artifact-producing pack script", () => {
-    for (const script of ["pack", "pack:dir", "release"]) {
+    for (const script of ["pack", "pack:dir", "pack:run", "release"]) {
       expect(packageJson.scripts[script]).toContain("runtime:build");
       const buildIndex = (packageJson.scripts[script] as string).indexOf("runtime:build");
       const builderIndex = (packageJson.scripts[script] as string).indexOf("electron-builder");
