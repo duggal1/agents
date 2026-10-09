@@ -11,6 +11,8 @@ import { readPrivateFile, writePrivateFile } from "./setup-store.js";
  */
 export const POSTGRES_MAJOR_VERSION = 16;
 export const POSTGRES_DATA_DIR_NAME = "postgres";
+/** Marker file PostgreSQL writes into an initialized cluster directory. */
+export const POSTGRES_VERSION_FILE = "PG_VERSION";
 export const POSTGRES_LOG_DIR_NAME = "logs";
 export const POSTGRES_LOG_FILE = "postgres.log";
 export const POSTGRES_CREDENTIALS_FILE = ".desktop-postgres.json";
@@ -464,11 +466,11 @@ export class LocalPostgresController {
   }
 
   private async hasCluster(): Promise<boolean> {
-    return (await readPrivateFile(path.join(this.deps.dataDir, "PG_VERSION"), 16)) !== null;
+    return (await readPrivateFile(path.join(this.deps.dataDir, POSTGRES_VERSION_FILE), 16)) !== null;
   }
 
   private async clusterVersion(): Promise<string | null> {
-    const raw = await readPrivateFile(path.join(this.deps.dataDir, "PG_VERSION"), 16);
+    const raw = await readPrivateFile(path.join(this.deps.dataDir, POSTGRES_VERSION_FILE), 16);
     return raw?.trim() ?? null;
   }
 
