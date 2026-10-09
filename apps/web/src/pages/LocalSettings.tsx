@@ -89,7 +89,7 @@ function RuntimeSection() {
       const result = await action();
       if (result.ok) {
         setKey("");
-        setNotice(done);
+        setNotice(`${done} It applies when the local backend next starts.`);
         await refresh();
       } else {
         setNotice(result.error ?? "Could not save that change.");
