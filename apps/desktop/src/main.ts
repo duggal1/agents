@@ -21,16 +21,8 @@ import {
   LAUNCH_CHECK_DELAY_MS,
 } from "./auto-update.js";
 import { openBrowserAuth } from "./browser-auth.js";
-import { DOCKER_INSTALL_LINKS, isDesktopSetupLink, runDocker } from "./docker-cli.js";
+import { LocalBackend } from "./local-backend.js";
 import { requestLocalSettings } from "./local-settings.js";
-import {
-  LocalStackController,
-  readStackToken,
-  readStackWebUrl,
-  resolveImageTag,
-  stackDir,
-  stackResourceDir,
-} from "./local-stack.js";
 import { oauthCallbackFrom } from "./oauth-callback.js";
 import {
   bundledRendererCandidates,
@@ -41,11 +33,8 @@ import {
 } from "./renderer-assets.js";
 import { installSessionPermissions } from "./session-permissions.js";
 import {
-  DEFAULT_LOCAL_WEB_URL,
-  desktopStackImageTag,
   isRakazoHealth,
   managedLocalOpenUrl,
-  maySendDesktopStackToken,
   normalizeServerUrl,
   parseSetupInput,
   probeFailureMessage,
@@ -65,11 +54,7 @@ import {
 } from "./window-options.js";
 
 const PERFORMANCE_USER_DATA = process.env.RAKAZO_PERFORMANCE_USER_DATA;
-/** Test hook: where the app-managed stack answers. Mode `new` still requires loopback. */
-const LOCAL_WEB_URL = process.env.RAKAZO_LOCAL_WEB_URL?.trim() || DEFAULT_LOCAL_WEB_URL;
 const PROBE_TIMEOUT_MS = 8_000;
-const DESKTOP_STACK_PROBE_PATH = "/.well-known/rakazo-desktop-stack";
-const DESKTOP_STACK_TOKEN_HEADER = "x-rakazo-desktop-stack-token";
 let mainWindow: BrowserWindow | null = null;
 const appWindowTargets = new WeakMap<BrowserWindow, string>();
 let setupWindow: BrowserWindow | null = null;
@@ -110,7 +95,8 @@ const desktopUpdater = new DesktopUpdateController(
   },
 );
 let launchUpdateCheckScheduled = false;
-let localStack: LocalStackController;
+/** Native PostgreSQL + API + worker supervised by the main process for mode `new`. */
+let localBackend: LocalBackend;
 
 markOnce("rk:main:module-evaluated");
 if (PERFORMANCE_USER_DATA) {
@@ -639,15 +625,15 @@ async function showLocalSettings() {
   if (openingSettings) return;
   openingSettings = true;
   try {
-    const url = localStack.webUrl();
-    const token = await readStackToken(stackDir(app.getPath("userData")));
-    if (!token || !(await localStack.matchesDesiredStack(url))) {
+    const localTarget = await localBackend.localSettingsTarget();
+    if (localTarget === null) {
       await dialog.showMessageBox({
         message: "Start the local server before opening its settings.",
         type: "info",
       });
       return;
     }
+    const url = localBackend.webUrl();
     await settingsCleanup;
     const partition = "local-server-settings";
     const targetSession = session.fromPartition(partition);
@@ -669,7 +655,7 @@ async function showLocalSettings() {
     });
     settingsWindow = win;
     const origin = new URL(url).origin;
-    settingsTarget = { origin, token };
+    settingsTarget = { origin, token: localTarget.token };
     win.webContents.setWindowOpenHandler(({ url: externalUrl }) => {
       const external = safeExternalUrl(externalUrl);
       if (external) void shell.openExternal(external);
@@ -721,10 +707,10 @@ function installApplicationMenu() {
   };
   const stopStack: Electron.MenuItemConstructorOptions = {
     id: "stop-local-stack",
-    label: "Stop Local Stack",
-    // The stack keeps running after quit (bots are always on); this is the explicit off switch.
+    label: "Stop Local Services",
+    // The services keep running after quit (bots are always on); this is the explicit off switch.
     click: () => {
-      if (currentSetup?.mode === "new") void localStack.stop();
+      if (currentSetup?.mode === "new") void localBackend.stop();
     },
   };
   const template: Electron.MenuItemConstructorOptions[] =
@@ -820,32 +806,6 @@ async function probeServer(rawUrl: string, signal?: AbortSignal): Promise<Deskto
     };
   } catch (error) {
     return { ok: false, url, error: probeFailureMessage(error) };
-  }
-}
-
-/** A public health response is not enough: another checkout may own the same fixed port. */
-async function probeManagedStack(
-  rawUrl: string,
-  token: string,
-  signal?: AbortSignal,
-): Promise<string | null> {
-  const url = normalizeServerUrl(rawUrl);
-  // Never put the private stack token on a cleartext LAN or .local hop.
-  if (url === null || !maySendDesktopStackToken(url)) return null;
-  const timeout = AbortSignal.timeout(PROBE_TIMEOUT_MS);
-  try {
-    const response = await net.fetch(`${url}${DESKTOP_STACK_PROBE_PATH}`, {
-      method: "GET",
-      headers: { [DESKTOP_STACK_TOKEN_HEADER]: token },
-      cache: "no-store",
-      credentials: "omit",
-      redirect: "manual",
-      signal: signal ? AbortSignal.any([timeout, signal]) : timeout,
-    });
-    if (!response.ok) return null;
-    return desktopStackImageTag(await readProbeJson(response));
-  } catch {
-    return null;
   }
 }
 
@@ -1013,27 +973,18 @@ function safeOrigin(targetUrl: string) {
 app.whenReady().then(async () => {
   installSessionPermissions(session.defaultSession, permissionTarget);
   const userDataDir = app.getPath("userData");
-  localStack = new LocalStackController({
+  localBackend = new LocalBackend({
+    userDataDir,
     platform: process.platform,
+    arch: process.arch,
     env: process.env,
-    exists: existsSync,
-    run: runDocker,
-    stackDir: stackDir(userDataDir),
-    resourceDir: stackResourceDir({
-      packaged: app.isPackaged,
-      resourcesPath: process.resourcesPath,
-      appPath: app.getAppPath(),
-    }),
-    localWebUrl:
-      process.env.RAKAZO_LOCAL_WEB_URL?.trim() ||
-      (await readStackWebUrl(stackDir(userDataDir), LOCAL_WEB_URL)),
-    imageTag: resolveImageTag({
-      version: app.getVersion(),
-      packaged: app.isPackaged,
-      override: process.env.RAKAZO_IMAGE_TAG,
-    }),
-    probe: (url, signal, token) => probeManagedStack(url, token, signal),
+    execPath: process.execPath,
+    packaged: app.isPackaged,
+    resourcesPath: process.resourcesPath,
+    appPath: app.getAppPath(),
+    appVersion: app.getVersion(),
     randomHex: (bytes) => randomBytes(bytes).toString("hex"),
+    probeApi: async (url) => (await probeServer(url)).ok,
     onState: (state) => {
       if (setupWindow !== null && !setupWindow.isDestroyed()) {
         setupWindow.webContents.send("desktop.setup.stack.changed", state);
@@ -1185,7 +1136,7 @@ app.whenReady().then(async () => {
   ipcMain.handle("desktop.setup.state", (event) => {
     if (!fromSetupWindow(event)) return null;
     return {
-      defaultLocalUrl: localStack.webUrl(),
+      defaultLocalUrl: localBackend.webUrl(),
       saved: currentSetup,
       error: setupError ?? undefined,
     };
@@ -1214,11 +1165,11 @@ app.whenReady().then(async () => {
         };
       }
 
-      // Only open the exact origin selected and authenticated by the managed stack.
+      // Only open the exact origin served by the managed native backend.
       let openSetup = setup;
       if (setup.mode === "new") {
-        const managedUrl = managedLocalOpenUrl(setup.serverUrl, localStack.webUrl());
-        if (managedUrl === null || !(await localStack.matchesDesiredStack())) {
+        const managedUrl = managedLocalOpenUrl(setup.serverUrl, localBackend.webUrl());
+        if (managedUrl === null || !(await localBackend.matchesDesired())) {
           return {
             ok: false,
             error: "The app-managed Sapphire services are not ready. Retry setup.",
@@ -1285,18 +1236,19 @@ app.whenReady().then(async () => {
   ipcMain.handle("desktop.setup.quit", (event) => {
     if (fromSetupWindow(event)) app.quit();
   });
-  ipcMain.handle("desktop.setup.openLink", async (event, link: unknown) => {
-    if (!fromSetupWindow(event) || !isDesktopSetupLink(link)) return;
-    await shell.openExternal(DOCKER_INSTALL_LINKS[link]);
-  });
   ipcMain.handle("desktop.setup.stack.state", (event) =>
-    fromSetupWindow(event) ? localStack.state() : null,
+    fromSetupWindow(event) ? localBackend.state() : null,
   );
-  ipcMain.handle("desktop.setup.stack.start", (event) => {
+  ipcMain.handle("desktop.setup.stack.start", (event, options: unknown) => {
     if (!fromSetupWindow(event)) return null;
-    // Respond right away; the setup window polls `stack.state` until a terminal phase.
-    void localStack.start();
-    return localStack.state();
+    // Respond right away; the setup window follows `stack.changed` to a terminal phase.
+    // Options are narrowed inside the backend: only `{ fresh?: boolean }` has any effect.
+    void localBackend.start(options);
+    return localBackend.state();
+  });
+  ipcMain.handle("desktop.setup.stack.stop", (event) => {
+    if (!fromSetupWindow(event)) return null;
+    return localBackend.stop();
   });
 
   // Register before startup awaits so macOS dock clicks during probe/open are handled.
@@ -1324,18 +1276,17 @@ app.whenReady().then(async () => {
     showSetupWindow();
   } else if (target.source === "saved") {
     if (currentSetup?.mode === "new") {
-      const managedUrl = managedLocalOpenUrl(target.url, localStack.webUrl());
-      const managedStackReady =
-        managedUrl !== null ? await localStack.matchesDesiredStack() : false;
-      if (managedStackReady && managedUrl !== null) {
+      const managedUrl = managedLocalOpenUrl(target.url, localBackend.webUrl());
+      if (managedUrl !== null && (await localBackend.matchesDesired())) {
         if (await openApp(managedUrl)) {
           commitPendingAppSwitch();
           destroySetupWindow();
         }
       } else {
-        // Missing, stale, foreign, or owned by another process: reconcile the
-        // app-managed stack before any API or computer traffic is allowed.
-        void localStack.start();
+        // Missing or outdated native backend: run the one-time data migration
+        // when needed, then boot PostgreSQL, API, and worker before any app or
+        // computer traffic is allowed. The setup window follows the progress.
+        void localBackend.start();
         showSetupWindow();
       }
     } else {
@@ -1364,9 +1315,26 @@ app.on("window-all-closed", () => {
   if (process.platform !== "darwin") app.quit();
 });
 
-app.on("before-quit", () => {
+let backendStopRequested = false;
+app.on("before-quit", (event) => {
   quitting = true;
   clearTimeout(warmWindowTimer);
-  // Containers keep running; only an in-flight pull/up is cut short.
-  localStack?.abort();
+  // Graceful shutdown order: stop API and worker first, then the database, so
+  // in-flight requests drain and PostgreSQL can recover on the next start.
+  if (currentSetup?.mode === "new" && !backendStopRequested) {
+    backendStopRequested = true;
+    event.preventDefault();
+    const force = setTimeout(() => app.quit(), 20_000);
+    force.unref?.();
+    void localBackend
+      .stop()
+      .catch(() => undefined)
+      .finally(() => {
+        clearTimeout(force);
+        app.quit();
+      });
+  } else {
+    // No local backend to drain: only cut short an in-flight migration attempt.
+    localBackend?.abort();
+  }
 });
