@@ -66,7 +66,8 @@ export interface RakazoDesktop {
 
 /**
  * How the desktop app was pointed at a Sapphire server during first-run setup.
- * `new` is the Docker Compose stack this app installs and runs on the same computer.
+ * `new` is the app-managed native local backend (PostgreSQL plus API and worker
+ * processes supervised by Electron) on the same computer.
  */
 export type DesktopInstanceMode = "new" | "existing";
 
@@ -97,7 +98,9 @@ export interface DesktopStackProbeResponse {
 }
 
 /**
- * Lifecycle of the Docker Compose stack the desktop app manages for mode `new`.
+ * Lifecycle of the legacy Docker Compose stack the desktop app used to manage for
+ * mode `new`. Kept for the one-time data migration from Compose volumes; the live
+ * local backend reports `DesktopLocalRuntimeState` instead.
  * `docker-missing` and `docker-not-running` wait for the person to act; `ready` and
  * `failed` are terminal until the next start.
  */
@@ -128,6 +131,38 @@ export interface DesktopLocalStackState {
 export type DesktopSetupLink = "docker-desktop" | "orbstack" | "docker-engine";
 
 /**
+ * Lifecycle of the app-managed native local backend for mode `new`: PostgreSQL,
+ * then API, then worker, all bound to loopback. `failed` is terminal until the
+ * next start; `degraded` keeps following until it recovers to `ready` or fails.
+ */
+export type DesktopLocalRuntimePhase =
+  | "idle"
+  | "starting-database"
+  | "migrating"
+  | "starting-api"
+  | "starting-worker"
+  | "ready"
+  | "degraded"
+  | "stopping"
+  | "failed";
+
+export interface DesktopLocalRuntimeState {
+  phase: DesktopLocalRuntimePhase;
+  /** One actionable sentence; null while the backend is progressing normally. */
+  message: string | null;
+  /** Bounded tail of redacted backend output for the current attempt. */
+  output: string[];
+  /** True when the last attempt ended in a migration failure the person may skip. */
+  freshStartAvailable: boolean;
+}
+
+/** Options for starting the native local backend. Never paths, ports, or env. */
+export interface DesktopLocalStartOptions {
+  /** Skip the one-time Compose data migration and boot an empty profile instead. */
+  fresh?: boolean;
+}
+
+/**
  * Bridge exposed only to the first-run setup window. The app window keeps the
  * narrower `rakazoDesktop` bridge so a connected server can never re-point the app.
  */
@@ -138,14 +173,18 @@ export interface RakazoSetup {
   test: (url: string) => Promise<DesktopReachability>;
   save: (setup: DesktopSetup) => Promise<{ ok: boolean; error?: string }>;
   quit: () => Promise<void>;
-  /** Opens one of the Docker install pages in the system browser. */
-  openLink: (link: DesktopSetupLink) => Promise<void>;
-  /** The Docker Compose stack this app installs and runs for mode `new`. */
+  /**
+   * The app-managed native local backend for mode `new`. Status, start, and stop
+   * only: the renderer never supplies paths, ports, or environment. Optional
+   * bot-computer credential fields are a follow-up and are not part of this bridge.
+   */
   stack: {
-    state: () => Promise<DesktopLocalStackState>;
-    /** Starts (or retries) the stack; a no-op while a start is already in flight. */
-    start: () => Promise<DesktopLocalStackState>;
+    state: () => Promise<DesktopLocalRuntimeState>;
+    /** Starts (or retries) the backend; a no-op while a start is already in flight. */
+    start: (options?: DesktopLocalStartOptions) => Promise<DesktopLocalRuntimeState>;
+    /** Stops backend services gracefully; safe to call at any phase. */
+    stop: () => Promise<DesktopLocalRuntimeState>;
     /** Fires on every state change so progress never depends on a renderer timer. */
-    onChange: (listener: (state: DesktopLocalStackState) => void) => void;
+    onChange: (listener: (state: DesktopLocalRuntimeState) => void) => void;
   };
 }
