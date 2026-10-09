@@ -232,7 +232,10 @@ export async function prismaMigrateDeploy(input: {
   let extraEnv: Record<string, string> = {};
   if (input.packaged) {
     const cli = path.join(input.runtimeRoot, "prisma", "bin", "prisma.mjs");
-    const schema = path.join(input.runtimeRoot, "prisma", "schema.prisma");
+    // Mirrors the staged prisma/ layout (config + schema + migrations travel
+    // together exactly as in packages/db): runtime/prisma/prisma.config.js
+    // declares schema "prisma/schema.prisma" relative to itself.
+    const schema = path.join(input.runtimeRoot, "prisma", "prisma", "schema.prisma");
     const engine = path.join(
       input.runtimeRoot,
       "prisma",

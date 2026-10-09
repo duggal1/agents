@@ -325,13 +325,23 @@ describe("prismaMigrateDeploy", () => {
   });
 
   it("runs the staged migrate tool on the service runtime with an explicit engine", async () => {
+    const seen: string[] = [];
     const run = vi.fn(async () => ({ code: 0, stdout: "", stderr: "" }));
     await prismaMigrateDeploy({
       ...base,
       packaged: true,
       run: run as never,
-      exists: () => true,
+      exists: (file) => {
+        seen.push(file);
+        return true;
+      },
     });
+    // The pre-flight check must look where the build actually stages the
+    // files (runtime/prisma/prisma/* mirrors packages/db/prisma/*); a wrong
+    // path here fails every packaged boot with "missing migration tool".
+    expect(seen).toContain("/runtime/prisma/bin/prisma.mjs");
+    expect(seen).toContain("/runtime/prisma/prisma/schema.prisma");
+    expect(seen).toContain("/runtime/prisma/engines/arm64/schema-engine-arm64");
     expect(run).toHaveBeenCalledOnce();
     const [binary, args, options] = run.mock.calls[0] as [
       string,
