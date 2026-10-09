@@ -135,7 +135,7 @@ function depsFor(overrides: Partial<DataMigrationDeps> & { mem: MemFs }): DataMi
     userDataDir: "/user",
     stackDir: "/user/stack",
     platform: "darwin",
-    env: { HOME: "/Users/tester", RAKAZO_DOCKER_BINARY: "/usr/local/bin/docker" },
+    env: { HOME: "/Users/tester", SAPPHIRE_DOCKER_BINARY: "/usr/local/bin/docker" },
     exists: (file) => file === "/usr/local/bin/docker" || overrides.mem.files.has(file),
     run: docker?.run ?? (overrides.run as DataMigrationDeps["run"]),
     binDir: "/runtime/postgres/arm64/bin",

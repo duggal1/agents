@@ -219,7 +219,7 @@ describe("backend lifecycle", () => {
     const backend = new LocalBackend(
       depsFor({
         // A missing binary even though Docker may exist on this machine.
-        env: { HOME: "/Users/tester", RAKAZO_DOCKER_BINARY: "/nonexistent/docker" },
+        env: { HOME: "/Users/tester", SAPPHIRE_DOCKER_BINARY: "/nonexistent/docker" },
         exists: existsSync,
         createRuntime: (...args: unknown[]) => {
           created.push(args);
@@ -295,7 +295,7 @@ describe("backend lifecycle", () => {
     const backend = new LocalBackend(
       depsFor({
         createRuntime: () => fakeRuntime() as never,
-        env: { RAKAZO_LOCAL_WEB_URL: "http://0.0.0.0:3100" },
+        env: { SAPPHIRE_LOCAL_WEB_URL: "http://0.0.0.0:3100" },
       }),
     );
     const state = await backend.start();

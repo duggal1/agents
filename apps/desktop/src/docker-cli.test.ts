@@ -68,8 +68,8 @@ describe("resolveDockerBinary", () => {
     expect(resolveDockerBinary("darwin", { HOME: "/Users/me" }, () => false)).toBeNull();
   });
 
-  it("treats RAKAZO_DOCKER_BINARY as the only candidate", () => {
-    const env = { RAKAZO_DOCKER_BINARY: "/fake/docker", PATH: "/usr/bin" };
+  it("treats SAPPHIRE_DOCKER_BINARY as the only candidate", () => {
+    const env = { SAPPHIRE_DOCKER_BINARY: "/fake/docker", PATH: "/usr/bin" };
     expect(resolveDockerBinary("linux", env, (file) => file === "/fake/docker")).toBe(
       "/fake/docker",
     );

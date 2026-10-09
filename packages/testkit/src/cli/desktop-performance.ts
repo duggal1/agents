@@ -173,9 +173,9 @@ function performanceEnvironment(databaseUrl: string): NodeJS.ProcessEnv {
     API_PROXY_TARGET: apiOrigin,
     WEB_PORT: String(webPort),
     RAKAZO_HOST: "127.0.0.1",
-    RAKAZO_WEB_URL: webOrigin,
-    RAKAZO_DISABLE_BUNDLED_RENDERER: remoteRenderer ? "1" : "0",
-    RAKAZO_DISABLE_WARM_WINDOW: disableWarmWindow ? "1" : "0",
+    SAPPHIRE_WEB_URL: webOrigin,
+    SAPPHIRE_DISABLE_BUNDLED_RENDERER: remoteRenderer ? "1" : "0",
+    SAPPHIRE_DISABLE_WARM_WINDOW: disableWarmWindow ? "1" : "0",
     RAKAZO_PERFORMANCE_ASSET_DELAY_MS: String(assetDelayMs),
     DATA_DIR: path.join(temporaryRoot, "data"),
     SIGNUPS_ENABLED: "true",
@@ -350,8 +350,8 @@ async function launchDesktop(
     executablePath: benchmark.executablePath,
     env: {
       ...benchmark.env,
-      RAKAZO_PERFORMANCE_USER_DATA: profile,
-      RAKAZO_PERFORMANCE_CLEAR_CACHE: clearCache ? "1" : "0",
+      SAPPHIRE_PERFORMANCE_USER_DATA: profile,
+      SAPPHIRE_PERFORMANCE_CLEAR_CACHE: clearCache ? "1" : "0",
     },
   });
   const page = await app.firstWindow();

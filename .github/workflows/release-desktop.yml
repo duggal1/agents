@@ -122,7 +122,7 @@ jobs:
       - name: Build renderer and Electron main process
         run: pnpm --filter @sapphire/web build && pnpm --filter @sapphire/desktop build
         env:
-          RAKAZO_ALLOW_DEV_SECRETS: "1"
+          SAPPHIRE_ALLOW_DEV_SECRETS: "1"
 
       - name: Build universal native runtime
         # Provisions the pinned PostgreSQL 16 source build (macOS 13.0,

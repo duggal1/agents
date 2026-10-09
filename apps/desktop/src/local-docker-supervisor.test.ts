@@ -134,7 +134,7 @@ describe("supervisor environment", () => {
       SUPERVISOR_PORT: "7091",
       SANDBOX_SUPERVISOR_TOKEN: "test-token",
       DOCKER_SOCKET: "/var/run/docker.sock",
-      RAKAZO_COMPUTER_CONTEXT: "/tmp/runtime/computer",
+      SAPPHIRE_COMPUTER_CONTEXT: "/tmp/runtime/computer",
       DATA_DIR: "/tmp/rakazo-data",
       SANDBOX_CONTROL_VIA_LOOPBACK: "true",
     });
@@ -228,7 +228,7 @@ describe("local docker supervisor", () => {
     expect(call?.env.SUPERVISOR_HOST).toBe("127.0.0.1");
     expect(call?.env.SUPERVISOR_PORT).toBe("7091");
     expect(call?.env.SANDBOX_SUPERVISOR_TOKEN).toBe("ab".repeat(32));
-    expect(call?.env.RAKAZO_COMPUTER_CONTEXT).toBe("/tmp/runtime/computer");
+    expect(call?.env.SAPPHIRE_COMPUTER_CONTEXT).toBe("/tmp/runtime/computer");
     expect(call?.env.SANDBOX_CONTROL_VIA_LOOPBACK).toBe("true");
     // The daemon check ran, but no image build was triggered (lazy on first use).
     expect(docker.calls.map((c) => c.args[0])).toEqual(["info"]);

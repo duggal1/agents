@@ -5,7 +5,7 @@ import type { SandboxProviderOptions } from "./sandbox-factory.js";
  * E2B primary, Docker fallback disabled by default, `none` when unconfigured.
  * Empty or remote provider without a key becomes `none` so services can boot
  * for signup. Packaged local mode (the Electron app's native backend, signalled
- * by `RAKAZO_LOCAL_RUNTIME_SETTINGS_PATH`) never implies Docker: with no key
+ * by `SAPPHIRE_LOCAL_RUNTIME_SETTINGS_PATH`) never implies Docker: with no key
  * the provider is `none` and computers stay unavailable unless the user has
  * explicitly enabled Docker fallback — the main process then selects `docker`
  * explicitly with a supervised token. Server and dev flows keep the historical

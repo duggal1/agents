@@ -102,7 +102,7 @@ export function serializeSetup(setup: DesktopSetup): string {
 
 /**
  * Decides between the first-run setup window and the app window. An explicit
- * `RAKAZO_WEB_URL` still wins over saved configuration so test and performance
+ * `SAPPHIRE_WEB_URL` still wins over saved configuration so test and performance
  * harnesses can point the shell anywhere without touching a user's real setup.
  */
 export function resolveStartupTarget(input: {

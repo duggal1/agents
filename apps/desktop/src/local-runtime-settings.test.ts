@@ -131,7 +131,7 @@ describe("local runtime settings", () => {
         dockerFallbackReady: false,
       }),
     ).toEqual({
-      RAKAZO_LOCAL_RUNTIME_SETTINGS_PATH: "/tmp/local-runtime-settings.json",
+      SAPPHIRE_LOCAL_RUNTIME_SETTINGS_PATH: "/tmp/local-runtime-settings.json",
       SANDBOX_PROVIDER: "e2b",
       E2B_API_KEY: "test-e2b-key",
     });

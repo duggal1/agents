@@ -18,7 +18,7 @@ const DEDICATED_SECRET_PLACEHOLDERS = new Set([
 ]);
 
 export function isDevSecretAllowed(env: NodeJS.ProcessEnv = process.env): boolean {
-  if (env.RAKAZO_ALLOW_DEV_SECRETS === "1") return true;
+  if (env.SAPPHIRE_ALLOW_DEV_SECRETS === "1") return true;
   if (env.VITEST === "true" || env.VITEST === "1") return true;
   const nodeEnv = env.NODE_ENV;
   return nodeEnv === "development" || nodeEnv === "test";

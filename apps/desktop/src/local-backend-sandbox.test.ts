@@ -58,7 +58,7 @@ function depsFor(overrides: Partial<LocalBackendDeps> = {}): LocalBackendDeps {
     env: {
       HOME: "/Users/tester",
       PATH: "/usr/bin",
-      RAKAZO_LOCAL_WEB_URL: "http://127.0.0.1:45173",
+      SAPPHIRE_LOCAL_WEB_URL: "http://127.0.0.1:45173",
     },
     execPath: process.execPath,
     packaged: false,
@@ -77,7 +77,7 @@ function depsFor(overrides: Partial<LocalBackendDeps> = {}): LocalBackendDeps {
 describe("sandbox service env", () => {
   it("merges the sandbox policy into both services without touching core fields", () => {
     const sandboxEnv = {
-      RAKAZO_LOCAL_RUNTIME_SETTINGS_PATH: "/user/settings.json",
+      SAPPHIRE_LOCAL_RUNTIME_SETTINGS_PATH: "/user/settings.json",
       SANDBOX_PROVIDER: "e2b",
       E2B_API_KEY: "test-e2b-key",
     };
@@ -119,7 +119,7 @@ describe("sandbox service env", () => {
         resolveSandboxServiceEnv: async (context) => {
           expect(context.appDataDir).toContain("appdata");
           return {
-            RAKAZO_LOCAL_RUNTIME_SETTINGS_PATH: "/user/settings.json",
+            SAPPHIRE_LOCAL_RUNTIME_SETTINGS_PATH: "/user/settings.json",
             SANDBOX_PROVIDER: "e2b",
             E2B_API_KEY: "test-e2b-key",
           };
@@ -218,6 +218,6 @@ describe("local sandbox service env", () => {
     });
     expect(env.SANDBOX_PROVIDER).toBe("none");
     expect(env).not.toHaveProperty("SANDBOX_SUPERVISOR_TOKEN");
-    expect(env.RAKAZO_LOCAL_RUNTIME_SETTINGS_PATH).toBe("/user/settings.json");
+    expect(env.SAPPHIRE_LOCAL_RUNTIME_SETTINGS_PATH).toBe("/user/settings.json");
   });
 });

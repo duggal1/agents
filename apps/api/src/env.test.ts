@@ -240,15 +240,15 @@ describe("loadEnv", () => {
       const file = path.join(dir, "local-runtime-settings.json");
       await writeFile(file, JSON.stringify({ version: 1, allowDockerComputerFallback: true }));
       expect(
-        loadEnv({ ...base, RAKAZO_LOCAL_RUNTIME_SETTINGS_PATH: file }).localRuntime,
+        loadEnv({ ...base, SAPPHIRE_LOCAL_RUNTIME_SETTINGS_PATH: file }).localRuntime,
       ).toEqual({ settingsPath: file, allowDockerComputerFallback: true });
       // Packaged local mode without a key selects none, never implicit Docker.
       expect(
-        loadEnv({ ...base, RAKAZO_LOCAL_RUNTIME_SETTINGS_PATH: file }).sandboxProvider,
+        loadEnv({ ...base, SAPPHIRE_LOCAL_RUNTIME_SETTINGS_PATH: file }).sandboxProvider,
       ).toBe("none");
       await writeFile(file, "{ corrupt");
       expect(
-        loadEnv({ ...base, RAKAZO_LOCAL_RUNTIME_SETTINGS_PATH: file }).localRuntime,
+        loadEnv({ ...base, SAPPHIRE_LOCAL_RUNTIME_SETTINGS_PATH: file }).localRuntime,
       ).toEqual({ settingsPath: file, allowDockerComputerFallback: false });
     } finally {
       await rm(dir, { recursive: true, force: true });

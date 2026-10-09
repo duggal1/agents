@@ -146,7 +146,7 @@ describe("startup target", () => {
     });
   });
 
-  it("lets RAKAZO_WEB_URL point the shell anywhere without touching saved setup", () => {
+  it("lets SAPPHIRE_WEB_URL point the shell anywhere without touching saved setup", () => {
     expect(resolveStartupTarget({ envUrl: "http://127.0.0.1:4321", saved })).toEqual({
       kind: "app",
       url: "http://127.0.0.1:4321",
@@ -154,7 +154,7 @@ describe("startup target", () => {
     });
   });
 
-  it("ignores an empty RAKAZO_WEB_URL", () => {
+  it("ignores an empty SAPPHIRE_WEB_URL", () => {
     expect(resolveStartupTarget({ envUrl: "   ", saved }).kind).toBe("app");
     expect(resolveStartupTarget({ envUrl: "   ", saved })).toMatchObject({ source: "saved" });
   });

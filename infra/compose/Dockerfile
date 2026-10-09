@@ -6,7 +6,7 @@ WORKDIR /app
 COPY --chmod=755 . .
 RUN pnpm install --frozen-lockfile
 RUN pnpm --filter @sapphire/db generate
-RUN RAKAZO_ALLOW_DEV_SECRETS=1 pnpm --filter @sapphire/web build
+RUN SAPPHIRE_ALLOW_DEV_SECRETS=1 pnpm --filter @sapphire/web build
 RUN install -d -m 750 -o node -g node /data /app/apps/web/node_modules/.vite-temp
 ARG GIT_SHA
 ENV NODE_ENV=production

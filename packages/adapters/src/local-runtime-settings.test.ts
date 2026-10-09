@@ -20,9 +20,9 @@ afterEach(() => {
 describe("local runtime settings file", () => {
   it("returns the configured settings path, if any", () => {
     expect(localRuntimeSettingsPath({})).toBeUndefined();
-    expect(localRuntimeSettingsPath({ RAKAZO_LOCAL_RUNTIME_SETTINGS_PATH: "  " })).toBeUndefined();
+    expect(localRuntimeSettingsPath({ SAPPHIRE_LOCAL_RUNTIME_SETTINGS_PATH: "  " })).toBeUndefined();
     expect(
-      localRuntimeSettingsPath({ RAKAZO_LOCAL_RUNTIME_SETTINGS_PATH: " /tmp/settings.json " }),
+      localRuntimeSettingsPath({ SAPPHIRE_LOCAL_RUNTIME_SETTINGS_PATH: " /tmp/settings.json " }),
     ).toBe("/tmp/settings.json");
   });
 

@@ -132,17 +132,17 @@ async function writeFakeDocker(mode: FakeDockerMode) {
 }
 
 async function launch(mode: FakeDockerMode | "missing") {
-  const env: NodeJS.ProcessEnv = { ...process.env, RAKAZO_PERFORMANCE_USER_DATA: userData };
-  // A stale RAKAZO_WEB_URL from the developer's shell would bypass setup entirely.
-  delete env.RAKAZO_WEB_URL;
+  const env: NodeJS.ProcessEnv = { ...process.env, SAPPHIRE_PERFORMANCE_USER_DATA: userData };
+  // A stale SAPPHIRE_WEB_URL from the developer's shell would bypass setup entirely.
+  delete env.SAPPHIRE_WEB_URL;
   return electron.launch({
     args: ["."],
     cwd: path.resolve(import.meta.dirname, ".."),
     env: {
       ...env,
-      RAKAZO_DOCKER_BINARY:
+      SAPPHIRE_DOCKER_BINARY:
         mode === "missing" ? "/nonexistent/docker" : await writeFakeDocker(mode),
-      RAKAZO_LOCAL_WEB_URL: serverUrl,
+      SAPPHIRE_LOCAL_WEB_URL: serverUrl,
       RAKAZO_IMAGE_TAG: IMAGE_TAG,
     },
   });

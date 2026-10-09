@@ -106,7 +106,7 @@ export function dockerSupervisorEnv(input: {
     SUPERVISOR_HOST: DOCKER_SUPERVISOR_HOST,
     SUPERVISOR_PORT: String(input.port),
     SANDBOX_SUPERVISOR_TOKEN: input.token,
-    RAKAZO_COMPUTER_CONTEXT: input.computerContextDir,
+    SAPPHIRE_COMPUTER_CONTEXT: input.computerContextDir,
     DATA_DIR: input.dataDir,
   };
   if (input.socket !== undefined) env.DOCKER_SOCKET = input.socket;
