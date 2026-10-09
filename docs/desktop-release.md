@@ -53,3 +53,27 @@ git push origin v0.1.1
 
 The workflow refuses tags that do not match the desktop version, are not on
 `main`, or are not newer than the latest published release.
+
+## Native macOS runtime (This computer)
+
+The macOS installer needs no Docker for the local backend. It ships a
+`runtime/` resource beside the web bundle containing the API and worker
+service bundles plus a pinned PostgreSQL 16 distribution for both Mac
+architectures (`arm64`, `x64`), built against the `13.0` minimum macOS
+version. Compose stack assets are excluded from the installer. E2B is the
+primary bot-computer provider; Docker runs only as an explicit opt-in
+computer fallback, never for the backend and never on the Mac host.
+
+Release CI builds the universal runtime with
+`SAPPHIRE_RUNTIME_UNIVERSAL=1 pnpm --filter @sapphire/desktop run runtime:build`,
+which requires `SAPPHIRE_POSTGRES_DIR_ARM64` and `SAPPHIRE_POSTGRES_DIR_X64`
+to point at pinned PostgreSQL 16 builds against macOS 13.0, then verifies
+both architectures, the minimum version, and every staged native binary's
+signature before reporting installer size.
+
+Resource budgets (locked; never raise without user review): total Sapphire
+RSS at or below 1.5 GiB after five minutes idle, and 95th-percentile total
+RSS at or below 2.5 GiB during one active chat turn plus one E2B computer
+session, counting Electron main, renderer, API, worker, and PostgreSQL.
+Docker Desktop VM memory is excluded. If a build misses either target, stop
+and report the measurements as the release blocker.

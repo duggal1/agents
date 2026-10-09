@@ -8,6 +8,17 @@ Same as the README quick start: `.env` from `.env.example`, Postgres via Compose
 
 For source development in WSL, keep the checkout and `data` directory in the Linux filesystem (for example, `~/rakazo`), and run `pnpm dev` as your normal user. The host-run supervisor matches bot container UID/GID to that user. If Docker Desktop container IPs are unreachable, set `SANDBOX_CONTROL_VIA_LOOPBACK=true` in `.env`; this publishes the token-protected control service on a random loopback port. Leave this unset for the Compose-hosted supervisor.
 
+## Packaged macOS app (This computer)
+
+The macOS installer runs the local backend natively: the API, worker, and a
+pinned PostgreSQL 16 ship inside the app and run as supervised processes on
+loopback. Docker is not needed for the local backend. Docker is required only
+if you opt into Docker computer fallback (E2B stays the primary bot-computer
+provider) or if you deploy the server with Docker Compose below. Quota
+fallback restores only completed portable workspace snapshots, never replays
+an in-flight command, and starts Docker computers with a clean browser
+profile.
+
 Compose bot homes mount only their own subdirectory of the application volume using Docker volume semantics. Docker's internal volume paths are never used as host bind mounts.
 
 ## Published images (no checkout)
