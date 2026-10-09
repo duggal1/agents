@@ -83,4 +83,31 @@ describe("pinned PostgreSQL provisioning", () => {
     expect(buildScript).toContain("provision-postgres.mjs");
     expect(buildScript).toContain("ensurePostgresSources");
   });
+
+  it("bundles services with --outdir so native assets ride along", () => {    // The supervisor graph emits a hashed .node binary beside index.js, which
+    // --outfile rejects; every entry is index.ts so --outdir keeps the same
+    // services/<id>/index.js layout the manifest reads.
+    expect(buildScript).toContain('"--outdir"');
+    expect(buildScript).not.toContain('"--outfile"');
+    expect(buildScript).toContain('endsWith(".node")');
+  });
+
+  it("prunes architectures from a previous wider build", () => {
+    // A single-arch run after a universal one must not leave a stale arch
+    // directory the manifest denies, nor ship it in the app.
+    expect(buildScript).toContain("previous wider build");
+  });
+
+  it("bundles the Electron main process so no workspace .ts ships", () => {
+    // tsc output would import @sapphire/contracts straight from src/*.ts;
+    // inside app.asar/node_modules Node refuses to strip those types
+    // (ERR_UNSUPPORTED_NODE_MODULES_TYPE_STRIPPING), while dev works because
+    // the workspace symlink resolves outside node_modules. Bundling inlines
+    // every workspace package as JS; only Electron and its updater stay
+    // external at runtime.
+    const build = packageJson.scripts["build"] as string;
+    expect(build).toContain("bun build src/main.ts");
+    expect(build).toContain("--external electron");
+    expect(build).toContain("--outdir dist");
+  });
 });

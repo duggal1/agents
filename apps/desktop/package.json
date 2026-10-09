@@ -7,7 +7,7 @@
   "main": "dist/main.js",
   "scripts": {
     "dev": "bun run build && electron .",
-    "build": "tsc -p tsconfig.json && node scripts/copy-static.mjs",
+    "build": "rm -rf dist && tsc --noEmit -p tsconfig.json && bun build src/main.ts --target=node --format=esm --outdir dist --external electron --external electron-updater && node scripts/copy-static.mjs",
     "runtime:build": "node scripts/build-runtime.mjs",
     "pack": "bun --filter @sapphire/web build && bun run build && bun run runtime:build && electron-builder --mac --win --linux",
     "pack:dir": "bun --filter @sapphire/web build && bun run build && bun run runtime:build && electron-builder --dir",
@@ -46,7 +46,8 @@
       },
       {
         "from": "../../runtime",
-        "to": "runtime"
+        "to": "runtime",
+        "filter": ["**/*", "!postgres-deps", "!postgres-deps/**/*"]
       }
     ],
     "extraMetadata": {
