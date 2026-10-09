@@ -155,23 +155,26 @@ function run(command, args, options = {}) {
   execFileSync(command, args, { stdio: "inherit", ...options });
 }
 
-/** Bundles one service into a single self-contained CommonJS-free ESM file. */
+/** Bundles one service into its own directory. `--outdir` (not `--outfile`)
+ * because graphs with native assets (the supervisor pulls a `.node` binary
+ * through its Docker client stack) emit more than one file; every entry is
+ * `index.ts` so the entry point still lands at `<id>/index.js`. */
 async function bundleService(service, outDir) {
-  const outfile = path.join(outDir, service.id, "index.js");
-  await mkdir(path.dirname(outfile), { recursive: true });
+  const dir = path.join(outDir, service.id);
+  await mkdir(dir, { recursive: true });
   run(process.env.SAPPHIRE_BUN ?? "bun", [
     "build",
     path.join(REPO_ROOT, service.entry),
     "--target=node",
-    "--outfile",
-    outfile,
+    "--outdir",
+    dir,
     // koffi ships a per-architecture native addon and is only reachable from the host
     // desktop sandbox provider, which local mode never selects. Its JavaScript is staged
     // as a package so a universal build can carry both architectures.
     "--external",
     "koffi",
   ]);
-  return outfile;
+  return path.join(dir, "index.js");
 }
 
 /**
@@ -370,6 +373,12 @@ async function verifyLayout(manifest) {
       throw new Error(`Runtime is missing ${relative}; packaging is incomplete.`);
     }
   }
+  // The supervisor bundle carries a hashed native asset beside index.js; pin
+  // its presence without pinning the hash.
+  const supervisorFiles = await readdir(path.join(SERVICES_DIR, "supervisor"));
+  if (!supervisorFiles.some((file) => file.endsWith(".node"))) {
+    throw new Error("Runtime is missing the supervisor native asset (*.node); packaging is incomplete.");
+  }
 }
 
 async function main() {
@@ -392,9 +401,20 @@ async function main() {
   const arches = universal ? ["arm64", "x64"] : [arch];
   const koffiArches = await copyRuntimeAssets(SERVICES_DIR, arches);
 
+  // The default dependency directory is always consulted, so a one-time
+  // manual provision keeps working with no environment set. Network builds
+  // still require the explicit SAPPHIRE_POSTGRES_BUILD=1 opt-in below.
+  process.env.SAPPHIRE_POSTGRES_DIR ??= postgresDepsDir();
   await ensurePostgresSources(arches, universal);
   const postgresArches = [];
   let postgresMinimum = null;
+  // Drop architectures left by a previous wider build so the manifest, the
+  // staged directories, and the packaged app never disagree with each other.
+  for (const entry of await readdir(path.join(OUT_DIR, "postgres")).catch(() => [])) {
+    if (!arches.includes(entry)) {
+      await rm(path.join(OUT_DIR, "postgres", entry), { recursive: true, force: true });
+    }
+  }
   for (const postgresArch of arches) {
     const postgresDir = path.join(OUT_DIR, "postgres", postgresArch);
     await rm(postgresDir, { recursive: true, force: true });

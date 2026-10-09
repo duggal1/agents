@@ -12,7 +12,7 @@ const packageJson = JSON.parse(readFileSync(path.join(desktopDir, "package.json"
   scripts: Record<string, string>;
   build: {
     mac: { target: string[]; notarize: boolean };
-    extraResources: Array<{ from: string; to: string }>;
+    extraResources: Array<{ from: string; to: string; filter?: string[] }>;
   };
 };
 
@@ -36,6 +36,14 @@ describe("native macOS packaging", () => {
     expect(
       packageJson.build.extraResources.some((entry) => entry.to.startsWith("stack/")),
     ).toBe(false);
+  });
+
+  it("keeps the Postgres build cache out of the packaged app", () => {
+    const runtime = packageJson.build.extraResources.find((entry) => entry.to === "runtime");
+    expect(runtime).toBeDefined();
+    // postgres-deps is a provision working directory that duplicates the
+    // staged binaries; shipping it would double the Postgres weight.
+    expect(runtime?.filter ?? []).toContain("!postgres-deps/**/*");
   });
 
   it("builds the runtime before every artifact-producing pack script", () => {
