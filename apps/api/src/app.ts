@@ -546,7 +546,16 @@ export async function createApp(
   mountScreenTarget(app, prisma, env.screenProxySecret);
   app.on(["GET", "POST"], "/api/auth/*", async (c) => {
     // Local mode has no login: the auth surface does not exist on the Mac path.
-    if (env.localMode) return c.json({ error: "Not available in local mode" }, 404);
+    if (env.localMode) {
+      // ...except the session lookup, which must answer 401 ("no session")
+      // rather than 404: the web session gate treats any non-401 error as
+      // "unreachable" and parks the app on the reconnect screen forever,
+      // while 401 correctly routes to the anonymous local-owner flow.
+      if (new URL(c.req.url).pathname === "/api/auth/get-session") {
+        return c.json({ error: "No session in local mode" }, 401);
+      }
+      return c.json({ error: "Not available in local mode" }, 404);
+    }
     const path = new URL(c.req.url).pathname.replace("/api/auth", "");
     if (isBlockedAuthPath(path)) {
       return c.json({ error: "Not available in version 1" }, 404);
