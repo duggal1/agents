@@ -98,8 +98,28 @@ describe("pinned PostgreSQL provisioning", () => {
     expect(buildScript).toContain("previous wider build");
   });
 
-  it("relocates staged binaries off the temp build prefix", () => {
-    // PostgreSQL bakes the build prefix into every binary; the temp dir is
+  it("stages the Prisma migrate tooling the packaged backend runs", () => {
+    // `prisma migrate deploy` runs before the API starts, with no network
+    // and no system Node: the CLI and config are bundled as JS, the schema
+    // plus migration history are copied, and one schema-engine binary per
+    // architecture is selected through PRISMA_SCHEMA_ENGINE_BINARY.
+    for (const token of [
+      "stagePrisma",
+      "prisma/bin/index.js",
+      "prisma/bin/prisma.mjs",
+      "CJS-main globals",
+      "prisma/prisma.config.js",
+      "prisma/schema.prisma",
+      "prisma/migrations",
+      "PRISMA_ENGINES_COMMIT",
+      "PRISMA_SCHEMA_ENGINE_BINARY",
+      "schema-engine-",
+    ]) {
+      expect(buildScript).toContain(token);
+    }
+  });
+
+  it("relocates staged binaries off the temp build prefix", () => {    // PostgreSQL bakes the build prefix into every binary; the temp dir is
     // deleted after staging, so without this the app dies with dyld
     // "Library not loaded". References become @loader_path-relative and
     // touched files are re-signed; --relocate-only repairs old provisions.

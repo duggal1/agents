@@ -12,7 +12,7 @@
 //                           architecture directory is missing. Set to "1" in release CI.
 //   SAPPHIRE_POSTGRES_VERSION  pinned PostgreSQL 16 minor (default 16.15).
 import { execFileSync } from "node:child_process";
-import { cp, mkdir, readdir, readFile, rm, stat, writeFile } from "node:fs/promises";
+import { cp, chmod, mkdir, readdir, readFile, rm, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -223,6 +223,156 @@ async function stageComputerContext(outDir) {
   return destination;
 }
 
+/**
+ * Pinned Prisma engines commit for the installed `prisma` CLI. Verified
+ * against the installed @prisma/engines-version at build time; a dependency
+ * bump that moves the commit fails closed here instead of shipping a
+ * mismatched engine.
+ */
+const PRISMA_ENGINES_COMMIT = "0edf323efd1d98336f3f0a68684b56f689b900d3";
+const PRISMA_ENGINE_TARGETS = { arm64: "darwin-arm64", x64: "darwin" };
+
+function prismaEngineFile(arch) {
+  return `schema-engine-${arch}`;
+}
+
+/** Reads the engines commit the installed prisma CLI was released with. */
+async function installedEnginesCommit() {
+  const meta = JSON.parse(
+    await readFile(path.join(await findPackageDir("@prisma/engines-version"), "package.json"), "utf8"),
+  );
+  const match = String(meta.version).match(/([0-9a-f]{40})$/);
+  if (!match) throw new Error(`Cannot read the engines commit from @prisma/engines-version ${meta.version}`);
+  return match[1];
+}
+
+/**
+ * Resolves a schema-engine binary for an architecture: an explicit
+ * `SAPPHIRE_PRISMA_ENGINES_DIR/<arch>/` override first, then the locally
+ * installed engine, then a pinned-commit download from the Prisma CDN
+ * (verified runnable below where the host allows it).
+ */
+async function prismaEngineSource(arch, cacheDir) {
+  const file = prismaEngineFile(arch);
+  const override = process.env.SAPPHIRE_PRISMA_ENGINES_DIR;
+  const candidates = override ? [path.join(override, arch, file)] : [];
+  if (candidates.length > 0) {
+    for (const candidate of candidates) {
+      if (await exists(candidate)) return candidate;
+    }
+    throw new Error(
+      `SAPPHIRE_PRISMA_ENGINES_DIR is set but has no ${arch}/${file}. ` +
+        "Stage one per architecture or unset the override.",
+    );
+  }
+  try {
+    const dir = await findPackageDir("@prisma/engines");
+    // The store names binaries per platform (schema-engine-darwin-arm64);
+    // the staged copy uses the normalized schema-engine-<arch> name.
+    for (const name of [file, `schema-engine-darwin-${arch}`]) {
+      const local = path.join(dir, name);
+      if (await exists(local)) return local;
+    }
+  } catch {
+    // Fall through to the pinned download.
+  }
+  const target = PRISMA_ENGINE_TARGETS[arch];
+  if (!target) throw new Error(`No Prisma engine target for architecture ${arch}.`);
+  const url = `https://binaries.prisma.sh/all_commits/${PRISMA_ENGINES_COMMIT}/${target}/schema-engine.gz`;
+  await mkdir(cacheDir, { recursive: true });
+  const archive = path.join(cacheDir, `${file}.gz`);
+  const dest = path.join(cacheDir, file);
+  if (await exists(dest)) {
+    console.log(`Reusing cached schema engine for ${arch}`);
+    return dest;
+  }
+  console.log(`Downloading pinned schema engine for ${arch}...`);
+  run("curl", ["-fSL", "--retry", "3", "-o", archive, url]);
+  await rm(dest, { force: true });
+  run("gunzip", ["-f", archive]);
+  await chmod(dest, 0o755);
+  return dest;
+}
+
+/**
+ * Stages everything `prisma migrate deploy` needs with no network at
+ * runtime: the bundled CLI, a bundled prisma.config.js (relative
+ * prisma/schema.prisma + prisma/migrations layout preserved), the schema,
+ * the migration history, and one schema-engine binary per architecture
+ * selected through PRISMA_SCHEMA_ENGINE_BINARY by the launcher.
+ */
+async function stagePrisma(outDir, arches) {
+  if ((await installedEnginesCommit()) !== PRISMA_ENGINES_COMMIT) {
+    throw new Error(
+      "Installed Prisma engines moved; update PRISMA_ENGINES_COMMIT in scripts/build-runtime.mjs.",
+    );
+  }
+  const prismaDir = path.join(REPO_ROOT, "packages/db/node_modules/prisma");
+  if (!(await exists(path.join(prismaDir, "build", "index.js")))) {
+    throw new Error("The prisma CLI is not installed. Run the package manager install first.");
+  }
+  const dest = path.join(outDir, "prisma");
+  await rm(dest, { recursive: true, force: true });
+  await mkdir(path.join(dest, "bin"), { recursive: true });
+  console.log("Bundling Prisma migrate CLI...");
+  // Plain ESM bundle plus a small CJS-compat launcher next to it: the CLI's
+  // startup gate eval("require.main === module") passes only with CJS-main
+  // globals present, which the launcher replicates exactly as node running
+  // the CJS original would. (--compile and CJS output both die on this
+  // gate or on top-level awaits in its dependencies.)
+  run(process.env.SAPPHIRE_BUN ?? "bun", [
+    "build",
+    path.join(prismaDir, "build", "index.js"),
+    "--target=node",
+    "--outdir",
+    path.join(dest, "bin"),
+  ]);
+  if (!(await exists(path.join(dest, "bin", "index.js")))) {
+    throw new Error("Prisma CLI bundle did not produce bin/index.js; packaging is incomplete.");
+  }
+  await writeFile(
+    path.join(dest, "bin", "prisma.mjs"),
+    `// Replicates CJS-main globals for the bundled Prisma CLI next to it.
+// Generated at stage time; do not edit by hand.
+import { createRequire } from "node:module";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+const bundle = new URL("./index.js", import.meta.url);
+const require = createRequire(bundle);
+require.main = { exports: {}, filename: fileURLToPath(bundle), loaded: false };
+globalThis.require = require;
+globalThis.module = require.main;
+globalThis.exports = require.main.exports;
+globalThis.__dirname = path.dirname(fileURLToPath(bundle));
+globalThis.__filename = fileURLToPath(bundle);
+await import(bundle.href);
+`,
+  );
+  console.log("Bundling Prisma config...");
+  run(process.env.SAPPHIRE_BUN ?? "bun", [
+    "build",
+    path.join(REPO_ROOT, "packages/db/prisma.config.ts"),
+    "--target=node",
+    "--outdir",
+    dest,
+  ]);
+  await cp(
+    path.join(REPO_ROOT, "packages/db/prisma/schema.prisma"),
+    path.join(dest, "prisma", "schema.prisma"),
+  );
+  await rm(path.join(dest, "prisma", "migrations"), { recursive: true, force: true });
+  await cp(path.join(REPO_ROOT, "packages/db/prisma/migrations"), path.join(dest, "prisma", "migrations"), {
+    recursive: true,
+  });
+  for (const arch of arches) {
+    const engineDir = path.join(dest, "engines", arch);
+    await mkdir(engineDir, { recursive: true });
+    const source = await prismaEngineSource(arch, path.join(outDir, ".cache", "prisma-engines"));
+    await cp(source, path.join(engineDir, prismaEngineFile(arch)));
+    await chmod(path.join(engineDir, prismaEngineFile(arch)), 0o755);
+  }
+  return dest;
+}
 /** Reads the Mach-O minimum macOS version so a build can never silently raise it. */
 function minimumMacos(binary) {
   const output = execFileSync("vtool", ["-show-build", binary], { encoding: "utf8" });
@@ -347,7 +497,7 @@ async function writeManifest(outDir, appVersion, postgresMinimum, koffiArches, p
 }
 
 /** Fails the build when a service entry, asset, or PostgreSQL binary is absent. */
-async function verifyLayout(manifest) {
+async function verifyLayout(manifest, arches) {
   const required = [
     [OUT_DIR, "runtime-manifest.json"],
     ...manifest.postgresArches.flatMap((arch) => [
@@ -362,6 +512,12 @@ async function verifyLayout(manifest) {
     [OUT_DIR, "computer/Dockerfile"],
     [OUT_DIR, "computer/control.py"],
     [OUT_DIR, "computer/start.sh"],
+    [OUT_DIR, "prisma/bin/index.js"],
+    [OUT_DIR, "prisma/bin/prisma.mjs"],
+    [OUT_DIR, "prisma/prisma.config.js"],
+    [OUT_DIR, "prisma/prisma/schema.prisma"],
+    [OUT_DIR, "prisma/prisma/migrations/migration_lock.toml"],
+    ...arches.map((arch) => [OUT_DIR, `prisma/engines/${arch}/schema-engine-${arch}`]),
     ...manifest.services.map((service) => [OUT_DIR, service.entry]),
     ...manifest.koffiArches.map((stagedArch) => [
       SERVICES_DIR,
@@ -400,6 +556,8 @@ async function main() {
   await stageComputerContext(OUT_DIR);
   const arches = universal ? ["arm64", "x64"] : [arch];
   const koffiArches = await copyRuntimeAssets(SERVICES_DIR, arches);
+  console.log("Staging Prisma migrate tooling...");
+  await stagePrisma(OUT_DIR, arches);
 
   // The default dependency directory is always consulted, so a one-time
   // manual provision keeps working with no environment set. Network builds
@@ -431,7 +589,7 @@ async function main() {
     koffiArches,
     postgresArches,
   );
-  await verifyLayout(manifest);
+  await verifyLayout(manifest, arches);
   console.log(
     `Runtime ready at ${OUT_DIR} (macOS ${postgresMinimum}+, ${manifest.services.length} services).`,
   );

@@ -216,6 +216,10 @@ export async function prismaMigrateDeploy(input: {
   repoRoot: string;
   databaseUrl: string;
   platform: string;
+  /** Node-capable runtime (Electron with ELECTRON_RUN_AS_NODE) for the CLI. */
+  execPath: string;
+  /** Host architecture selecting the staged schema-engine binary. */
+  arch: string;
   env: NodeJS.ProcessEnv;
   run: RunPostgres;
   exists: (file: string) => boolean;
@@ -225,16 +229,36 @@ export async function prismaMigrateDeploy(input: {
   let binary: string;
   let args: string[];
   let cwd: string;
+  let extraEnv: Record<string, string> = {};
   if (input.packaged) {
-    binary = path.join(input.runtimeRoot, "prisma", "bin", "prisma");
+    const cli = path.join(input.runtimeRoot, "prisma", "bin", "prisma.mjs");
     const schema = path.join(input.runtimeRoot, "prisma", "schema.prisma");
-    if (!input.exists(binary) || !input.exists(schema)) {
+    const engine = path.join(
+      input.runtimeRoot,
+      "prisma",
+      "engines",
+      input.arch,
+      `schema-engine-${input.arch}`,
+    );
+    if (!input.exists(cli) || !input.exists(schema) || !input.exists(engine)) {
       throw new Error(
         "The packaged app is missing its database migration tool. Reinstall Sapphire and retry.",
       );
     }
-    args = ["migrate", "deploy", "--schema", schema];
-    cwd = path.dirname(schema);
+    // The CLI bundle needs CJS-main globals (see bin/prisma.mjs) and therefore
+    // a real Node runtime: the same Electron executable as the services with
+    // ELECTRON_RUN_AS_NODE, because no system Node exists on a user's machine
+    // and PATH is not inherited by design. No --schema flag: the staged
+    // prisma.config.js in cwd already declares the schema and migrations
+    // paths, exactly like the dev flow. The engine path is explicit so the
+    // CLI never downloads anything at runtime.
+    binary = input.execPath;
+    args = [cli, "migrate", "deploy"];
+    cwd = path.join(input.runtimeRoot, "prisma");
+    extraEnv = {
+      [RUNTIME_EXEC_PATH_ENV]: "1",
+      PRISMA_SCHEMA_ENGINE_BINARY: engine,
+    };
   } else {
     const base = path.join(input.repoRoot, "node_modules", ".bin", "prisma");
     binary = input.platform === "win32" ? `${base}.cmd` : base;
@@ -248,7 +272,7 @@ export async function prismaMigrateDeploy(input: {
   }
   const result = await input.run(binary, args, {
     cwd,
-    env: runtimeChildEnv(input.platform, input.env, { DATABASE_URL: input.databaseUrl }),
+    env: runtimeChildEnv(input.platform, input.env, { DATABASE_URL: input.databaseUrl, ...extraEnv }),
     timeoutMs: input.timeoutMs ?? 10 * 60_000,
     ...(input.signal === undefined ? {} : { signal: input.signal }),
   });
@@ -416,6 +440,8 @@ export class LocalBackend {
               repoRoot: path.resolve(this.deps.appPath, "..", ".."),
               databaseUrl: context.databaseUrl,
               platform: this.deps.platform,
+              execPath: this.deps.execPath,
+              arch: this.deps.arch,
               env: this.deps.env,
               run,
               exists,
@@ -473,6 +499,8 @@ export class LocalBackend {
         repoRoot: path.resolve(this.deps.appPath, "..", ".."),
         databaseUrl: context.databaseUrl,
         platform: this.deps.platform,
+        execPath: this.deps.execPath,
+        arch: this.deps.arch,
         env: this.deps.env,
         run: this.deps.run ?? runPostgres,
         exists,

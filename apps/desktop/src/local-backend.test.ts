@@ -310,6 +310,8 @@ describe("prismaMigrateDeploy", () => {
     repoRoot: "/repo",
     databaseUrl: "postgres://rakazo:pw@127.0.0.1:1/rakazo",
     platform: "darwin",
+    execPath: "/App/Sapphire",
+    arch: "arm64",
     env: {},
     timeoutMs: 1000,
   };
@@ -320,6 +322,37 @@ describe("prismaMigrateDeploy", () => {
       prismaMigrateDeploy({ ...base, packaged: true, run: run as never, exists: () => false }),
     ).rejects.toThrow(/migration tool/);
     expect(run).not.toHaveBeenCalled();
+  });
+
+  it("runs the staged migrate tool on the service runtime with an explicit engine", async () => {
+    const run = vi.fn(async () => ({ code: 0, stdout: "", stderr: "" }));
+    await prismaMigrateDeploy({
+      ...base,
+      packaged: true,
+      run: run as never,
+      exists: () => true,
+    });
+    expect(run).toHaveBeenCalledOnce();
+    const [binary, args, options] = run.mock.calls[0] as [
+      string,
+      string[],
+      { env: Record<string, string>; cwd: string },
+    ];
+    // The CLI bundle needs CJS-main globals, so it runs on the same
+    // Node-capable runtime as the services; no --schema flag because the
+    // staged config in cwd already declares schema and migrations paths.
+    expect(binary).toBe("/App/Sapphire");
+    expect(args).toEqual([
+      "/runtime/prisma/bin/prisma.mjs",
+      "migrate",
+      "deploy",
+    ]);
+    expect(options.cwd).toBe("/runtime/prisma");
+    expect(options.env.DATABASE_URL).toBe(base.databaseUrl);
+    expect(options.env.ELECTRON_RUN_AS_NODE).toBe("1");
+    expect(options.env.PRISMA_SCHEMA_ENGINE_BINARY).toBe(
+      "/runtime/prisma/engines/arm64/schema-engine-arm64",
+    );
   });
 
   it("runs a fixed argv with only DATABASE_URL added", async () => {
