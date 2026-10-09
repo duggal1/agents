@@ -1,4 +1,4 @@
-import type { SandboxProvider } from "@sapphire/adapter-kit";
+import type { ComputerRef, SandboxProvider } from "@sapphire/adapter-kit";
 import { BoxSandboxEmulator } from "./box-emulator.js";
 import { BoxSandboxProvider } from "./box-sandbox.js";
 import { CreateOSSandboxProvider } from "./createos-sandbox.js";
@@ -10,6 +10,10 @@ import { ManagedSandboxEmulator } from "./e2b-emulator.js";
 import { E2BSandboxProvider } from "./e2b-sandbox.js";
 import { FakeSandboxProvider } from "./fake-sandbox.js";
 import { NoneSandboxProvider } from "./none-sandbox.js";
+import {
+  QuotaFallbackSandbox,
+  type QuotaFallbackPolicy,
+} from "./sandbox-fallback.js";
 
 export interface SandboxProviderOptions {
   supervisorUrl?: string;
@@ -85,4 +89,43 @@ export function createSandboxProvider(kind: string, opts: SandboxProviderOptions
         `Unknown SANDBOX_PROVIDER "${kind}". Use none | docker | e2b | daytona | createos | box | e2b-emulator | daytona-emulator | box-emulator | desktop | fake.`,
       );
   }
+}
+
+/**
+ * Build the E2B-primary/Docker-fallback routing pair for local macOS mode.
+ * The primary is E2B when its key is present, otherwise a closed `none`
+ * provider so the backend boots healthy with computers unavailable. The
+ * fallback is Docker when its supervisor is configured, otherwise `none`.
+ * Never constructs the host `desktop` provider: there is no host-execution
+ * fallback. Only a classified permanent quota failure moves provisioning to
+ * Docker, gated by `policy.fallbackAllowed` (user opt-in + daemon reachable).
+ */
+export function createE2BFallbackSandbox(
+  opts: SandboxProviderOptions,
+  policy: Pick<QuotaFallbackPolicy, "fallbackAllowed"> & {
+    primaryKind?: ComputerRef["kind"];
+    fallbackKind?: ComputerRef["kind"];
+  },
+): QuotaFallbackSandbox {
+  const primaryKind = policy.primaryKind ?? "e2b";
+  const fallbackKind = policy.fallbackKind ?? "docker";
+  if (primaryKind === "desktop" || fallbackKind === "desktop") {
+    throw new Error("Computer fallback must never route to the host desktop provider");
+  }
+  const primary = opts.e2bApiKey?.trim()
+    ? createSandboxProvider("e2b", opts)
+    : new NoneSandboxProvider(
+        "Computers unavailable: E2B_API_KEY is not configured. Add E2B credits or enable Docker computer fallback.",
+      );
+  const fallback =
+    opts.supervisorUrl || opts.supervisorToken
+      ? createSandboxProvider("docker", opts)
+      : new NoneSandboxProvider(
+          "Computers unavailable: Docker fallback is not configured. Add E2B credits or enable Docker computer fallback.",
+        );
+  return new QuotaFallbackSandbox(primary, fallback, {
+    primaryKind,
+    fallbackKind,
+    fallbackAllowed: policy.fallbackAllowed,
+  });
 }

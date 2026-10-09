@@ -1,4 +1,6 @@
-import { mkdir } from "node:fs/promises";
+import { mkdir, mkdtemp } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import path from "node:path";
 import type {
   AdapterContext,
   AgentHomeStore,
@@ -20,6 +22,7 @@ import {
   clearInactiveUserComputerControl,
   expireComputerControl,
   hasActiveComputerControl,
+  hasActiveComputerRun,
   isIdleOwnComputerTakeover,
   revokeScreenControl,
 } from "./computer-control.js";
@@ -31,6 +34,13 @@ import {
 } from "./computer-workspace.js";
 import { isSandboxGoneError } from "./e2b-sandbox.js";
 import { resolveAgentHomePath } from "./home.js";
+import { FALLBACK_BROWSER_PROFILE_NOTICE } from "./sandbox-fallback.js";
+import {
+  collectWorkspaceSnapshot,
+  discardWorkspaceSnapshot,
+  readWorkspaceSnapshot,
+  type WorkspaceSnapshotLimits,
+} from "./workspace-snapshot.js";
 
 type ComputerUpdateProgress = (
   stage: Exclude<ComputerUpdate["stage"], "preparing">,
@@ -860,5 +870,240 @@ export async function replaceComputer(
       })
       .catch(() => undefined);
     throw error;
+  }
+}
+
+/**
+ * Thrown when Docker fallback cannot run: the user did not opt in, or no
+ * Docker daemon/supervisor is reachable. The backend stays healthy and the
+ * computer reports unavailable — never host execution.
+ */
+export class DockerFallbackUnavailableError extends Error {
+  constructor(
+    reason = "Docker fallback is not enabled or no Docker daemon is available",
+  ) {
+    super(
+      `Docker computer fallback unavailable: ${reason}. ` +
+        "The backend stays healthy; computer work is unavailable until E2B credits are restored or fallback is enabled.",
+    );
+    this.name = "DockerFallbackUnavailableError";
+  }
+}
+
+export interface ComputerFallbackMigration {
+  primaryKind: string;
+  fallbackKind: string;
+  fallbackAllowed: () => boolean | Promise<boolean>;
+  /** Directory under the app data dir where bounded snapshots stage. */
+  snapshotBaseDir: string;
+  snapshotLimits?: WorkspaceSnapshotLimits;
+}
+
+export interface ComputerFallbackResult {
+  computer: ComputerRef;
+  /** True when the fallback computer restored portable workspace files. */
+  snapshotRestored: boolean;
+  /** True when the snapshot was refreshed from the reachable primary first. */
+  snapshotRefreshed: boolean;
+  /**
+   * True when a turn was in flight on the primary. Its command is never
+   * replayed on the fallback; the turn is interrupted and needs a fresh turn.
+   * False only for a new computer that never ran anything.
+   */
+  interruptedInflight: boolean;
+  /** User-facing notice, or null when the turn can continue on Docker. */
+  notice: string | null;
+}
+
+const MIGRATABLE_COMPUTER_STATES = ["running", "stopped", "suspended", "error"];
+
+/**
+ * Move one primary (E2B) computer to the Docker fallback after a classified
+ * permanent quota failure.
+ *
+ * - New computers (no persisted providerRef) provision straight onto Docker
+ *   and the turn continues: the failed E2B call was never accepted.
+ * - Existing computers restore only completed portable state: refresh the
+ *   bounded snapshot from the primary when it is still reachable, otherwise
+ *   restore the last completed home revision. The in-flight command is never
+ *   replayed; the turn is marked interrupted and needs a fresh turn.
+ * - Browser login state and provider desktop state are non-portable: the
+ *   fallback starts with a clean profile plus a concise notice.
+ * - Refuses while a live run owns the computer (execution fence), while a
+ *   user holds screen control, or when fallback is not allowed — and never
+ *   routes to the host `desktop` provider.
+ */
+export async function migrateComputerToFallback(
+  deps: {
+    prisma: PrismaClient;
+    primary: SandboxProvider;
+    fallback: SandboxProvider;
+    home: AgentHomeStore;
+    dataDir?: string;
+  },
+  computerId: string,
+  migration: ComputerFallbackMigration,
+  context: AdapterContext,
+): Promise<ComputerFallbackResult> {
+  if (migration.primaryKind === "desktop" || migration.fallbackKind === "desktop") {
+    throw new Error("Computer fallback must never route to the host desktop provider");
+  }
+  const existing = await deps.prisma.computer.findUniqueOrThrow({ where: { id: computerId } });
+  if (existing.maintenanceId && existing.maintenanceId !== context.operationId) {
+    throw new ComputerBusyError();
+  }
+  // Already migrated: idempotent no-op so reconciler retries are safe.
+  if (existing.kind === migration.fallbackKind && existing.providerRef) {
+    return {
+      computer: toComputerRef(existing),
+      snapshotRestored: false,
+      snapshotRefreshed: false,
+      interruptedInflight: false,
+      notice: null,
+    };
+  }
+  if (existing.kind !== migration.primaryKind) {
+    throw new Error(
+      `Computer ${computerId} is on provider "${existing.kind}", not the fallback primary "${migration.primaryKind}"`,
+    );
+  }
+  if (hasActiveComputerControl(existing)) throw new ComputerBusyError();
+  // Execution fence: a live turn owns this computer. Its own failure handler
+  // surfaces the quota error; the next fresh turn migrates.
+  if (await hasActiveComputerRun(deps.prisma, computerId)) throw new ComputerBusyError();
+  if (!(await migration.fallbackAllowed())) throw new DockerFallbackUnavailableError();
+  if (!MIGRATABLE_COMPUTER_STATES.includes(existing.state)) throw new ComputerBusyError();
+
+  const homePath = resolveAgentHomePath(deps.home, existing.homeKey, deps.dataDir ?? "./data");
+  await mkdir(homePath, { recursive: true });
+  await mkdir(migration.snapshotBaseDir, { recursive: true });
+  const previousState = existing.state;
+  const now = new Date();
+  const claimStamp = new Date(Math.max(now.getTime(), existing.updatedAt.getTime() + 1));
+  const claimed = await deps.prisma.computer.updateMany({
+    where: { id: computerId, state: previousState, updatedAt: existing.updatedAt },
+    data: { state: "suspending", updatedAt: claimStamp },
+  });
+  if (claimed.count !== 1) throw new ComputerBusyError();
+  const releaseClaim = () =>
+    deps.prisma.computer
+      .updateMany({
+        where: { id: computerId, state: "suspending", updatedAt: claimStamp },
+        data: { state: previousState },
+      })
+      .catch(() => undefined);
+
+  let provisioned: ComputerRef | undefined;
+  const staging = await mkdtemp(path.join(migration.snapshotBaseDir, `fallback-${computerId}-`));
+  try {
+    const ref = await deps.fallback.provision(
+      { botId: existing.homeKey, homePath },
+      context,
+    );
+    provisioned = ref;
+    await deps.fallback.prepare(ref, context);
+
+    let snapshotRestored = false;
+    let snapshotRefreshed = false;
+    let notice: string | null = null;
+    let interruptedInflight = false;
+    if (existing.providerRef) {
+      interruptedInflight = true;
+      const refreshed = await refreshFallbackSnapshot(
+        deps,
+        toComputerRef(existing),
+        staging,
+        migration,
+        context,
+      );
+      snapshotRefreshed = refreshed;
+      if (!refreshed) {
+        // Never mix a partial primary export with the last completed state.
+        await discardWorkspaceSnapshot(staging);
+        await mkdir(staging, { recursive: true });
+      }
+      if (refreshed || (await stageLastCompletedSnapshot(deps, existing.homeKey, staging, migration, context))) {
+        await deps.fallback.importWorkspace(ref, readWorkspaceSnapshot(staging), context);
+        snapshotRestored = true;
+      }
+      await ensureComputerWorkspaceLayout(
+        deps.fallback,
+        ref,
+        parseComputerMode(existing.scope),
+        context.botId,
+        context,
+      );
+      notice = FALLBACK_BROWSER_PROFILE_NOTICE;
+    }
+    const activated = await deps.prisma.computer.updateMany({
+      where: { id: computerId, state: "suspending", updatedAt: claimStamp },
+      data: {
+        state: "running",
+        providerRef: ref.providerRef,
+        kind: ref.kind,
+      },
+    });
+    if (activated.count !== 1) throw new ComputerBusyError();
+    return {
+      computer: ref,
+      snapshotRestored,
+      snapshotRefreshed,
+      interruptedInflight,
+      notice,
+    };
+  } catch (error) {
+    if (provisioned) {
+      await rollbackProvisionedComputer(deps.fallback, provisioned, context, error).catch(
+        () => undefined,
+      );
+    }
+    await releaseClaim();
+    throw error;
+  } finally {
+    await discardWorkspaceSnapshot(staging);
+  }
+}
+
+/**
+ * Refresh the bounded snapshot from the still-reachable primary. Returns true
+ * when the refresh succeeded; false leaves any partial staging behind for the
+ * caller to discard before restoring the last completed revision instead.
+ */
+async function refreshFallbackSnapshot(
+  deps: { primary: SandboxProvider },
+  primaryRef: ComputerRef,
+  staging: string,
+  migration: ComputerFallbackMigration,
+  context: AdapterContext,
+): Promise<boolean> {
+  try {
+    const collected = await collectWorkspaceSnapshot(
+      deps.primary.exportWorkspace(primaryRef, context),
+      staging,
+      migration.snapshotLimits,
+    );
+    return collected.files > 0;
+  } catch {
+    return false;
+  }
+}
+
+/** Stage the last completed home revision when the primary is unreachable. */
+async function stageLastCompletedSnapshot(
+  deps: { home: AgentHomeStore },
+  homeKey: string,
+  staging: string,
+  migration: ComputerFallbackMigration,
+  context: AdapterContext,
+): Promise<boolean> {
+  try {
+    const collected = await collectWorkspaceSnapshot(
+      deps.home.exportHome(homeKey, context),
+      staging,
+      migration.snapshotLimits,
+    );
+    return collected.files > 0;
+  } catch {
+    return false;
   }
 }

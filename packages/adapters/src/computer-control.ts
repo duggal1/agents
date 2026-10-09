@@ -5,6 +5,7 @@ import {
   runContinueJob,
   type SandboxProvider,
 } from "@sapphire/adapter-kit";
+import { ACTIVE_RUN_STATUSES } from "@sapphire/core";
 import type { PrismaClient, ThreadEvents } from "@sapphire/db";
 import { getLogger } from "@sapphire/logging";
 import { toComputerRef } from "./computer-support.js";
@@ -279,4 +280,25 @@ export async function expireComputerControl(
   });
   await enqueueTakeoverContinuation(deps.jobs, released ? released.runId : null);
   return Boolean(released);
+}
+
+/**
+ * Execution fence for provider fallback: true while any live run still uses
+ * this computer. A fallback migration must refuse while this is true — the
+ * run that owns the computer surfaces the quota failure itself, and the next
+ * fresh turn migrates. Migrating underneath a live turn would replay or
+ * orphan its in-flight tool call.
+ */
+export async function hasActiveComputerRun(
+  prisma: PrismaClient,
+  computerId: string,
+): Promise<boolean> {
+  const live = await prisma.run.findFirst({
+    where: {
+      status: { in: [...ACTIVE_RUN_STATUSES] },
+      bot: { computerId },
+    },
+    select: { id: true },
+  });
+  return live !== null;
 }
