@@ -13,40 +13,32 @@
   const stackDetails = document.getElementById("stack-details");
   const stackProgress = document.getElementById("stack-progress");
   const stackProgressFill = document.getElementById("stack-progress-fill");
-  const stackDockerHelp = document.getElementById("stack-docker-help");
   const status = document.getElementById("status");
   const loader = document.getElementById("loader");
   const loaderLabel = document.getElementById("loader-label");
   const checkButton = document.getElementById("check");
+  const freshButton = document.getElementById("start-fresh");
   const continueButton = document.getElementById("continue");
 
   const STACK_POLL_MS = 1000;
   const PHASE_LABELS = {
-    "checking-docker": "Getting ready",
-    preparing: "Getting ready",
-    pulling: "Downloading Sapphire",
-    starting: "Starting Sapphire",
-    "waiting-healthy": "Almost ready",
+    "starting-database": "Starting local database",
+    migrating: "Moving your previous data",
+    "starting-api": "Starting app services",
+    "starting-worker": "Starting background jobs",
     ready: "Sapphire is ready.",
+    degraded: "Running with a warning",
+    stopping: "Stopping",
   };
-  const TERMINAL_PHASES = new Set([
-    "idle",
-    "docker-missing",
-    "docker-not-running",
-    "ready",
-    "failed",
-  ]);
+  const TERMINAL_PHASES = new Set(["idle", "ready", "failed"]);
   const PHASE_PROGRESS = {
-    "checking-docker": 0.06,
-    preparing: 0.12,
-    pulling: 0.2,
-    starting: 0.82,
-    "waiting-healthy": 0.92,
+    "starting-database": 0.25,
+    migrating: 0.5,
+    "starting-api": 0.7,
+    "starting-worker": 0.85,
+    degraded: 0.9,
     ready: 1,
   };
-  /** Docker reports bytes pulled but never a total, so the bar approaches the next phase without reaching it. */
-  const PULL_SPAN = 0.6;
-  const PULL_SCALE_BYTES = 1.2e9;
 
   let defaultLocalUrl = "";
   let stackPolling = false;
@@ -98,29 +90,13 @@
     panelNew.hidden = mode !== "new";
     panelExisting.hidden = mode === "new";
     checkButton.hidden = mode === "new";
+    freshButton.hidden = true;
     if (mode !== "new") continueButton.textContent = "Continue";
     setStatus("");
   }
 
-  function isDockerPhase(phase) {
-    return phase === "docker-missing" || phase === "docker-not-running";
-  }
-
-  function downloadedBytes(stack) {
-    return Object.values(stack.layerBytes ?? {}).reduce((total, bytes) => total + bytes, 0);
-  }
-
-  function formatBytes(bytes) {
-    if (bytes >= 1e9) return `${(bytes / 1e9).toFixed(1)} GB`;
-    if (bytes >= 1e6) return `${Math.round(bytes / 1e6)} MB`;
-    if (bytes >= 1e3) return `${Math.round(bytes / 1e3)} kB`;
-    return `${Math.round(bytes)} B`;
-  }
-
   function progressFor(stack) {
-    const base = PHASE_PROGRESS[stack.phase] ?? 0;
-    if (stack.phase !== "pulling") return base;
-    return base + PULL_SPAN * (1 - Math.exp(-downloadedBytes(stack) / PULL_SCALE_BYTES));
+    return PHASE_PROGRESS[stack.phase] ?? 0;
   }
 
   function renderProgress(stack) {
@@ -133,7 +109,7 @@
     }
     // A retry restarts at its phase; otherwise the bar only ever moves forward.
     lastProgress =
-      stack.phase === "checking-docker"
+      stack.phase === "starting-database"
         ? progressFor(stack)
         : Math.max(lastProgress, progressFor(stack));
     const percent = (lastProgress * 100).toFixed(1);
@@ -142,11 +118,16 @@
   }
 
   function renderDetails(stack) {
-    const bytes = stack.phase === "pulling" ? downloadedBytes(stack) : 0;
-    stackDetail.textContent = bytes > 0 ? `${formatBytes(bytes)} downloaded` : "";
+    // The backend reports one actionable sentence while it works; surface it
+    // under the phase label so a data copy never looks stalled.
+    const detail =
+      (stack.phase === "migrating" || stack.phase === "degraded") && stack.message
+        ? stack.message
+        : "";
+    stackDetail.textContent = detail;
 
     // A new attempt clears the output, so drop an expansion the person did not ask for.
-    if (stack.phase === "checking-docker" && detailsOpenedByFailure) {
+    if (stack.phase === "starting-database" && detailsOpenedByFailure) {
       detailsOpen = false;
       detailsOpenedByFailure = false;
     }
@@ -171,10 +152,12 @@
     stackSection.hidden = phase === "idle";
     if (phase === "idle") {
       continueButton.textContent = "Continue";
+      freshButton.hidden = true;
       return;
     }
-    const failed = isDockerPhase(phase) || phase === "failed";
-    const text = (failed ? stack.message : PHASE_LABELS[phase]) ?? "";
+    const failed = phase === "failed";
+    // A failure or warning carries its own explanation; otherwise the label describes the phase.
+    const text = (failed || phase === "degraded" ? stack.message : null) || PHASE_LABELS[phase] || "";
     if (stackPhase.textContent !== text) {
       stackPhase.textContent = text;
       stackPhase.classList.remove("swap");
@@ -187,10 +170,11 @@
 
     renderProgress(stack);
     renderDetails(stack);
-    stackDockerHelp.hidden = !isDockerPhase(phase);
+    // A blocked data copy may be skipped: the old installation stays intact
+    // for a later retry either way.
+    freshButton.hidden = !(failed && stack.freshStartAvailable === true);
 
-    if (isDockerPhase(phase)) continueButton.textContent = "Check again";
-    else if (phase === "failed") continueButton.textContent = "Retry";
+    if (phase === "failed") continueButton.textContent = "Retry";
     else continueButton.textContent = "Continue";
     setBusy(!TERMINAL_PHASES.has(phase));
   }
@@ -254,22 +238,22 @@
         await waitForStackChange();
       }
     } catch {
-      setStatus("Could not follow the local stack. Try again.", "error");
+      setStatus("Could not follow the local app. Try again.", "error");
       setBusy(false);
     } finally {
       stackPolling = false;
     }
   }
 
-  async function runStack() {
+  async function runStack(fresh) {
     setStatus("");
     setBusy(true);
     try {
       // A queued start still reads `idle`; leave the panel as it is and let the follow render it.
-      const started = await bridge.stack.start();
+      const started = await bridge.stack.start(fresh === true ? { fresh: true } : undefined);
       if (started !== null && started.phase !== "idle") renderStack(started);
     } catch {
-      setStatus("Could not start the local stack. Try again.", "error");
+      setStatus("Could not start the local app. Try again.", "error");
       setBusy(false);
       return;
     }
@@ -322,9 +306,8 @@
     if (lastStack !== null) renderDetails(lastStack);
   });
 
-  stackDockerHelp.addEventListener("click", (event) => {
-    const link = event.target instanceof HTMLElement ? event.target.dataset.link : undefined;
-    if (link) void bridge.openLink(link);
+  freshButton.addEventListener("click", () => {
+    void runStack(true);
   });
 
   form.addEventListener("submit", (event) => {

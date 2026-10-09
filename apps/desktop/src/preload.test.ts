@@ -35,6 +35,7 @@ describe("desktop preload bridge", () => {
       "localSettings",
       "oauth",
       "platform",
+      "runtime",
       "update",
       "window",
     ]);
@@ -70,6 +71,31 @@ describe("desktop preload bridge", () => {
     ]);
   });
 
+  it("exposes only boolean runtime posture, never the key itself", async () => {
+    const { invoke, exposeInMainWorld } = runPreload("preload.cjs");
+
+    const [, bridge] = exposeInMainWorld.mock.calls[0] as [string, RakazoDesktop];
+    expect(Object.keys(bridge.runtime ?? {}).sort()).toEqual([
+      "clearKey",
+      "setFallbackAllowed",
+      "setKey",
+      "status",
+    ]);
+
+    await bridge.runtime?.status();
+    await bridge.runtime?.setKey("test-e2b-key");
+    await bridge.runtime?.clearKey();
+    await bridge.runtime?.setFallbackAllowed(true);
+    expect(invoke.mock.calls.map(([channel]) => channel)).toEqual([
+      "desktop.runtime.status",
+      "desktop.runtime.setKey",
+      "desktop.runtime.clearKey",
+      "desktop.runtime.setFallbackAllowed",
+    ]);
+    expect(invoke).toHaveBeenCalledWith("desktop.runtime.setKey", "test-e2b-key");
+    expect(invoke).toHaveBeenCalledWith("desktop.runtime.setFallbackAllowed", true);
+  });
+
   it("keeps setup off the app bridge so a connected server cannot re-point the app", () => {
     const { exposeInMainWorld } = runPreload("preload.cjs");
     const [, bridge] = exposeInMainWorld.mock.calls[0] as [string, Record<string, unknown>];
@@ -77,6 +103,7 @@ describe("desktop preload bridge", () => {
       "localSettings",
       "oauth",
       "platform",
+      "runtime",
       "update",
       "window",
     ]);
@@ -112,39 +139,48 @@ describe("setup preload bridge", () => {
     expect(globalName).toBe("rakazoSetup");
     expect(bridge.platform).toBe("linux");
     expect(Object.keys(bridge).sort()).toEqual([
-      "openLink",
       "platform",
       "quit",
+      "runtime",
       "save",
       "stack",
       "state",
       "test",
     ]);
-    expect(Object.keys(bridge.stack).sort()).toEqual(["onChange", "start", "state"]);
+    expect(Object.keys(bridge.stack).sort()).toEqual(["onChange", "start", "state", "stop"]);
 
     await bridge.state();
     await bridge.test("http://127.0.0.1:5173");
     await bridge.save({ mode: "new", serverUrl: "http://127.0.0.1:5173" });
     await bridge.quit();
-    await bridge.openLink("orbstack");
     await bridge.stack.state();
     await bridge.stack.start();
+    await bridge.stack.start({ fresh: true });
+    await bridge.stack.stop();
+    await bridge.runtime.status();
+    await bridge.runtime.setKey("test-e2b-key");
     expect(invoke.mock.calls.map(([channel]) => channel)).toEqual([
       "desktop.setup.state",
       "desktop.setup.test",
       "desktop.setup.save",
       "desktop.setup.quit",
-      "desktop.setup.openLink",
       "desktop.setup.stack.state",
       "desktop.setup.stack.start",
+      "desktop.setup.stack.start",
+      "desktop.setup.stack.stop",
+      "desktop.setup.runtime.status",
+      "desktop.setup.runtime.setKey",
     ]);
-    expect(invoke).toHaveBeenCalledWith("desktop.setup.openLink", "orbstack");
+    // The stack bridge takes status/start/stop only; start options narrow to
+    // `{ fresh?: boolean }` in the main process. No Docker install links remain.
+    expect(invoke).toHaveBeenCalledWith("desktop.setup.stack.start", undefined);
+    expect(invoke).toHaveBeenCalledWith("desktop.setup.stack.start", { fresh: true });
 
     const listener = vi.fn();
     bridge.stack.onChange(listener);
     const [channel, handler] = on.mock.calls.at(-1) as [string, (...args: unknown[]) => void];
     expect(channel).toBe("desktop.setup.stack.changed");
-    handler({}, { phase: "pulling" });
-    expect(listener).toHaveBeenCalledWith({ phase: "pulling" });
+    handler({}, { phase: "starting-database" });
+    expect(listener).toHaveBeenCalledWith({ phase: "starting-database" });
   });
 });

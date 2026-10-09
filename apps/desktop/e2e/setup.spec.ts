@@ -89,13 +89,25 @@ test("first run asks whether to use a local or existing instance", async () => {
   await expect(setup.getByText("Existing instance")).toBeVisible();
   await expect(setup.locator(".card")).toHaveCount(0);
 
-  // A new instance is the default: the app runs the stack itself at the local address.
+  // A new instance is the default: the app runs its own services locally.
   await expect(setup.getByRole("radio", { name: /This computer/ })).toBeChecked();
   // The panel is empty until a start begins, so check the attribute rather than the box.
   await expect(setup.locator("#panel-new")).toHaveJSProperty("hidden", false);
   await expect(setup.locator("#stack")).toBeHidden();
   await expect(setup.getByRole("button", { name: "Check connection" })).toBeHidden();
   await expect(setup.locator("#panel-existing")).toBeHidden();
+
+  // Native local mode never mentions Docker installers; the fresh-start escape
+  // hatch only appears after a blocked data migration, not up front.
+  await expect(setup.locator("#stack-docker-help")).toHaveCount(0);
+  await expect(setup.getByText("Docker Desktop")).toHaveCount(0);
+  await expect(setup.getByText("OrbStack")).toHaveCount(0);
+  await expect(setup.getByText("Docker Engine")).toHaveCount(0);
+  await expect(setup.locator("#start-fresh")).toBeHidden();
+
+  // Bot computers are an optional post-setup step, not a backend prerequisite.
+  await expect(setup.locator("#e2b-slot")).toBeVisible();
+  await expect(setup.locator("#e2b-slot")).toContainText("Bot computers are optional");
 
   await setup.screenshot({
     path: path.join(import.meta.dirname, "screenshots", "01-setup-new-instance.png"),

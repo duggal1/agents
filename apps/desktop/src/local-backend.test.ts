@@ -182,10 +182,10 @@ describe("backend lifecycle", () => {
 
   it("stops gracefully at any phase", async () => {
     const runtime = fakeRuntime();
-    const backend = new LocalBackend(depsFor({ createRuntime: () => runtime as never }));
-    expect((await backend.stop()).phase).toBe("stopped");
+    const backend = new LocalBackend(depsFor({ createRuntime: () => runtime }));
+    expect((await backend.stop()).phase).toBe("idle");
     await backend.start();
-    expect((await backend.stop()).phase).toBe("stopped");
+    expect((await backend.stop()).phase).toBe("idle");
     expect(runtime.calls).toEqual(["start", "stop"]);
   });
 

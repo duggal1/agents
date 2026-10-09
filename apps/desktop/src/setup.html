@@ -79,11 +79,12 @@
             </div>
             <p id="stack-detail" class="stack-detail"></p>
             <pre id="stack-output" class="stack-output" hidden></pre>
-            <div id="stack-docker-help" class="stack-help" hidden>
-              <button class="link" type="button" data-link="docker-desktop">Docker Desktop</button>
-              <button class="link" type="button" data-link="orbstack">OrbStack</button>
-              <button class="link" type="button" data-link="docker-engine">Docker Engine</button>
-            </div>
+          </div>
+          <div id="e2b-slot" class="stack-help" data-e2b="placeholder">
+            <p class="stack-detail">
+              Bot computers are optional. You can connect one after setup; this
+              computer works without it.
+            </p>
           </div>
         </section>
 
@@ -111,6 +112,7 @@
 
         <div class="actions">
           <button id="check" class="button button-secondary" type="button">Check connection</button>
+          <button id="start-fresh" class="button button-secondary" type="button" hidden>Start fresh instead</button>
           <button id="continue" class="button button-primary" type="submit">Continue<svg class="button-arrow" width="16" height="16" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true" focusable="false"><path d="M221.66,181.66l-48,48a8,8,0,0,1-11.32-11.32L196.69,184H72a8,8,0,0,1-8-8V32a8,8,0,0,1,16,0V168H196.69l-34.35-34.34a8,8,0,0,1,11.32-11.32l48,48A8,8,0,0,1,221.66,181.66Z"/></svg></button>
         </div>
       </form>
