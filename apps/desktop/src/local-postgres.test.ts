@@ -1,4 +1,4 @@
-import { mkdtemp, readFile, rm, stat, writeFile } from "node:fs/promises";
+import { mkdtemp, readFile, readdir, rm, stat, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
@@ -230,6 +230,13 @@ describe("LocalPostgresController", () => {
     // psql creates the database with only the password in the environment.
     expect(calls[2]!.env.PGPASSWORD).toBe(fakeHex(16));
     expect(calls[2]!.env.OPENROUTER_API_KEY).toBeUndefined();
+    // psql must address the server over TCP loopback: the default /tmp unix
+    // socket is not where this server listens, so bare psql never connects.
+    for (const query of calls.slice(2, 4)) {
+      expect(query.args).toEqual(
+        expect.arrayContaining(["-h", "127.0.0.1", "-p", "55432", "-U", "rakazo"]),
+      );
+    }
     expect(migrated).toEqual([`postgres://rakazo:${fakeHex(16)}@127.0.0.1:55432/rakazo`]);
     expect(phases.map((entry) => entry.phase)).toEqual(["starting-database", "migrating", "ready"]);
     await expect(readPrivateJson(dir)).resolves.toMatchObject({ port: 55432 });
@@ -415,6 +422,109 @@ describe("LocalPostgresController", () => {
     expect(a.phase).toBe("ready");
     expect(b.phase).toBe("ready");
     expect(calls.filter((call) => call.args.at(-1) === "start")).toHaveLength(1);
+  });
+});
+
+describe("cold init keeps the cluster directory initdb-clean", () => {
+  let dir: string;
+  beforeEach(async () => {
+    dir = await mkdtemp(path.join(tmpdir(), "sapphire-pg-init-"));
+  });
+  afterEach(async () => {
+    await rm(dir, { recursive: true, force: true });
+  });
+
+  /**
+   * The real initdb refuses a non-empty directory ("exists but is not
+   * empty ... dot-prefixed/invisible file"). The fake enforces the same
+   * invariant against the real temp dir so the ordering bug that broke
+   * every first launch cannot regress silently.
+   */
+  function initdbLikeReal(plan: Partial<Record<string, Scripted>> = {}) {
+    return scriptedRun({
+      initdb: async (call) => {
+        const dataDir = call.args[call.args.indexOf("-D") + 1]!;
+        const entries = await readdir(dataDir);
+        if (entries.length > 0) {
+          return fail(`directory "${dataDir}" exists but is not empty`);
+        }
+        // initdb must not observe our credentials file: it is persisted
+        // only after init succeeds.
+        if ((await readPostgresCredentials(dataDir)) !== null) {
+          return fail("credentials file visible to initdb");
+        }
+        return ok;
+      },
+      pg_isready: ok,
+      ...plan,
+    });
+  }
+
+  it("initializes an empty directory and persists credentials after", async () => {
+    const { run, calls } = initdbLikeReal();
+    const controller = new LocalPostgresController(depsFor(dir, run));
+
+    const state = await controller.start();
+
+    expect(state.phase).toBe("ready");
+    expect(calls.map((call) => path.basename(call.binary))[0]).toBe("initdb");
+    await expect(readPostgresCredentials(dir)).resolves.toMatchObject({ port: 55432 });
+    // The password file never lands in the cluster dir (it would break a
+    // retry the same way the credentials file did).
+    expect(await readdir(dir)).not.toContain(`.pwfile-${process.pid}`);
+    const initdb = calls[0]!;
+    const pwfile = initdb.args[initdb.args.indexOf("--pwfile") + 1]!;
+    expect(path.dirname(pwfile)).not.toBe(dir);
+  });
+
+  it("repairs a directory poisoned by failed first launches", async () => {
+    // Exactly what a broken retry loop leaves behind: our credentials file
+    // plus an orphaned password file from a dead process.
+    await writePostgresCredentials(dir, {
+      version: 1,
+      port: 55432,
+      user: "rakazo",
+      database: "rakazo",
+      password: fakeHex(16),
+    });
+    await writeFile(path.join(dir, ".pwfile-99999"), "stale\n", "utf8");
+    const { run } = initdbLikeReal();
+    const controller = new LocalPostgresController(depsFor(dir, run));
+
+    const state = await controller.start();
+
+    expect(state.phase).toBe("ready");
+    expect(await readdir(dir)).not.toContain(".pwfile-99999");
+  });
+
+  it("fails closed on foreign files instead of deleting them", async () => {
+    await writeFile(path.join(dir, "user-data.txt"), "not ours\n", "utf8");
+    const { run } = initdbLikeReal();
+    const controller = new LocalPostgresController(depsFor(dir, run));
+
+    const state = await controller.start();
+
+    expect(state.phase).toBe("failed");
+    // Our cleanup touches only our dotfiles; foreign content is preserved
+    // for the user to move, and initdb reports it.
+    await expect(readFile(path.join(dir, "user-data.txt"), "utf8")).resolves.toBe("not ours\n");
+  });
+
+  it("recovers on retry after initdb itself fails once", async () => {
+    let attempts = 0;
+    const { run } = initdbLikeReal({
+      initdb: async () => {
+        attempts += 1;
+        return attempts === 1 ? fail("disk hiccup") : ok;
+      },
+      pg_isready: ok,
+    });
+    const first = new LocalPostgresController(depsFor(dir, run));
+    expect((await first.start()).phase).toBe("failed");
+
+    const second = new LocalPostgresController(depsFor(dir, run));
+    expect((await second.start()).phase).toBe("ready");
+    expect(attempts).toBe(2);
   });
 });
 

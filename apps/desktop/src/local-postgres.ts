@@ -1,6 +1,7 @@
 import { spawn } from "node:child_process";
-import { mkdir, rename, stat, unlink } from "node:fs/promises";
+import { mkdir, readdir, rename, stat, unlink } from "node:fs/promises";
 import { createServer } from "node:net";
+import { tmpdir } from "node:os";
 import path from "node:path";
 import { DESKTOP_MACOS_ARCHITECTURES, RUNTIME_DIR_NAME, runtimeChildEnv } from "./local-runtime.js";
 import { readPrivateFile, writePrivateFile } from "./setup-store.js";
@@ -337,6 +338,11 @@ export function isPortInUse(output: string): boolean {
  * Owns exactly one PostgreSQL 16 cluster. It initializes a cold cluster, starts a warm
  * one, waits for it to accept connections, runs migrations, and stops it cleanly. Every
  * external command is injected so the whole lifecycle is testable offline.
+ *
+ * Cold-init ordering is load-bearing: initdb refuses a non-empty directory,
+ * so the cluster directory holds only PostgreSQL files until initdb succeeds.
+ * Credentials live in memory until then and are persisted right after; the
+ * initdb password file lives in the OS temp dir, never in the cluster dir.
  */
 export class LocalPostgresController {
   private current: PostgresState = { phase: "stopped", message: null };
@@ -438,11 +444,26 @@ export class LocalPostgresController {
       } else {
         this.credentials = await this.createCredentials();
         if (this.credentials === null) return this.current;
+        // Failed first launches (and older builds that wrote secrets into the
+        // cluster dir) leave our dotfiles behind; initdb would refuse the
+        // directory for them. Only our files are removed — anything else
+        // still fails closed inside initdb below.
+        await this.removeLegacyClusterDotfiles();
       }
 
       await (this.deps.rotateLog ?? defaultRotateLog)(this.logPath(), POSTGRES_LOG_MAX_BYTES);
 
-      if (!warm && !(await this.initCluster())) return this.current;
+      if (!warm) {
+        if (!(await this.initCluster())) return this.current;
+        // Persist only after initdb owns the directory: a crash before this
+        // line retries cold, and a crash after it restarts warm. A crash
+        // exactly in between reports missing credentials for an empty,
+        // migration-less cluster, which a fresh profile recovers.
+        const credentials = this.credentials;
+        if (credentials !== null) {
+          await writePostgresCredentials(this.deps.dataDir, credentials);
+        }
+      }
       if (!(await this.startServer(signal))) return this.current;
       if (!warm && !(await this.createDatabase())) return this.current;
       if (!(await this.waitReady(signal))) return this.current;
@@ -481,21 +502,37 @@ export class LocalPostgresController {
       this.fail(INIT_FAILED);
       return null;
     }
-    const credentials: PostgresCredentials = {
+    // Memory only: writing the file now would make initdb refuse the
+    // non-empty cluster directory. boot() persists after init succeeds.
+    return {
       version: POSTGRES_CREDENTIALS_VERSION,
       port,
       user: POSTGRES_DEFAULT_USER,
       database: POSTGRES_DEFAULT_DATABASE,
       password,
     };
-    await writePostgresCredentials(this.deps.dataDir, credentials);
-    return credentials;
+  }
+
+  /**
+   * Cold path only (no PG_VERSION exists, so no live cluster can depend on
+   * these): drops our own dotfiles from failed attempts — the credentials
+   * file older builds wrote here and orphaned `.pwfile-*` files — so initdb
+   * sees the empty directory it requires.
+   */
+  private async removeLegacyClusterDotfiles(): Promise<void> {
+    const names = await readdir(this.deps.dataDir).catch(() => [] as string[]);
+    for (const name of names) {
+      if (name !== POSTGRES_CREDENTIALS_FILE && !name.startsWith(".pwfile-")) continue;
+      await unlink(path.join(this.deps.dataDir, name)).catch(() => undefined);
+    }
   }
 
   private async initCluster(): Promise<boolean> {
     const credentials = this.credentials;
     if (credentials === null) return false;
-    const pwFile = path.join(this.deps.dataDir, `.pwfile-${process.pid}`);
+    // The OS temp dir, never the cluster dir: initdb refuses a directory
+    // that already contains this file on retry.
+    const pwFile = path.join(tmpdir(), `.sapphire-pwfile-${process.pid}`);
     await writePrivateFile(pwFile, `${credentials.password}\n`);
     try {
       const result = await this.runTool("initdb", [
@@ -568,7 +605,19 @@ export class LocalPostgresController {
   private async createDatabase(): Promise<boolean> {
     const credentials = this.credentials;
     if (credentials === null) return false;
+    // Explicit TCP loopback: without -h/-p psql defaults to the /tmp unix
+    // socket, but the server's socket lives in the cluster dir — the
+    // connection would always fail. Matches waitReady and databaseUrl().
+    const endpoint = [
+      "-h",
+      "127.0.0.1",
+      "-p",
+      String(credentials.port),
+      "-U",
+      credentials.user,
+    ];
     const exists = await this.psql([
+      ...endpoint,
       "--dbname",
       "postgres",
       "-tAc",
@@ -580,6 +629,7 @@ export class LocalPostgresController {
     }
     if (exists.stdout.trim() === "1") return true;
     const created = await this.psql([
+      ...endpoint,
       "--dbname",
       "postgres",
       "-c",
