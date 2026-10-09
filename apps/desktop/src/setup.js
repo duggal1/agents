@@ -4,6 +4,7 @@
 
   const form = document.getElementById("setup");
   const serverUrl = document.getElementById("server-url");
+  const e2bKey = document.getElementById("e2b-key");
   const panelNew = document.getElementById("panel-new");
   const panelExisting = document.getElementById("panel-existing");
   const stackSection = document.getElementById("stack");
@@ -196,6 +197,30 @@
     }
   }
 
+  /**
+   * Stores an entered E2B key OS-encrypted before the backend starts, so the
+   * first launch already carries it. Empty means Skip for now. Returns false
+   * when the key could not be stored, leaving the backend stopped.
+   */
+  async function storePendingKey() {
+    if (e2bKey === null || e2bKey.value.trim() === "") return true;
+    const key = e2bKey.value;
+    e2bKey.value = "";
+    if (bridge.runtime === undefined) {
+      setStatus("Could not save the E2B key. Skip it for now and try again.", "error");
+      return false;
+    }
+    const stored = await bridge.runtime.setKey(key);
+    if (!stored.ok) {
+      setStatus(
+        stored.error ?? "Could not save the E2B key. Skip it for now and try again.",
+        "error",
+      );
+      return false;
+    }
+    return true;
+  }
+
   /** Wakes on the next pushed state, and on the timer if a push is ever missed. */
   function waitForStackChange() {
     return new Promise((resolve) => {
@@ -248,6 +273,12 @@
   async function runStack(fresh) {
     setStatus("");
     setBusy(true);
+    // Existing instance has no key field; only This computer stores a key, and
+    // only before its backend starts.
+    if (selectedMode() === "new" && !(await storePendingKey())) {
+      setBusy(false);
+      return;
+    }
     try {
       // A queued start still reads `idle`; leave the panel as it is and let the follow render it.
       const started = await bridge.stack.start(fresh === true ? { fresh: true } : undefined);
