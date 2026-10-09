@@ -46,3 +46,41 @@ describe("runtime packaging", () => {
     expect(RUNTIME_MANIFEST_VERSION).toBe(1);
   });
 });
+
+describe("pinned PostgreSQL provisioning", () => {
+  const provisionScript = readFileSync(
+    path.join(desktopDir, "scripts", "provision-postgres.mjs"),
+    "utf8",
+  );
+
+  it("pins the 16.15 source tarball with a verified checksum", () => {
+    expect(provisionScript).toContain('"16.15"');
+    expect(provisionScript).toContain(
+      "c1575341fa7bd40f5274ea465b34390f4dc64cdd0770af327005caaeb9f6b7ed",
+    );
+    expect(provisionScript).toContain("https://ftp.postgresql.org/pub/source");
+    expect(provisionScript).toContain("sha256");
+  });
+
+  it("targets the same macOS minimum as the supervisor contract", () => {
+    expect(provisionScript).toContain(`"${DESKTOP_MINIMUM_MACOS}"`);
+    expect(provisionScript).toContain("MACOSX_DEPLOYMENT_TARGET");
+  });
+
+  it("builds hermetically and proves the result before staging", () => {
+    for (const flag of ["--without-readline", "--without-zlib", "--without-icu"]) {
+      expect(provisionScript).toContain(flag);
+    }
+    expect(provisionScript).not.toContain("--with-ssl=");
+    expect(provisionScript).toContain("--universal");
+    // The fat build must carry both slices; the staged result must prove SCRAM logins work.
+    expect(provisionScript).toContain("lipo");
+    expect(provisionScript).toContain("scram-sha-256");
+  });
+
+  it("provisions missing architectures instead of failing closed", () => {
+    expect(buildScript).toContain("SAPPHIRE_POSTGRES_BUILD");
+    expect(buildScript).toContain("provision-postgres.mjs");
+    expect(buildScript).toContain("ensurePostgresSources");
+  });
+});

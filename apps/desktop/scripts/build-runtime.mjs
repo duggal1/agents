@@ -7,7 +7,9 @@
 //
 //   SAPPHIRE_POSTGRES_DIR   stage an already-built PostgreSQL bin directory (CI cache or
 //                           a local source build). The minimum macOS version is verified.
-//   SAPPHIRE_POSTGRES_BUILD build PostgreSQL from the pinned source tarball instead.
+//   SAPPHIRE_POSTGRES_BUILD provision the pinned PostgreSQL 16 from a verified source
+//                           tarball (scripts/provision-postgres.mjs) whenever a needed
+//                           architecture directory is missing. Set to "1" in release CI.
 //   SAPPHIRE_POSTGRES_VERSION  pinned PostgreSQL 16 minor (default 16.15).
 import { execFileSync } from "node:child_process";
 import { cp, mkdir, readdir, readFile, rm, stat, writeFile } from "node:fs/promises";
@@ -243,7 +245,9 @@ function compareVersions(left, right) {
 /**
  * Resolves the source PostgreSQL directory for an architecture. A universal build needs
  * one per architecture, supplied either as `<dir>/<arch>` subdirectories or as
- * `SAPPHIRE_POSTGRES_DIR_ARM64` / `SAPPHIRE_POSTGRES_DIR_X64` overrides.
+ * `SAPPHIRE_POSTGRES_DIR_ARM64` / `SAPPHIRE_POSTGRES_DIR_X64` overrides. With
+ * `SAPPHIRE_POSTGRES_BUILD=1` the pinned provision script fills the default
+ * dependency directory instead of failing closed (see `ensurePostgresSources`).
  */
 async function postgresSource(arch) {
   const base = process.env.SAPPHIRE_POSTGRES_DIR;
@@ -257,8 +261,41 @@ async function postgresSource(arch) {
   }
   throw new Error(
     `No PostgreSQL ${POSTGRES_MAJOR_VERSION} bin directory for ${arch}. Set SAPPHIRE_POSTGRES_DIR ` +
-      `(or SAPPHIRE_POSTGRES_DIR_${arch.toUpperCase()}) to a build made against macOS ${DESKTOP_MINIMUM_MACOS}.`,
+      `(or SAPPHIRE_POSTGRES_DIR_${arch.toUpperCase()}) to a build made against macOS ${DESKTOP_MINIMUM_MACOS}, ` +
+      `or set SAPPHIRE_POSTGRES_BUILD=1 to provision the pinned build from a verified source tarball.`,
   );
+}
+
+/** Default dependency directory the provision script writes per-arch builds to. */
+function postgresDepsDir() {
+  return process.env.SAPPHIRE_POSTGRES_DIR ?? path.join(REPO_ROOT, "runtime", "postgres-deps");
+}
+
+/**
+ * Provisions whichever architectures have no usable source directory yet, using
+ * the pinned, checksum-verified source build. Explicit per-arch directories are
+ * never overwritten; a fat universal provision serves both arches at once.
+ */
+async function ensurePostgresSources(arches, universal) {
+  if (process.env.SAPPHIRE_POSTGRES_BUILD !== "1") return;
+  const missing = [];
+  for (const arch of arches) {
+    try {
+      await postgresSource(arch);
+    } catch {
+      missing.push(arch);
+    }
+  }
+  if (missing.length === 0) return;
+  const provision = path.join(REPO_ROOT, "apps", "desktop", "scripts", "provision-postgres.mjs");
+  const out = postgresDepsDir();
+  console.log(`Provisioning pinned PostgreSQL for ${missing.join(", ")}...`);
+  if (universal) {
+    run(process.execPath, [provision, "--universal", "--out", out]);
+  } else {
+    for (const arch of missing) run(process.execPath, [provision, "--arch", arch, "--out", out]);
+  }
+  if (process.env.SAPPHIRE_POSTGRES_DIR === undefined) process.env.SAPPHIRE_POSTGRES_DIR = out;
 }
 
 /** Copies a verified PostgreSQL 16 distribution, or fails clearly when it is missing. */
@@ -355,6 +392,7 @@ async function main() {
   const arches = universal ? ["arm64", "x64"] : [arch];
   const koffiArches = await copyRuntimeAssets(SERVICES_DIR, arches);
 
+  await ensurePostgresSources(arches, universal);
   const postgresArches = [];
   let postgresMinimum = null;
   for (const postgresArch of arches) {
