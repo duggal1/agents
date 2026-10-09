@@ -1,10 +1,10 @@
 import { execFile } from "node:child_process";
-import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { readFile, rm, writeFile } from "node:fs/promises";
 import { createServer, type Server } from "node:http";
-import { tmpdir } from "node:os";
 import path from "node:path";
 import { promisify } from "node:util";
-import { type ElectronApplication, _electron as electron, expect, test } from "@playwright/test";
+import { type ElectronApplication, expect, test } from "@playwright/test";
+import { launchApp } from "./launch.js";
 
 const APP_MARKER = "Existing Sapphire instance ready";
 const execFileAsync = promisify(execFile);
@@ -12,7 +12,7 @@ const execFileAsync = promisify(execFile);
 let server: Server;
 let serverUrl: string;
 let closedUrl: string;
-let userData: string;
+let userData = "";
 let app: ElectronApplication | undefined;
 
 /** A port nothing listens on, so a connection attempt is refused rather than blocked. */
@@ -53,32 +53,26 @@ test.afterAll(async () => {
   });
 });
 
-test.beforeEach(async () => {
-  userData = await mkdtemp(path.join(tmpdir(), "rakazo-desktop-e2e-"));
-});
-
 test.afterEach(async () => {
   await app?.close();
   app = undefined;
-  await rm(userData, { recursive: true, force: true });
+  if (userData !== "") await rm(userData, { recursive: true, force: true });
+  userData = "";
 });
 
-function launch(extraEnv: Record<string, string> = {}) {
-  const env = { ...process.env, RAKAZO_PERFORMANCE_USER_DATA: userData };
-  // A stale RAKAZO_WEB_URL from the developer's shell would bypass setup entirely.
-  delete env.RAKAZO_WEB_URL;
-  const executablePath = process.env.RAKAZO_E2E_EXECUTABLE;
-  return electron.launch({
-    ...(executablePath ? { executablePath: path.resolve(executablePath) } : {}),
-    args: executablePath ? [] : ["."],
-    cwd: path.resolve(import.meta.dirname, ".."),
-    env: { ...env, ...extraEnv },
+async function launch(extraEnv: Record<string, string> = {}) {
+  const launched = await launchApp({
+    executablePath: process.env.SAPPHIRE_E2E_EXECUTABLE,
+    extraEnv,
   });
+  app = launched.app;
+  userData = launched.userData;
+  return launched.app;
 }
 
 test("first run asks whether to use a local or existing instance", async () => {
   app = await launch();
-  if (process.env.RAKAZO_E2E_EXECUTABLE) {
+  if (process.env.SAPPHIRE_E2E_EXECUTABLE) {
     expect(await app.evaluate(({ app }) => app.isPackaged)).toBe(true);
   }
   const setup = await app.firstWindow();
@@ -529,7 +523,7 @@ test("an unreachable saved server falls back to setup with a recovery message", 
 });
 
 test("the native application menu can reopen setup without exposing setup IPC to the server", async () => {
-  app = await launch({ RAKAZO_WEB_URL: serverUrl });
+  app = await launch({ SAPPHIRE_WEB_URL: serverUrl });
   const appWindow = await app.firstWindow();
   await expect(appWindow.getByText(APP_MARKER)).toBeVisible();
 
@@ -577,13 +571,13 @@ test("servers on the same host but different ports do not share login cookies", 
   }
 
   try {
-    app = await launch({ RAKAZO_WEB_URL: `http://127.0.0.1:${firstAddress.port}` });
+    app = await launch({ SAPPHIRE_WEB_URL: `http://127.0.0.1:${firstAddress.port}` });
     const firstWindow = await app.firstWindow();
     await expect(firstWindow.getByText("Cookie stored")).toBeVisible();
     await expect.poll(() => firstWindow.evaluate(() => document.cookie)).toContain("fake-one");
     await app.close();
 
-    app = await launch({ RAKAZO_WEB_URL: `http://127.0.0.1:${secondAddress.port}` });
+    app = await launch({ SAPPHIRE_WEB_URL: `http://127.0.0.1:${secondAddress.port}` });
     const secondWindow = await app.firstWindow();
     await expect(secondWindow.getByText("Cookies: none")).toBeVisible();
   } finally {
@@ -599,7 +593,7 @@ test("servers on the same host but different ports do not share login cookies", 
 });
 
 test("setup IPC is not reachable from the connected app window", async () => {
-  app = await launch({ RAKAZO_WEB_URL: serverUrl });
+  app = await launch({ SAPPHIRE_WEB_URL: serverUrl });
   const appWindow = await app.firstWindow();
   await expect(appWindow.getByText(APP_MARKER)).toBeVisible();
 
