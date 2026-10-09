@@ -81,6 +81,17 @@ import type {
 } from "./types.js";
 
 export interface SandboxProvider {
+  /**
+   * Provider-identity routing invariant (E2B-first local-macOS fallback).
+   *
+   * Every computer carries a persisted provider identity — its `kind` plus
+   * `providerRef` (see `ComputerRef`, stored per computer row). All operations
+   * below MUST route by that persisted identity, never by process environment:
+   * an existing E2B computer keeps talking to E2B and an existing Docker
+   * computer keeps talking to Docker until a deliberate, fenced migration
+   * rewrites the persisted identity. Changing the process-wide default affects
+   * newly created computers only.
+   */
   describe(): AdapterDescriptor<SandboxCapabilities>;
   /** Optional live browser on the same leased screen as observe/act. */
   pageBrowser?(
