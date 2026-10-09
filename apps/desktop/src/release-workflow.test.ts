@@ -98,6 +98,7 @@ describe("desktop release workflow", () => {
   it("builds the universal native runtime before packaging macOS", () => {
     expect(workflow).toContain("Build universal native runtime");
     expect(workflow).toContain("SAPPHIRE_RUNTIME_UNIVERSAL=1");
+    expect(workflow).toContain("SAPPHIRE_POSTGRES_BUILD=1");
     expect(workflow).toContain("run runtime:build");
     expect(workflow).toContain("--mac --universal");
   });

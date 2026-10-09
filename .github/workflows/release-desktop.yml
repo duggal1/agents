@@ -125,10 +125,14 @@ jobs:
           RAKAZO_ALLOW_DEV_SECRETS: "1"
 
       - name: Build universal native runtime
-        # Needs SAPPHIRE_POSTGRES_DIR_ARM64 and SAPPHIRE_POSTGRES_DIR_X64:
-        # pinned PostgreSQL 16 builds against macOS 13.0 (see
-        # docs/desktop-release.md). Fails closed when either is missing.
-        run: SAPPHIRE_RUNTIME_UNIVERSAL=1 pnpm --filter @sapphire/desktop run runtime:build
+        # Provisions the pinned PostgreSQL 16 source build (macOS 13.0,
+        # checksum-verified, fat arm64+x86_64; see
+        # apps/desktop/scripts/provision-postgres.mjs and
+        # docs/desktop-release.md) whenever an architecture directory is
+        # missing, so a clean runner never fails closed waiting for
+        # hand-staged SAPPHIRE_POSTGRES_DIR_* directories. Explicit
+        # per-arch directories still take precedence when set.
+        run: SAPPHIRE_RUNTIME_UNIVERSAL=1 SAPPHIRE_POSTGRES_BUILD=1 pnpm --filter @sapphire/desktop run runtime:build
 
       - name: Require macOS signing and notarization credentials
         if: runner.os == 'macOS'
