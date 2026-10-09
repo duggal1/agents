@@ -98,6 +98,16 @@ describe("pinned PostgreSQL provisioning", () => {
     expect(buildScript).toContain("previous wider build");
   });
 
+  it("relocates staged binaries off the temp build prefix", () => {
+    // PostgreSQL bakes the build prefix into every binary; the temp dir is
+    // deleted after staging, so without this the app dies with dyld
+    // "Library not loaded". References become @loader_path-relative and
+    // touched files are re-signed; --relocate-only repairs old provisions.
+    for (const token of ["install_name_tool", "@loader_path", "codesign", "--relocate-only"]) {
+      expect(provisionScript).toContain(token);
+    }
+  });
+
   it("bundles the Electron main process so no workspace .ts ships", () => {
     // tsc output would import @sapphire/contracts straight from src/*.ts;
     // inside app.asar/node_modules Node refuses to strip those types

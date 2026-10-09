@@ -5,6 +5,11 @@
 //
 //   node scripts/provision-postgres.mjs --universal [--out <dir>] [--force]
 //   node scripts/provision-postgres.mjs --arch arm64 [--out <dir>] [--force]
+//   node scripts/provision-postgres.mjs --relocate-only [--universal] [--out <dir>]
+//
+// --relocate-only repairs a provision staged before relocation support: it
+// rewrites the dead build prefix to loader-relative paths in place (seconds)
+// instead of rebuilding (minutes), then re-proves the result.
 //
 // Sources and pins (override only for a reviewed version bump):
 //   SAPPHIRE_POSTGRES_VERSION  pinned minor (default 16.15, must stay major 16)
@@ -20,8 +25,8 @@
 // build is only attempted natively (configure test-programs must execute).
 import { execFileSync, spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { createReadStream } from "node:fs";
-import { cp, mkdir, mkdtemp, readFile, rm, stat, writeFile } from "node:fs/promises";
+import { createReadStream, lstatSync } from "node:fs";
+import { cp, mkdir, mkdtemp, readFile, readdir, rm, stat, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -50,14 +55,15 @@ function fail(message) {
 }
 
 function parseArgs(argv) {
-  const args = { arch: null, universal: false, out: null, force: false };
+  const args = { arch: null, universal: false, out: null, force: false, relocateOnly: false };
   for (let index = 0; index < argv.length; index += 1) {
     const token = argv[index];
     if (token === "--universal") args.universal = true;
     else if (token === "--force") args.force = true;
+    else if (token === "--relocate-only") args.relocateOnly = true;
     else if (token === "--arch") args.arch = argv[(index += 1)];
     else if (token === "--out") args.out = argv[(index += 1)];
-    else fail(`Unknown argument: ${token}\nUsage: provision-postgres.mjs [--arch arm64|x64] [--universal] [--out <dir>] [--force]`);
+    else fail(`Unknown argument: ${token}\nUsage: provision-postgres.mjs [--arch arm64|x64] [--universal] [--out <dir>] [--force] [--relocate-only]`);
   }
   return args;
 }
@@ -194,7 +200,11 @@ async function verifyBuild(binDir, workDir) {
   }
   // Boot a throwaway cluster with SCRAM auth and prove a TCP password login works.
   const cluster = path.join(workDir, "verify-cluster");
-  const socketDir = path.join(workDir, "verify-socket");
+  // Unix socket paths are capped near 104 chars and mkdtemp nests deep under
+  // /var/folders, so the socket directory stays brutally short (per-process
+  // for concurrent-provision safety) while the cluster and logs keep the
+  // unique work dir.
+  const socketDir = path.join(os.tmpdir(), `spv-${process.pid}`);
   await mkdir(socketDir, { recursive: true });
   // Throwaway verification credential only; the directory is deleted below.
   const verifyPassword = "verify-scram-proof";
@@ -223,6 +233,7 @@ async function verifyBuild(binDir, workDir) {
       env,
       stdio: "pipe",
     });
+    await rm(socketDir, { recursive: true, force: true });
   }
   return { version, minimum };
 }
@@ -232,6 +243,95 @@ async function provisionRecord(dir) {
     return JSON.parse(await readFile(path.join(dir, PROVISION_RECORD_FILE), "utf8"));
   } catch {
     return null;
+  }
+}
+
+/** LC_LOAD_DYLIB paths otool reports for one Mach-O file (all slices). */
+function linkedLibraries(file) {
+  const output = execFileSync("otool", ["-L", file], { encoding: "utf8" });
+  const refs = [];
+  // Only "(compatibility …)" lines are linked libraries; the file header and
+  // per-slice "(architecture …)" headers never match this shape.
+  for (const line of output.split("\n")) {
+    const match = line.match(/^\s+(\S+) \(compatibility/);
+    if (match) refs.push(match[1]);
+  }
+  return refs;
+}
+
+function isSymlink(file) {
+  try {
+    return lstatSync(file).isSymbolicLink();
+  } catch {
+    return true;
+  }
+}
+
+/**
+ * Makes a staged architecture directory relocatable. PostgreSQL bakes the
+ * build prefix into every binary (`.../install/lib/libpq.5.dylib`), which
+ * dies with the temp build dir. Every such reference becomes
+ * `@loader_path`-relative (binaries reach `../lib`, libs reach siblings),
+ * lib ids are set the same way, and every touched file is re-signed ad-hoc
+ * (release CI signs again with the Developer ID). A reference to an absolute
+ * path that exists on disk and is outside our lib (like /usr/lib) is a
+ * system library and stays; anything else absolute fails closed as a
+ * hermeticity violation.
+ */
+async function relocatePostgres(dir, knownPrefix) {
+  const binDir = path.join(dir, "bin");
+  const libDir = path.join(dir, "lib");
+  const libNames = new Set(
+    (await readdir(libDir).catch(() => [])).filter((name) => name.endsWith(".dylib")),
+  );
+  const candidates = [
+    ...(await readdir(binDir).catch(() => [])).map((name) => path.join(binDir, name)),
+    [...libNames].map((name) => path.join(libDir, name)),
+  ];
+  let changed = 0;
+  for (const file of candidates) {
+    if (isSymlink(file)) continue;
+    let refs;
+    try {
+      refs = linkedLibraries(file);
+    } catch {
+      continue; // Not a Mach-O file; nothing to rewrite.
+    }
+    const fromDir = path.dirname(file);
+    let touched = false;
+    for (const ref of refs) {
+      if (!path.isAbsolute(ref) || ref.startsWith("/usr/lib/") || ref.startsWith("/System/")) {
+        continue;
+      }
+      const known = knownPrefix !== undefined && ref.startsWith(`${knownPrefix}/`);
+      const orphaned =
+        knownPrefix === undefined && !(await exists(ref)) && libNames.has(path.basename(ref));
+      if (!known && !orphaned) {
+        throw new Error(
+          `${file} links ${ref}, which is neither a system library nor our staged lib. ` +
+            "Refusing a non-hermetic build.",
+        );
+      }
+      const target = path.join(libDir, path.basename(ref));
+      const relative = path.relative(fromDir, target);
+      execFileSync("install_name_tool", ["-change", ref, `@loader_path/${relative}`, file]);
+      touched = true;
+    }
+    if (fromDir === libDir) {
+      execFileSync("install_name_tool", ["-id", `@loader_path/${path.basename(file)}`, file]);
+      touched = true;
+    }
+    if (touched) {
+      execFileSync("codesign", ["--force", "--sign", "-", file]);
+      changed += 1;
+    }
+  }
+  if (changed === 0) {
+    // Either already relocated (@loader_path refs need no work) or nothing
+    // linked our lib; verify below decides which.
+    console.log(`No library paths to rewrite in ${dir}`);
+  } else {
+    console.log(`Relocated ${changed} binaries in ${dir}`);
   }
 }
 
@@ -255,6 +355,7 @@ async function main() {
       record.version === POSTGRES_VERSION &&
       record.sha256 === POSTGRES_TARBALL_SHA256 &&
       record.minimumMacos === DESKTOP_MINIMUM_MACOS &&
+      record.relocated === true &&
       (await exists(path.join(dir, "bin", "postgres")));
     if (fresh && !args.force) {
       console.log(`PostgreSQL ${POSTGRES_VERSION} for ${arch} is already provisioned at ${dir}`);
@@ -264,9 +365,41 @@ async function main() {
   const missing = arches.filter((arch) => !upToDate.includes(arch));
   if (missing.length === 0) return;
 
-  for (const tool of ["curl", "make", "vtool", "lipo"]) {
+  for (const tool of ["curl", "make", "vtool", "lipo", "otool", "install_name_tool", "codesign"]) {
     const check = spawnSync("command", ["-v", tool], { stdio: "ignore", shell: true });
     if (check.status !== 0) fail(`Required tool '${tool}' is not on PATH.`);
+  }
+
+  // Repair mode: a provision from before relocation support is fixed in
+  // place (seconds) instead of rebuilt (minutes), then proven below.
+  if (args.relocateOnly) {
+    for (const arch of missing) {
+      const dir = path.join(out, arch);
+      const record = await provisionRecord(dir);
+      if (
+        record === null ||
+        record.version !== POSTGRES_VERSION ||
+        record.sha256 !== POSTGRES_TARBALL_SHA256
+      ) {
+        fail(
+          `${dir} is not a matching pinned provision; refusing to repair it. ` +
+            "Run a full provision instead.",
+        );
+      }
+      await relocatePostgres(dir);
+      const workDir = await mkdtemp(path.join(os.tmpdir(), "sapphire-postgres-verify-"));
+      try {
+        const { version, minimum } = await verifyBuild(path.join(dir, "bin"), workDir);
+        await writeFile(
+          path.join(dir, PROVISION_RECORD_FILE),
+          `${JSON.stringify({ ...record, minimumMacos: minimum, relocated: true, reportedVersion: version, verifiedAt: new Date().toISOString() }, null, 2)}\n`,
+        );
+        console.log(`Relocated and verified PostgreSQL ${version} (macOS ${minimum}+) at ${dir}`);
+      } finally {
+        await rm(workDir, { recursive: true, force: true });
+      }
+    }
+    return;
   }
 
   const tarball = await downloadTarball(path.join(out, ".cache"));
@@ -281,23 +414,34 @@ async function main() {
     const cpus = execFileSync("sysctl", ["-n", "hw.ncpu"], { encoding: "utf8" }).trim() || "4";
     run("make", ["-j", cpus], { cwd: source, env: configureEnv(fat) });
     run("make", ["install"], { cwd: source, env: configureEnv(fat) });
-    const { version, minimum } = await verifyBuild(path.join(install, "bin"), workDir);
-    if (fat) {
-      const built = execFileSync("lipo", ["-archs", path.join(install, "bin", "postgres")], {
-        encoding: "utf8",
-      }).trim().split(/\s+/).sort();
-      if (built.join(",") !== "arm64,x86_64") {
-        throw new Error(`Fat build is missing a slice: lipo reports '${built.join(" ")}'.`);
-      }
-    }
     for (const arch of missing) {
       const dir = path.join(out, arch);
       await rm(dir, { recursive: true, force: true });
       await mkdir(path.dirname(dir), { recursive: true });
       await cp(install, dir, { recursive: true, dereference: true });
+      // Rewrite the temp build prefix out of every binary before anything
+      // runs from the staged copy; verifyBuild below then proves the exact
+      // shipped bytes, including the SCRAM login.
+      await relocatePostgres(dir, install);
+      const verifyDir = await mkdtemp(path.join(os.tmpdir(), "sapphire-postgres-verify-"));
+      let version;
+      let minimum;
+      try {
+        ({ version, minimum } = await verifyBuild(path.join(dir, "bin"), verifyDir));
+      } finally {
+        await rm(verifyDir, { recursive: true, force: true });
+      }
+      if (fat) {
+        const built = execFileSync("lipo", ["-archs", path.join(dir, "bin", "postgres")], {
+          encoding: "utf8",
+        }).trim().split(/\s+/).sort();
+        if (built.join(",") !== "arm64,x86_64") {
+          throw new Error(`Fat build is missing a slice: lipo reports '${built.join(" ")}'.`);
+        }
+      }
       await writeFile(
         path.join(dir, PROVISION_RECORD_FILE),
-        `${JSON.stringify({ version: POSTGRES_VERSION, sha256: POSTGRES_TARBALL_SHA256, minimumMacos: minimum, fat, reportedVersion: version, builtAt: new Date().toISOString() }, null, 2)}\n`,
+        `${JSON.stringify({ version: POSTGRES_VERSION, sha256: POSTGRES_TARBALL_SHA256, minimumMacos: minimum, fat, relocated: true, reportedVersion: version, builtAt: new Date().toISOString() }, null, 2)}\n`,
       );
       console.log(`Provisioned PostgreSQL ${version} (macOS ${minimum}+) at ${dir}`);
     }
