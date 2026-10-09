@@ -559,6 +559,12 @@ export class LocalPostgresController {
   }
 
   private async startServer(signal?: AbortSignal): Promise<boolean> {
+    // A previous app instance may have died without stopping its server
+    // (crash, SIGKILL). Its lock file then makes pg_ctl start fail even
+    // though the data dir is fine. If a live server answers our credentials,
+    // it is a compatible server for this cluster — adopt it instead of
+    // failing every subsequent launch into the same wall.
+    if (await this.adoptLiveServer(signal)) return true;
     const first = await this.spawnServer(signal);
     if (first === true) return true;
     if (first === "port-in-use") {
@@ -600,6 +606,37 @@ export class LocalPostgresController {
       return true;
     }
     return isPortInUse(`${result.stdout}\n${result.stderr}`) ? "port-in-use" : false;
+  }
+
+  /**
+   * Returns true when a server already holds this data dir AND answers our
+   * TCP credentials — i.e. it can serve this cluster. Anything else (no
+   * server, stale lock, foreign server that rejects our login) returns false
+   * and normal startup proceeds, so this never masks a real problem.
+   */
+  private async adoptLiveServer(signal?: AbortSignal): Promise<boolean> {
+    const credentials = this.credentials;
+    if (credentials === null) return false;
+    const status = await this.runTool("pg_ctl", ["-D", this.deps.dataDir, "status"], signal);
+    if (status.code !== 0) return false;
+    const probe = await this.runTool(
+      "pg_isready",
+      [
+        "-h",
+        "127.0.0.1",
+        "-p",
+        String(credentials.port),
+        "-U",
+        credentials.user,
+        "-d",
+        credentials.database,
+        "-q",
+      ],
+      signal,
+    );
+    if (probe.code !== 0) return false;
+    this.serverRunning = true;
+    return true;
   }
 
   private async createDatabase(): Promise<boolean> {

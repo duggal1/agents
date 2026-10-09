@@ -197,7 +197,13 @@ describe("LocalPostgresController", () => {
 
   it("initializes a cold cluster, creates the database, migrates, and becomes ready", async () => {
     const phases: PostgresState[] = [];
-    const { run, calls } = scriptedRun({ pg_isready: ok });
+    // pg_ctl status reports "not running" (code 3) so boot takes the normal
+    // spawn path; the adopt path has its own tests below.
+    const notRunning = { code: 3, stdout: "stopped", stderr: "" };
+    const { run, calls } = scriptedRun({
+      pg_ctl: (call) => (call.args.at(-1) === "status" ? notRunning : ok),
+      pg_isready: ok,
+    });
     const migrated: string[] = [];
     const controller = new LocalPostgresController(
       depsFor(dir, run, {
@@ -214,6 +220,7 @@ describe("LocalPostgresController", () => {
     expect(calls.map((call) => path.basename(call.binary))).toEqual([
       "initdb",
       "pg_ctl",
+      "pg_ctl",
       "psql",
       "psql",
       "pg_isready",
@@ -224,15 +231,15 @@ describe("LocalPostgresController", () => {
     expect(initdb.args.join(" ")).toContain(`-U rakazo`);
     expect(initdb.args.join(" ")).toContain("-A scram-sha-256");
     // The server binds loopback on the persisted port.
-    const start = calls[1]!;
+    const start = calls.find((call) => call.args.at(-1) === "start")!;
     expect(start.args.join(" ")).toContain("listen_addresses=127.0.0.1");
     expect(start.args.join(" ")).toContain("port=55432");
     // psql creates the database with only the password in the environment.
-    expect(calls[2]!.env.PGPASSWORD).toBe(fakeHex(16));
-    expect(calls[2]!.env.OPENROUTER_API_KEY).toBeUndefined();
+    expect(calls[3]!.env.PGPASSWORD).toBe(fakeHex(16));
+    expect(calls[3]!.env.OPENROUTER_API_KEY).toBeUndefined();
     // psql must address the server over TCP loopback: the default /tmp unix
     // socket is not where this server listens, so bare psql never connects.
-    for (const query of calls.slice(2, 4)) {
+    for (const query of calls.slice(3, 5)) {
       expect(query.args).toEqual(
         expect.arrayContaining(["-h", "127.0.0.1", "-p", "55432", "-U", "rakazo"]),
       );
@@ -245,6 +252,8 @@ describe("LocalPostgresController", () => {
   it("starts a warm cluster without initdb or database creation", async () => {
     await warmCluster();
     const { run, calls } = scriptedRun({
+      pg_ctl: (call) =>
+        call.args.at(-1) === "status" ? { code: 3, stdout: "stopped", stderr: "" } : ok,
       pg_isready: ok,
       psql: fail("should not run"),
     });
@@ -253,7 +262,11 @@ describe("LocalPostgresController", () => {
     const state = await controller.start();
 
     expect(state.phase).toBe("ready");
-    expect(calls.map((call) => path.basename(call.binary))).toEqual(["pg_ctl", "pg_isready"]);
+    expect(calls.map((call) => path.basename(call.binary))).toEqual([
+      "pg_ctl",
+      "pg_ctl",
+      "pg_isready",
+    ]);
   });
 
   it("refuses a cluster from another PostgreSQL major version", async () => {
@@ -285,7 +298,9 @@ describe("LocalPostgresController", () => {
     let started = 0;
     const { run, calls } = scriptedRun({
       pg_ctl: (call) => {
-        if (call.args.at(-1) !== "start") return ok;
+        const last = call.args.at(-1);
+        if (last === "status") return { code: 3, stdout: "stopped", stderr: "" };
+        if (last !== "start") return ok;
         started += 1;
         return started === 1 ? fail("could not bind IPv4 address: Address already in use") : ok;
       },
@@ -324,7 +339,8 @@ describe("LocalPostgresController", () => {
 
     expect(state.phase).toBe("failed");
     expect(state.message).toMatch(/did not accept connections/);
-    expect(calls.filter((call) => path.basename(call.binary) === "pg_isready")).toHaveLength(1);
+    // One probe during adoption plus one poll inside the readiness wait.
+    expect(calls.filter((call) => path.basename(call.binary) === "pg_isready")).toHaveLength(2);
   });
 
   it("keeps the data and reports a repairable error when migration fails", async () => {
@@ -404,11 +420,13 @@ describe("LocalPostgresController", () => {
       reachedSpawn = resolve;
     });
     const { run, calls } = scriptedRun({
-      pg_ctl: () =>
-        new Promise<RunPostgresResult>((resolve) => {
-          release = () => resolve(ok);
-          reachedSpawn();
-        }),
+      pg_ctl: (call) =>
+        call.args.at(-1) === "status"
+          ? { code: 3, stdout: "stopped", stderr: "" }
+          : new Promise<RunPostgresResult>((resolve) => {
+              release = () => resolve(ok);
+              reachedSpawn();
+            }),
       pg_isready: ok,
     });
     const controller = new LocalPostgresController(depsFor(dir, run));
@@ -525,6 +543,82 @@ describe("cold init keeps the cluster directory initdb-clean", () => {
     const second = new LocalPostgresController(depsFor(dir, run));
     expect((await second.start()).phase).toBe("ready");
     expect(attempts).toBe(2);
+  });
+});
+
+describe("adopting a live server orphaned by a dead app", () => {
+  let dir: string;
+  beforeEach(async () => {
+    dir = await mkdtemp(path.join(tmpdir(), "sapphire-pg-adopt-"));
+    await writeFile(path.join(dir, "PG_VERSION"), "16\n", "utf8");
+    await writePostgresCredentials(dir, {
+      version: 1,
+      port: 55432,
+      user: "rakazo",
+      database: "rakazo",
+      password: fakeHex(16),
+    });
+  });
+  afterEach(async () => {
+    await rm(dir, { recursive: true, force: true });
+  });
+
+  it("adopts a server that answers our credentials instead of failing on its lock", async () => {
+    const { run, calls } = scriptedRun({
+      pg_ctl: (call) => {
+        const last = call.args.at(-1);
+        if (last === "status") return ok;
+        if (last === "stop") return ok;
+        return fail("pg_ctl start must not run when a live server is adopted");
+      },
+      pg_isready: ok,
+    });
+    const controller = new LocalPostgresController(depsFor(dir, run));
+
+    const state = await controller.start();
+
+    expect(state.phase).toBe("ready");
+    expect(calls.some((call) => call.args.at(-1) === "start")).toBe(false);
+    // An adopted server is still ours to stop on quit.
+    await expect(controller.stop()).resolves.toEqual({ phase: "stopped", message: null });
+  });
+
+  it("does not adopt a live server that rejects our login", async () => {
+    let probes = 0;
+    const { run, calls } = scriptedRun({
+      pg_ctl: (call) => {
+        const last = call.args.at(-1);
+        if (last === "status") return ok;
+        if (last === "start") return ok;
+        if (last === "stop") return ok;
+        return ok;
+      },
+      pg_isready: () => {
+        probes += 1;
+        // First probe (adoption check) rejects; the readiness wait passes.
+        return probes === 1 ? fail("password authentication failed") : ok;
+      },
+    });
+    const controller = new LocalPostgresController(depsFor(dir, run));
+
+    const state = await controller.start();
+
+    expect(state.phase).toBe("ready");
+    expect(calls.some((call) => call.args.at(-1) === "start")).toBe(true);
+  });
+
+  it("starts normally when no server holds the directory", async () => {
+    const { run, calls } = scriptedRun({
+      pg_ctl: (call) => (call.args.at(-1) === "status" ? fail("no server running") : ok),
+      pg_isready: ok,
+      psql: fail("should not run"),
+    });
+    const controller = new LocalPostgresController(depsFor(dir, run));
+
+    const state = await controller.start();
+
+    expect(state.phase).toBe("ready");
+    expect(calls.some((call) => call.args.at(-1) === "start")).toBe(true);
   });
 });
 
