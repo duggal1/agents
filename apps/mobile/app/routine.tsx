@@ -67,7 +67,7 @@ export default function RoutineDetail() {
               gap: 8,
             }}
           >
-            <Text style={{ color: tokens.foreground, fontSize: 20, fontWeight: "600" }}>
+            <Text style={{ color: tokens.foreground, fontSize: 20 }}>
               {routine.name}
             </Text>
             <Text
@@ -125,11 +125,12 @@ export default function RoutineDetail() {
             style={{
               alignItems: "center",
               borderRadius: 12,
+              borderCurve: "continuous",
               backgroundColor: tokens.primary,
               padding: 14,
             }}
           >
-            <Text style={{ color: tokens.primaryForeground, fontSize: 15, fontWeight: "600" }}>
+            <Text style={{ color: tokens.primaryForeground, fontSize: 15 }}>
               {t("Open conversation")}
             </Text>
           </Pressable>

@@ -11,6 +11,7 @@ import {
   View,
 } from "react-native";
 import type { MobileBot, MobileBotSection } from "../lib/api";
+import { mobileTokens } from "../lib/appearance";
 import { useI18n } from "../lib/i18n";
 import { native, useThemedStyles } from "../lib/native";
 import { NativeSymbol } from "./native-symbol";
@@ -232,6 +233,7 @@ function SectionOption({
 }
 
 function createBotOrganizeStyles() {
+  const tokens = mobileTokens();
   return StyleSheet.create({
     overlay: {
       flex: 1,
@@ -250,17 +252,17 @@ function createBotOrganizeStyles() {
     },
     title: {
       color: native.label,
-      fontSize: 18,
-      fontWeight: "600",
+      fontSize: 17,
       paddingHorizontal: 8,
-      paddingBottom: 10,
+      paddingBottom: 12,
     },
     action: {
-      minHeight: 46,
+      minHeight: 44,
       flexDirection: "row",
       alignItems: "center",
       gap: 12,
-      borderRadius: 11,
+      borderRadius: 12,
+      borderCurve: "continuous",
       paddingHorizontal: 10,
     },
     pressed: {
@@ -274,10 +276,9 @@ function createBotOrganizeStyles() {
     sectionLabel: {
       color: native.secondaryLabel,
       fontSize: 13,
-      fontWeight: "600",
       paddingHorizontal: 10,
       paddingTop: 12,
-      paddingBottom: 6,
+      paddingBottom: 8,
     },
     sectionOptions: {
       maxHeight: 230,
@@ -288,7 +289,8 @@ function createBotOrganizeStyles() {
       flexDirection: "row",
       alignItems: "center",
       gap: 12,
-      borderRadius: 11,
+      borderRadius: 12,
+      borderCurve: "continuous",
       paddingHorizontal: 10,
     },
     newSectionRow: {
@@ -300,27 +302,28 @@ function createBotOrganizeStyles() {
     },
     newSectionInput: {
       flex: 1,
-      height: 40,
-      borderRadius: 10,
+      height: 44,
+      borderRadius: 12,
+      borderCurve: "continuous",
       backgroundColor: native.fill,
       color: native.label,
       paddingHorizontal: 12,
       fontSize: 16,
     },
     newSectionSubmit: {
-      minHeight: 40,
+      minHeight: 44,
       justifyContent: "center",
-      borderRadius: 10,
+      borderRadius: 12,
+      borderCurve: "continuous",
       backgroundColor: native.label,
-      paddingHorizontal: 14,
+      paddingHorizontal: 16,
     },
     newSectionSubmitLabel: {
       color: native.page,
       fontSize: 14,
-      fontWeight: "600",
     },
     error: {
-      color: "#EF4444",
+      color: tokens.destructive,
       fontSize: 13,
       paddingHorizontal: 10,
       paddingTop: 8,
@@ -333,7 +336,6 @@ function createBotOrganizeStyles() {
     cancelLabel: {
       color: native.secondaryLabel,
       fontSize: 16,
-      fontWeight: "600",
     },
   });
 }

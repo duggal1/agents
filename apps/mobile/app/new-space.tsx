@@ -83,13 +83,14 @@ export default function NewSpace() {
           style={{
             marginTop: 20,
             backgroundColor: tokens.primary,
-            borderRadius: 11,
+            borderRadius: 12,
+            borderCurve: "continuous",
             padding: 14,
             alignItems: "center",
             opacity: !name.trim() || pending ? 0.4 : 1,
           }}
         >
-          <Text style={{ color: tokens.primaryForeground, fontSize: 16, fontWeight: "600" }}>
+          <Text style={{ color: tokens.primaryForeground, fontSize: 16 }}>
             {pending ? t("Creating…") : t("Create space")}
           </Text>
         </Pressable>

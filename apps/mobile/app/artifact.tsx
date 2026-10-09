@@ -309,7 +309,7 @@ function createStyles() {
       borderRadius: 999,
       backgroundColor: native.fill,
     },
-    pillText: { color: native.label, fontSize: 13, fontWeight: "600" },
+    pillText: { color: native.label, fontSize: 13 },
     body: { flex: 1, margin: 16, marginTop: 8, borderRadius: 18, overflow: "hidden" },
     centered: { flex: 1, alignItems: "center", justifyContent: "center", padding: 24 },
     errorText: { color: native.secondaryLabel, fontSize: 14, textAlign: "center" },

@@ -89,7 +89,7 @@ export function InlineImageAttachment({
   return (
     <Pressable {...pressableProps} onPress={state.status === "error" ? onOpen : undefined}>
       <View style={[styles.placeholder, { backgroundColor: tokens.muted }]}>
-        <Text style={[styles.label, { color: labelColor }]}>🖼 {name}</Text>
+        <Text style={[styles.label, { color: labelColor }]}>{name}</Text>
         <Text style={[styles.hint, { color: tokens.mutedForeground }]}>
           {state.status === "loading" ? t("Loading image…") : t("Tap to open")}
         </Text>

@@ -99,7 +99,8 @@ export default function NewBot() {
           style={{
             marginTop: 8,
             backgroundColor: tokens.muted,
-            borderRadius: 11,
+            borderRadius: 12,
+            borderCurve: "continuous",
             padding: 16,
             color: tokens.foreground,
           }}
@@ -116,7 +117,8 @@ export default function NewBot() {
           style={{
             marginTop: 8,
             backgroundColor: tokens.muted,
-            borderRadius: 11,
+            borderRadius: 12,
+            borderCurve: "continuous",
             padding: 16,
             color: tokens.foreground,
           }}
@@ -134,7 +136,8 @@ export default function NewBot() {
           style={{
             marginTop: 8,
             backgroundColor: tokens.muted,
-            borderRadius: 11,
+            borderRadius: 12,
+            borderCurve: "continuous",
             padding: 16,
             color: tokens.foreground,
             minHeight: 120,
@@ -149,7 +152,8 @@ export default function NewBot() {
           style={{
             marginTop: 24,
             backgroundColor: tokens.primary,
-            borderRadius: 11,
+            borderRadius: 12,
+            borderCurve: "continuous",
             padding: 16,
             alignItems: "center",
             opacity: !name.trim() || pending ? 0.4 : 1,

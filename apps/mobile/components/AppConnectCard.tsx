@@ -85,7 +85,8 @@ export function AppConnectCard({
       accessibilityLabel={t("{name} connection", { name: block.name })}
       style={{
         width: "90%",
-        borderRadius: 18,
+        borderRadius: 16,
+        borderCurve: "continuous",
         borderWidth: 1,
         borderColor: tokens.border,
         backgroundColor: tokens.card,
@@ -99,25 +100,26 @@ export function AppConnectCard({
           style={{
             width: 40,
             height: 40,
-            borderRadius: 10,
+            borderRadius: 12,
+            borderCurve: "continuous",
             backgroundColor: tokens.muted,
             alignItems: "center",
             justifyContent: "center",
           }}
         >
-          <Text style={{ color: tokens.foreground, fontSize: 15, fontWeight: "600" }}>
+          <Text style={{ color: tokens.foreground, fontSize: 15 }}>
             {block.name.slice(0, 1).toUpperCase()}
           </Text>
         </View>
-        <View style={{ flex: 1, gap: 2 }}>
+        <View style={{ flex: 1, gap: 4 }}>
           <Text
             accessibilityActions={accessibilityActions}
             onAccessibilityAction={onAccessibilityAction}
-            style={{ color: tokens.foreground, fontSize: 15, fontWeight: "600" }}
+            style={{ color: tokens.foreground, fontSize: 15 }}
           >
             {view.title}
           </Text>
-          <Text style={{ color: tokens.mutedForeground, fontSize: 13.5 }} numberOfLines={2}>
+          <Text style={{ color: tokens.mutedForeground, fontSize: 13 }} numberOfLines={2}>
             {view.description}
           </Text>
         </View>
@@ -128,9 +130,10 @@ export function AppConnectCard({
             disabled={busy}
             onPress={() => void authorize()}
             style={{
-              minHeight: 36,
-              paddingHorizontal: 14,
+              minHeight: 44,
+              paddingHorizontal: 16,
               borderRadius: 999,
+              borderCurve: "continuous",
               backgroundColor: native.fillPressed,
               alignItems: "center",
               justifyContent: "center",
@@ -139,13 +142,13 @@ export function AppConnectCard({
             {busy ? (
               <ActivityIndicator color={native.label} />
             ) : (
-              <Text style={{ color: native.label, fontSize: 14, fontWeight: "600" }}>
+              <Text style={{ color: native.label, fontSize: 14 }}>
                 {view.actionLabel}
               </Text>
             )}
           </Pressable>
         ) : (
-          <Text style={{ color: tokens.success, fontSize: 13.5, fontWeight: "600" }}>
+          <Text style={{ color: tokens.success, fontSize: 13 }}>
             {view.actionLabel}
           </Text>
         )}

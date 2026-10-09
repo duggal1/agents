@@ -140,20 +140,6 @@ export function hairlineColor(tokens: ColorTokens): string {
   return tokens.border;
 }
 
-/**
- * Depth without decoration. Cards and toasts are never shadowed;
- * only floating glass (composer, jump-to-latest) carries one
- * elevation shadow via CSS boxShadow (RN 0.86+, no legacy shadow props).
- */
-export const ELEVATION = {
-  none: [] as never[],
-  float: [
-    {
-      offsetX: 0,
-      offsetY: 8,
-      blurRadius: 24,
-      spreadDistance: -8,
-      color: "rgba(0,0,0,0.45)",
-    },
-  ],
-} as const;
+// No elevation system: cards, toasts, sheets and floating glass are never
+// shadowed (DESIGN.MD shadow-none). Depth comes from the OS glass material
+// and one-step surface lifts, never from boxShadow/shadow*/elevation props.

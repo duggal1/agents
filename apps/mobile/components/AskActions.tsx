@@ -45,7 +45,7 @@ export function AskActions({
   }
 
   return (
-    <View style={{ marginTop: 12, gap: 6 }}>
+    <View style={{ marginTop: 12, gap: 8 }}>
       {actions.map((action) => {
         const emphasized = action.id === "allow" || action.id === "always";
         return (
@@ -58,8 +58,11 @@ export function AskActions({
             style={{
               alignSelf: "stretch",
               borderRadius: 12,
+              borderCurve: "continuous",
               paddingHorizontal: 14,
               paddingVertical: 12,
+              minHeight: 44,
+              justifyContent: "center",
               backgroundColor: emphasized ? tokens.muted : "transparent",
               borderWidth: 1,
               borderColor: tokens.border,
@@ -70,7 +73,6 @@ export function AskActions({
               style={{
                 color: tokens.foreground,
                 fontSize: 15,
-                fontWeight: emphasized ? "600" : "400",
               }}
             >
               {pendingAction === action.id

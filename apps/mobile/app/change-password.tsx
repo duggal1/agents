@@ -193,7 +193,7 @@ function createStyles() {
       alignItems: "center",
       justifyContent: "center",
     },
-    buttonLabel: { color: tokens.primaryForeground, fontSize: 16, fontWeight: "600" },
+    buttonLabel: { color: tokens.primaryForeground, fontSize: 16 },
     disabled: { opacity: 0.45 },
     pressed: { opacity: 0.7 },
   });

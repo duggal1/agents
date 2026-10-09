@@ -82,6 +82,8 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { AppConnectCard } from "../components/AppConnectCard";
 import { AskActions } from "../components/AskActions";
 import { BotAvatar } from "../components/bot-avatar";
+import { Glass } from "../components/ui/glass";
+import { GlassButton } from "../components/ui/glass-button";
 import type { ImageArtifactPreviewTarget } from "../components/image-artifact-viewer";
 import { InlineImageAttachment } from "../components/inline-image-attachment";
 import { McpApprovalCard } from "../components/McpApprovalCard";
@@ -138,7 +140,7 @@ import {
   quotableMessageSegments,
   truncateQuoteExcerpt,
 } from "../lib/message-presentation";
-import { native, useMobileTokens, useResolvedAppearance } from "../lib/native";
+import { useMobileTokens, useResolvedAppearance } from "../lib/native";
 import {
   threadRouteSpaceOnFocus,
   threadSpaceRequest,
@@ -1858,60 +1860,51 @@ function Thread() {
           />
         )}
         {!showPinnedPage && threadScrollState.detached ? (
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={
-              threadScrollState.unread ? t("Jump to latest, new messages") : t("Jump to latest")
-            }
-            onPress={() => {
-              performScroll(scrollBehavior.current.jumpToLatest());
-              setThreadScrollState(scrollBehavior.current.state());
-            }}
+          <View
             style={{
               position: "absolute",
               left: "50%",
               marginLeft: -22,
               bottom: 12,
-              width: 44,
-              height: 44,
-              borderRadius: 22,
-              borderCurve: "continuous",
-              borderWidth: 1,
-              borderColor: tokens.border,
-              backgroundColor: tokens.card,
-              alignItems: "center",
-              justifyContent: "center",
-              boxShadow: [
-                {
-                  offsetX: 0,
-                  offsetY: 8,
-                  blurRadius: 24,
-                  spreadDistance: -8,
-                  color: "rgba(0,0,0,0.45)",
-                },
-              ],
             }}
           >
-            <NativeSymbol
+            <GlassButton
               ios="arrow.down"
               android="arrow-down"
-              size={18}
-              color={tokens.foreground}
-            />
-            {threadScrollState.unread ? (
+              iconSize={18}
+              accessibilityLabel={
+                threadScrollState.unread ? t("Jump to latest, new messages") : t("Jump to latest")
+              }
+              onPress={() => {
+                performScroll(scrollBehavior.current.jumpToLatest());
+                setThreadScrollState(scrollBehavior.current.state());
+              }}
+            >
               <View
-                style={{
-                  position: "absolute",
-                  top: 3,
-                  right: 3,
-                  width: 8,
-                  height: 8,
-                  borderRadius: 4,
-                  backgroundColor: tokens.primary,
-                }}
-              />
-            ) : null}
-          </Pressable>
+                style={{ width: 44, height: 44, alignItems: "center", justifyContent: "center" }}
+              >
+                <NativeSymbol
+                  ios="arrow.down"
+                  android="arrow-down"
+                  size={18}
+                  color={tokens.foreground}
+                />
+                {threadScrollState.unread ? (
+                  <View
+                    style={{
+                      position: "absolute",
+                      top: 8,
+                      right: 8,
+                      width: 8,
+                      height: 8,
+                      borderRadius: 4,
+                      backgroundColor: tokens.primary,
+                    }}
+                  />
+                ) : null}
+              </View>
+            </GlassButton>
+          </View>
         ) : null}
       </View>
       <View style={{ paddingBottom: keyboardVisible ? 12 : Math.max(insets.bottom + 12, 24) }}>
@@ -2139,37 +2132,24 @@ function Thread() {
             alignItems: "flex-end",
           }}
         >
-          <Pressable
+          <GlassButton
+            ios="plus"
+            android="add"
+            iconSize={18}
             accessibilityLabel={t("Attach file")}
-            hitSlop={6}
             onPress={showAttachMenu}
-            style={({ pressed }) => ({
-              width: 44,
-              height: 44,
-              borderRadius: 22,
-              borderCurve: "continuous",
-              borderWidth: 1,
-              borderColor: tokens.border,
-              backgroundColor: tokens.card,
-              alignItems: "center",
-              justifyContent: "center",
-              opacity: pressed ? 0.7 : 1,
-            })}
           >
             <NativeSymbol ios="plus" android="add" size={18} color={tokens.mutedForeground} />
-          </Pressable>
-          <View
+          </GlassButton>
+          <Glass
+            interactive
             style={{
               flex: 1,
               flexDirection: "row",
               flexWrap: "wrap",
               alignItems: "center",
               gap: 8,
-              backgroundColor: tokens.card,
-              borderWidth: 1,
-              borderColor: tokens.border,
               borderRadius: 22,
-              borderCurve: "continuous",
               paddingHorizontal: 12,
               paddingVertical: 8,
               minHeight: 44,
@@ -2294,24 +2274,14 @@ function Thread() {
                 writingDirection: "auto",
               }}
             />
-          </View>
+          </Glass>
           {botId && !onCall && draft.trim().length === 0 ? (
-            <Pressable
+            <GlassButton
+              ios="waveform"
+              android="pulse-outline"
+              iconSize={18}
               accessibilityLabel={t("Call")}
-              hitSlop={6}
               onPress={() => void startVoiceCall()}
-              style={({ pressed }) => ({
-                width: 44,
-                height: 44,
-                borderRadius: 22,
-                borderCurve: "continuous",
-                borderWidth: 1,
-                borderColor: tokens.border,
-                backgroundColor: tokens.card,
-                alignItems: "center",
-                justifyContent: "center",
-                opacity: pressed ? 0.7 : 1,
-              })}
             >
               <NativeSymbol
                 ios="waveform"
@@ -2319,50 +2289,26 @@ function Thread() {
                 size={18}
                 color={tokens.mutedForeground}
               />
-            </Pressable>
+            </GlassButton>
           ) : null}
-          <Pressable
+          <GlassButton
+            primary
+            ios="arrow.up"
+            android="arrow-up"
+            iconSize={18}
             accessibilityLabel={t("Send")}
             disabled={sending || !canSend}
             onPress={() => void send()}
-            style={({ pressed }) => ({
-              backgroundColor: tokens.primary,
-              borderRadius: 22,
-              borderCurve: "continuous",
-              width: 44,
-              height: 44,
-              alignItems: "center",
-              justifyContent: "center",
-              opacity: sending || !canSend ? 0.5 : pressed ? 0.85 : 1,
-            })}
-          >
-            <NativeSymbol
-              ios="arrow.up"
-              android="arrow-up"
-              size={18}
-              color={tokens.primaryForeground}
-            />
-          </Pressable>
+          />
           {working ? (
-            <Pressable
+            <GlassButton
+              ios="stop.fill"
+              android="stop"
+              iconSize={15}
               accessibilityLabel={t("Stop")}
               disabled={sending}
               onPress={() => void stop()}
-              style={({ pressed }) => ({
-                borderColor: tokens.border,
-                borderWidth: 1,
-                borderRadius: 22,
-                borderCurve: "continuous",
-                backgroundColor: tokens.card,
-                width: 44,
-                height: 44,
-                alignItems: "center",
-                justifyContent: "center",
-                opacity: sending ? 0.5 : pressed ? 0.7 : 1,
-              })}
-            >
-              <NativeSymbol ios="stop.fill" android="stop" size={15} color={tokens.foreground} />
-            </Pressable>
+            />
           ) : null}
         </View>
       </View>
@@ -3283,7 +3229,7 @@ const MessageBubble = memo(function MessageBubble({
                   fontSize: 15,
                 }}
               >
-                📎 {attachment.name ?? t("File")}
+                {attachment.name ?? t("File")}
               </Text>
               {formatFileSize(attachment.size) ? (
                 <Text
@@ -3542,7 +3488,7 @@ function AskBlock({
     >
       <Text
         {...actionProps}
-        style={{ color: tokens.foreground, fontSize: 15.5, fontWeight: "600" }}
+        style={{ color: tokens.foreground, fontSize: 15 }}
       >
         {ask.text}
       </Text>
@@ -3599,13 +3545,16 @@ function AskBlock({
             style={{
               alignSelf: "flex-end",
               borderRadius: 999,
-              backgroundColor: tokens.foreground,
+              borderCurve: "continuous",
+              backgroundColor: tokens.primary,
               opacity: incomplete || submitting ? 0.5 : 1,
+              minHeight: 44,
+              justifyContent: "center",
               paddingHorizontal: 16,
               paddingVertical: 9,
             }}
           >
-            <Text style={{ color: tokens.primaryForeground, fontWeight: "600" }}>
+            <Text style={{ color: tokens.primaryForeground }}>
               {submitting ? submittingLabel : submitLabel}
             </Text>
           </Pressable>

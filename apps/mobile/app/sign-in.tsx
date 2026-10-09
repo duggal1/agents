@@ -159,7 +159,6 @@ export default function SignIn() {
                 style={{
                   color: tokens.foreground,
                   fontSize: 32,
-                  fontWeight: "500",
                   textAlign: "center",
                 }}
               >
@@ -180,7 +179,7 @@ export default function SignIn() {
                       setResetSent(false);
                     }}
                   >
-                    <Text style={{ color: tokens.foreground, fontSize: 15, fontWeight: "600" }}>
+                    <Text style={{ color: tokens.foreground, fontSize: 15 }}>
                       {t("Back to sign in")}
                     </Text>
                   </Pressable>
@@ -197,7 +196,8 @@ export default function SignIn() {
                       style={{
                         marginTop: 28,
                         backgroundColor: tokens.muted,
-                        borderRadius: 13,
+                        borderRadius: 12,
+                        borderCurve: "continuous",
                         padding: 16,
                         color: tokens.foreground,
                       }}
@@ -214,7 +214,8 @@ export default function SignIn() {
                     style={{
                       marginTop: mode === "up" ? 12 : 28,
                       backgroundColor: tokens.muted,
-                      borderRadius: 13,
+                      borderRadius: 12,
+                      borderCurve: "continuous",
                       padding: 16,
                       color: tokens.foreground,
                     }}
@@ -232,7 +233,8 @@ export default function SignIn() {
                       style={{
                         marginTop: 12,
                         backgroundColor: tokens.muted,
-                        borderRadius: 13,
+                        borderRadius: 12,
+                        borderCurve: "continuous",
                         padding: 16,
                         color: tokens.foreground,
                       }}
@@ -248,8 +250,9 @@ export default function SignIn() {
                     style={{
                       marginTop: 16,
                       backgroundColor: tokens.primary,
-                      borderRadius: 13,
-                      padding: 18,
+                      borderRadius: 12,
+                      borderCurve: "continuous",
+                      padding: 16,
                       alignItems: "center",
                     }}
                   >
@@ -273,7 +276,7 @@ export default function SignIn() {
                       }}
                       style={{ alignSelf: "center", marginTop: 16 }}
                     >
-                      <Text style={{ color: tokens.foreground, fontSize: 14, fontWeight: "600" }}>
+                      <Text style={{ color: tokens.foreground, fontSize: 14 }}>
                         {t("Forgot password?")}
                       </Text>
                     </Pressable>
@@ -302,7 +305,7 @@ export default function SignIn() {
                       }}
                       style={{ marginLeft: 5 }}
                     >
-                      <Text style={{ color: tokens.foreground, fontSize: 15, fontWeight: "600" }}>
+                      <Text style={{ color: tokens.foreground, fontSize: 15 }}>
                         {mode === "in"
                           ? t("Sign up")
                           : mode === "up"
@@ -445,11 +448,11 @@ function ServerSheet({
             <Pressable onPress={onClose} hitSlop={8}>
               <Text style={{ color: tokens.mutedForeground, fontSize: 17 }}>{t("Cancel")}</Text>
             </Pressable>
-            <Text style={{ color: tokens.foreground, fontSize: 17, fontWeight: "600" }}>
+            <Text style={{ color: tokens.foreground, fontSize: 17 }}>
               {t("Server")}
             </Text>
             <Pressable onPress={() => void save()} disabled={pending} hitSlop={8}>
-              <Text style={{ color: tokens.foreground, fontSize: 17, fontWeight: "600" }}>
+              <Text style={{ color: tokens.foreground, fontSize: 17 }}>
                 {pending ? t("Checking…") : t("Save")}
               </Text>
             </Pressable>
@@ -477,7 +480,8 @@ function ServerSheet({
             style={{
               marginTop: 20,
               backgroundColor: tokens.muted,
-              borderRadius: 13,
+              borderRadius: 12,
+              borderCurve: "continuous",
               padding: 16,
               color: tokens.foreground,
               fontSize: 16,

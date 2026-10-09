@@ -1,7 +1,9 @@
 import { memo } from "react";
-import { StyleSheet, Text, View, type ViewStyle } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
+import type { ViewStyle } from "react-native";
 import { native, useThemedStyles } from "../lib/native";
 import { BotAvatar } from "./bot-avatar";
+import { NativeSymbol } from "./native-symbol";
 
 export interface GroupAvatarMember {
   botId?: string;
@@ -28,10 +30,16 @@ export const GroupAvatar = memo(function GroupAvatar({
             width: size,
             height: size,
             borderRadius: size / 2,
+            borderCurve: "continuous",
           },
         ]}
       >
-        <Text style={[styles.fallbackText, { fontSize: Math.round(size * 0.35) }]}>👥</Text>
+        <NativeSymbol
+          ios="person.2.fill"
+          android="people"
+          size={Math.round(size * 0.4)}
+          color={native.secondaryLabel}
+        />
       </View>
     );
   }
@@ -90,12 +98,13 @@ export const GroupAvatar = memo(function GroupAvatar({
             width: miniSize,
             height: miniSize,
             borderRadius: miniSize / 2,
+            borderCurve: "continuous",
             backgroundColor: native.fillPressed,
             alignItems: "center",
             justifyContent: "center",
           }}
         >
-          <Text style={{ color: native.label, fontSize: 10, fontWeight: "600" }}>
+          <Text style={{ color: native.label, fontSize: 10, fontVariant: ["tabular-nums"] }}>
             +{members.length - 2}
           </Text>
         </View>
@@ -110,9 +119,6 @@ function createGroupAvatarStyles() {
       backgroundColor: native.fillPressed,
       alignItems: "center",
       justifyContent: "center",
-    },
-    fallbackText: {
-      color: native.secondaryLabel,
     },
   });
 }

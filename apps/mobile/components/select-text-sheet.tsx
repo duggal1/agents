@@ -52,7 +52,7 @@ function createStyles() {
   return StyleSheet.create({
     sheet: { flex: 1, backgroundColor: tokens.background },
     header: { flexDirection: "row", justifyContent: "flex-end", padding: 16 },
-    done: { color: tokens.foreground, fontSize: 17, fontWeight: "600" },
+    done: { color: tokens.foreground, fontSize: 17 },
     content: { paddingHorizontal: 20, paddingBottom: 40 },
     text: { color: tokens.foreground, fontSize: 16, lineHeight: 24 },
   });

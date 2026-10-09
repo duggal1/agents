@@ -287,7 +287,8 @@ export default function BotSettingsScreen() {
           style={{
             marginTop: 8,
             backgroundColor: tokens.muted,
-            borderRadius: 11,
+            borderRadius: 12,
+            borderCurve: "continuous",
             padding: 16,
             color: tokens.foreground,
           }}
@@ -304,7 +305,8 @@ export default function BotSettingsScreen() {
           style={{
             marginTop: 8,
             backgroundColor: tokens.muted,
-            borderRadius: 11,
+            borderRadius: 12,
+            borderCurve: "continuous",
             padding: 16,
             color: tokens.foreground,
           }}
@@ -322,7 +324,8 @@ export default function BotSettingsScreen() {
           style={{
             marginTop: 8,
             backgroundColor: tokens.muted,
-            borderRadius: 11,
+            borderRadius: 12,
+            borderCurve: "continuous",
             padding: 16,
             color: tokens.foreground,
             minHeight: 120,
@@ -345,10 +348,12 @@ export default function BotSettingsScreen() {
               accessibilityLabel={t("Color {number}", { number: index + 1 })}
               accessibilityState={{ checked: color === option }}
               onPress={() => setColor(option)}
+              hitSlop={6}
               style={{
                 width: 36,
                 height: 36,
                 borderRadius: 18,
+                borderCurve: "continuous",
                 backgroundColor: option,
                 borderWidth: 3,
                 borderColor: color === option ? tokens.foreground : "transparent",
@@ -414,7 +419,8 @@ export default function BotSettingsScreen() {
                 borderWidth: 1,
                 borderColor: tokens.border,
                 backgroundColor: tokens.muted,
-                borderRadius: 11,
+                borderRadius: 12,
+                borderCurve: "continuous",
                 paddingVertical: 12,
                 paddingHorizontal: 16,
               }}
@@ -441,7 +447,8 @@ export default function BotSettingsScreen() {
                     borderWidth: 1,
                     borderColor: tokens.border,
                     backgroundColor: tokens.muted,
-                    borderRadius: 11,
+                    borderRadius: 12,
+                    borderCurve: "continuous",
                     paddingVertical: 12,
                     paddingHorizontal: 16,
                   }}
@@ -464,7 +471,8 @@ export default function BotSettingsScreen() {
           style={{
             marginTop: 24,
             backgroundColor: tokens.primary,
-            borderRadius: 11,
+            borderRadius: 12,
+            borderCurve: "continuous",
             padding: 16,
             alignItems: "center",
             opacity: !name.trim() || pending || !bot ? 0.4 : 1,

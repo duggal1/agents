@@ -1,44 +1,97 @@
+import { BlurView } from "expo-blur";
+import {
+  GlassView,
+  isGlassEffectAPIAvailable,
+  isLiquidGlassAvailable,
+} from "expo-glass-effect";
 import type { ReactNode } from "react";
-import type { StyleProp, ViewStyle } from "react-native";
+import type { StyleProp, ViewProps, ViewStyle } from "react-native";
 import { StyleSheet, View } from "react-native";
 import { RADII } from "../../lib/design";
-import { useMobileTokens } from "../../lib/native";
+import { useMobileTokens, useResolvedAppearance } from "../../lib/native";
 
-type GlassProps = {
-  children?: ReactNode;
+export const GLASS =
+  process.env.EXPO_OS === "ios" &&
+  isGlassEffectAPIAvailable() &&
+  isLiquidGlassAvailable();
+
+type GlassProps = ViewProps & {
   style?: StyleProp<ViewStyle>;
+  effect?: "regular" | "clear";
   tint?: string;
-  radius?: number;
+  interactive?: boolean;
+  children?: ReactNode;
 };
 
 /**
- * Translucent material surface (liquid-glass fallback without new native deps).
- *
- * Mirrors fable glass.tsx / astra ui.tsx Glass(): on iOS 26 with
- * expo-glass-effect this becomes a native GlassView; here it is a
- * translucent card fill + hairline border so the same call sites upgrade
- * cleanly later. Never give it opacity 0 — that silently disables glass.
+ * Liquid glass surface on iOS 26+, a blurred translucent surface elsewhere.
+ * Never give it opacity 0 — that silently disables the glass.
  */
-export function Glass({ children, style, tint, radius = RADII.lg }: GlassProps) {
+export function Glass({
+  style,
+  effect = "regular",
+  tint,
+  interactive = false,
+  children,
+  ...rest
+}: GlassProps) {
+  const scheme = useResolvedAppearance();
   const tokens = useMobileTokens();
+  if (GLASS) {
+    return (
+      <GlassView
+        colorScheme={scheme}
+        glassEffectStyle={effect}
+        tintColor={tint}
+        isInteractive={interactive}
+        style={[styles.base, style]}
+        {...rest}
+      >
+        {children}
+      </GlassView>
+    );
+  }
   const flat = StyleSheet.flatten(style) ?? {};
-  const resolvedRadius =
-    typeof flat.borderRadius === "number" ? flat.borderRadius : radius;
   return (
     <View
       style={[
+        styles.base,
+        style,
         {
+          overflow: "hidden",
           backgroundColor: tint ?? `${tokens.card}E6`,
           borderWidth: StyleSheet.hairlineWidth,
           borderColor: tokens.border,
-          borderRadius: resolvedRadius,
-          borderCurve: "continuous",
-          overflow: "hidden",
         },
-        style,
       ]}
+      {...rest}
     >
+      <BlurView
+        intensity={40}
+        tint={scheme === "dark" ? "dark" : "light"}
+        style={[
+          StyleSheet.absoluteFill,
+          { borderRadius: flat.borderRadius as number | undefined },
+        ]}
+      />
+      <View
+        pointerEvents="none"
+        style={[
+          StyleSheet.absoluteFill,
+          {
+            backgroundColor:
+              scheme === "dark" ? "rgba(40,40,44,0.55)" : "rgba(255,255,255,0.55)",
+          },
+        ]}
+      />
       {children}
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  base: {
+    borderCurve: "continuous",
+    borderRadius: RADII.lg,
+  },
+});

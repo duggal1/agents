@@ -125,12 +125,13 @@ export default function GroupSettingsScreen() {
               pending
                 ? 0.5
                 : 1,
-            borderRadius: 11,
+            borderRadius: 12,
+            borderCurve: "continuous",
             padding: 14,
             alignItems: "center",
           }}
         >
-          <Text style={{ color: tokens.primaryForeground, fontSize: 16, fontWeight: "600" }}>
+          <Text style={{ color: tokens.primaryForeground, fontSize: 16 }}>
             {pending ? t("Saving…") : t("Save")}
           </Text>
         </Pressable>

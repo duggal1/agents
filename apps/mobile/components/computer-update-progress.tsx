@@ -7,6 +7,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { computerUpdates } from "../lib/computer-updates";
 import { useI18n } from "../lib/i18n";
 import { useMobileTokens } from "../lib/native";
+import { NativeSymbol } from "./native-symbol";
 
 export function ComputerUpdateProgress() {
   const { t } = useI18n();
@@ -91,10 +92,20 @@ export function ComputerUpdateProgress() {
                   <View key={stage} style={styles.step}>
                     {index === current ? (
                       <ActivityIndicator color={tokens.foreground} />
+                    ) : index < current ? (
+                      <NativeSymbol
+                        ios="checkmark.circle.fill"
+                        android="checkmark-circle"
+                        size={17}
+                        color={tokens.success}
+                      />
                     ) : (
-                      <Text style={{ color: tokens.mutedForeground }}>
-                        {index < current ? "✓" : "○"}
-                      </Text>
+                      <NativeSymbol
+                        ios="circle"
+                        android="ellipse-outline"
+                        size={17}
+                        color={tokens.mutedForeground}
+                      />
                     )}
                     <Text
                       accessibilityLiveRegion={index === current ? "polite" : "none"}
@@ -185,12 +196,13 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 12,
     borderWidth: 1,
-    borderRadius: 14,
+    borderRadius: 16,
+    borderCurve: "continuous",
     padding: 12,
   },
-  secondary: { fontSize: 12, textAlign: "center", marginTop: 3 },
-  sheet: { flex: 1, padding: 24, gap: 24 },
-  title: { fontSize: 22, fontWeight: "600" },
-  step: { flexDirection: "row", alignItems: "center", gap: 16 },
+  secondary: { fontSize: 12, textAlign: "center", marginTop: 4 },
+  sheet: { flex: 1, padding: 20, gap: 20 },
+  title: { fontSize: 22 },
+  step: { flexDirection: "row", alignItems: "center", gap: 12, minHeight: 44 },
   button: { minHeight: 44, justifyContent: "center", alignItems: "center" },
 });

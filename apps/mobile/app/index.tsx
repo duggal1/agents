@@ -26,6 +26,7 @@ import { BotAvatar } from "../components/bot-avatar";
 import { BotOrganizeModal } from "../components/bot-organize-modal";
 import { GroupAvatar } from "../components/group-avatar";
 import { NativeSymbol } from "../components/native-symbol";
+import { GlassButton } from "../components/ui/glass-button";
 import { WorkingIndicator } from "../components/WorkingIndicator";
 import {
   activityStatusLabel,
@@ -466,43 +467,49 @@ export default function Home() {
   return (
     <View style={[styles.screen, { paddingTop: Math.max(insets.top, 20) }]}>
       <View style={styles.header}>
-        <CircleButton accessibilityLabel={t("Account")} onPress={() => router.push("/account")}>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={t("Account")}
+          onPress={() => router.push("/account")}
+          hitSlop={6}
+          style={({ pressed }) => [styles.circleButton, pressed && styles.circlePressed]}
+        >
           <Text style={styles.profileInitials}>{initials}</Text>
-        </CircleButton>
+        </Pressable>
         <View style={styles.headerActions}>
-          <CircleButton
+          <GlassButton
             accessibilityLabel={t("Activity")}
             active={activityMode}
-            accent
+            ios={activityMode ? "bell.fill" : "bell"}
+            android={activityMode ? "notifications" : "notifications-outline"}
+            iconSize={17}
             onPress={toggleActivityMode}
-          >
-            <NativeSymbol
-              ios={activityMode ? "bell.fill" : "bell"}
-              android={activityMode ? "notifications" : "notifications-outline"}
-              size={17}
-              color={activityMode ? tokens.primaryForeground : tokens.foreground}
-            />
-          </CircleButton>
-          <CircleButton
+          />
+          <GlassButton
             accessibilityLabel={t("Search")}
             active={searching}
+            ios="magnifyingglass"
+            android="search"
+            iconSize={17}
             onPress={() =>
               setSearching((open) => {
                 if (open) setQuery("");
                 return !open;
               })
             }
-          >
-            <NativeSymbol ios="magnifyingglass" android="search" size={17} />
-          </CircleButton>
-          <CircleButton
+          />
+          <GlassButton
             accessibilityLabel={t("Artifacts")}
+            ios="square.stack.3d.up"
+            android="layers-outline"
+            iconSize={17}
             onPress={() => router.push("/artifacts")}
-          >
-            <NativeSymbol ios="square.stack.3d.up" android="layers-outline" size={17} />
-          </CircleButton>
-          <CircleButton
+          />
+          <GlassButton
             accessibilityLabel={t("Create")}
+            ios="plus"
+            android="add"
+            iconSize={18}
             onPress={() => {
               if (spaceActionRef.current.busy || spaceActionRef.current.recoveryId) return;
               Alert.alert(
@@ -517,9 +524,7 @@ export default function Home() {
                 { cancelable: true },
               );
             }}
-          >
-            <NativeSymbol ios="plus" android="add" size={18} />
-          </CircleButton>
+          />
         </View>
       </View>
 
@@ -911,37 +916,6 @@ function ConversationRow({
   );
 }
 
-function CircleButton({
-  children,
-  onPress,
-  accessibilityLabel,
-  active = false,
-  accent = false,
-}: {
-  children: ReactNode;
-  onPress: () => void;
-  accessibilityLabel: string;
-  active?: boolean;
-  accent?: boolean;
-}) {
-  const styles = useThemedStyles(createHomeStyles);
-  return (
-    <Pressable
-      accessibilityRole="button"
-      accessibilityLabel={accessibilityLabel}
-      accessibilityState={{ selected: active }}
-      onPress={onPress}
-      hitSlop={4}
-      style={({ pressed }) => [
-        styles.circleButton,
-        accent && active ? styles.circleAccent : (active || pressed) && styles.circlePressed,
-      ]}
-    >
-      {children}
-    </Pressable>
-  );
-}
-
 function SearchRow({ hit, onPress }: { hit: SearchHit; onPress: () => void }) {
   const styles = useThemedStyles(createHomeStyles);
   return (
@@ -1100,9 +1074,6 @@ function createHomeStyles() {
     },
     circlePressed: {
       backgroundColor: native.fill,
-    },
-    circleAccent: {
-      backgroundColor: tokens.primary,
     },
     profileInitials: {
       color: native.label,

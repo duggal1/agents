@@ -44,6 +44,6 @@ function createStyles() {
       overflow: "hidden",
     },
     image: { width: 28, height: 28 },
-    letter: { color: native.label, fontSize: 16, fontWeight: "600" },
+    letter: { color: native.label, fontSize: 16 },
   });
 }

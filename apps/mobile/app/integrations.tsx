@@ -815,7 +815,7 @@ function createIntegrationsStyles() {
     screen: { flex: 1, backgroundColor: native.page },
     content: { padding: 20, gap: 14 },
     explanation: { color: native.secondaryLabel, fontSize: 14, lineHeight: 20 },
-    section: { color: native.secondaryLabel, fontSize: 14, fontWeight: "600", marginTop: 2 },
+    section: { color: native.secondaryLabel, fontSize: 13, marginTop: 4 },
     smallButton: {
       minHeight: 42,
       paddingHorizontal: 14,
@@ -833,7 +833,7 @@ function createIntegrationsStyles() {
       alignItems: "center",
       justifyContent: "center",
     },
-    buttonLabel: { color: native.label, fontSize: 14, fontWeight: "600" },
+    buttonLabel: { color: native.label, fontSize: 14 },
     card: { padding: 16, borderRadius: 16, backgroundColor: native.fill, gap: 12 },
     input: {
       minHeight: 48,
@@ -874,10 +874,9 @@ function createIntegrationsStyles() {
     logoInitial: {
       color: native.label,
       fontSize: 14,
-      fontWeight: "600",
     },
-    grow: { flex: 1, gap: 3, minWidth: 0 },
-    title: { color: native.label, fontSize: 15, fontWeight: "600" },
+    grow: { flex: 1, gap: 4, minWidth: 0 },
+    title: { color: native.label, fontSize: 15 },
     secondary: { color: native.secondaryLabel, fontSize: 13 },
     accountActions: {
       flexDirection: "row",
@@ -900,8 +899,8 @@ function createIntegrationsStyles() {
       paddingHorizontal: 10,
       fontSize: 13,
     },
-    link: { color: native.label, fontSize: 14, fontWeight: "600" },
-    remove: { color: destructive, fontSize: 14, fontWeight: "600" },
+    link: { color: native.label, fontSize: 14 },
+    remove: { color: destructive, fontSize: 14 },
     error: { color: destructive, fontSize: 14 },
     detail: { gap: 14 },
     detailHeader: {
@@ -912,7 +911,7 @@ function createIntegrationsStyles() {
     },
     detailTitleRow: { flex: 1, flexDirection: "row", alignItems: "center", gap: 10, minWidth: 0 },
     backButton: { paddingVertical: 4 },
-    detailTitle: { flex: 1, color: native.label, fontSize: 17, fontWeight: "600" },
+    detailTitle: { flex: 1, color: native.label, fontSize: 17 },
     toolsToggle: {
       flexDirection: "row",
       alignItems: "center",

@@ -8,21 +8,36 @@ import { native, useMobileTokens } from "../lib/native";
 
 const styles = StyleSheet.create({
   actions: { flexDirection: "row", gap: 8 },
-  badge: { alignItems: "center", borderRadius: 8, height: 28, justifyContent: "center", width: 28 },
-  badgeText: { fontSize: 12, fontWeight: "600" },
+  badge: {
+    alignItems: "center",
+    borderRadius: 6,
+    borderCurve: "continuous",
+    height: 28,
+    justifyContent: "center",
+    width: 28,
+  },
+  badgeText: { fontSize: 12 },
   button: {
     alignItems: "center",
     borderRadius: 999,
+    borderCurve: "continuous",
     justifyContent: "center",
-    minHeight: 36,
-    paddingHorizontal: 14,
+    minHeight: 44,
+    paddingHorizontal: 16,
   },
-  card: { borderRadius: 18, borderWidth: 1, paddingHorizontal: 16, paddingVertical: 14, gap: 8 },
-  description: { fontSize: 13.5, opacity: 0.75 },
+  card: {
+    borderRadius: 16,
+    borderCurve: "continuous",
+    borderWidth: 1,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    gap: 8,
+  },
+  description: { fontSize: 13 },
   header: { alignItems: "center", flexDirection: "row", gap: 12 },
-  headline: { flex: 1, gap: 2 },
-  summary: { fontSize: 13.5 },
-  title: { fontSize: 15, fontWeight: "600" },
+  headline: { flex: 1, gap: 4 },
+  summary: { fontSize: 13 },
+  title: { fontSize: 15 },
 });
 
 export function McpApprovalCard({
@@ -97,7 +112,7 @@ export function McpApprovalCard({
         <Text
           style={{
             color: status === "connected" ? tokens.success : tokens.mutedForeground,
-            fontSize: 13.5,
+            fontSize: 13,
           }}
         >
           {status === "connected"
@@ -126,7 +141,7 @@ export function McpApprovalCard({
                   },
                 ]}
               >
-                <Text style={{ color: native.label, fontSize: 14, fontWeight: "600" }}>
+                <Text style={{ color: native.label, fontSize: 14 }}>
                   {t("Approve")}
                 </Text>
               </Pressable>

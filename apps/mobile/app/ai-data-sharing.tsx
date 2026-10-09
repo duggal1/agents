@@ -89,5 +89,5 @@ export default function AiDataSharing() {
 const styles = StyleSheet.create({
   container: { padding: 20, gap: 24 },
   recipient: { gap: 10 },
-  title: { fontSize: 18, fontWeight: "600" },
+  title: { fontSize: 18 },
 });

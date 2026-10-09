@@ -282,7 +282,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: StyleSheet.hairlineWidth,
     paddingHorizontal: 12,
   },
-  title: { flex: 1, fontSize: 15, fontWeight: "500" },
+  title: { flex: 1, fontSize: 15 },
   headerButton: { padding: 10 },
   stage: { flex: 1, alignItems: "center", justifyContent: "center", overflow: "hidden" },
   message: { fontSize: 15, textAlign: "center", padding: 24 },

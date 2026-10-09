@@ -332,7 +332,6 @@ export default function Computer() {
                 style={{
                   color: tokens.foreground,
                   fontSize: 19,
-                  fontWeight: "500",
                   textAlign: "center",
                 }}
               >
@@ -387,8 +386,7 @@ export default function Computer() {
                     style={{
                       flexShrink: 1,
                       color: tokens.foreground,
-                      fontSize: 15.5,
-                      fontWeight: "500",
+                      fontSize: 15,
                     }}
                   >
                     {label}

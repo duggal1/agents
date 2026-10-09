@@ -1,8 +1,10 @@
 import type { ComponentProps, ReactNode } from "react";
-import { Pressable, StyleSheet } from "react-native";
+import * as Haptics from "expo-haptics";
+import { Pressable } from "react-native";
 import type Ionicons from "@react-native-vector-icons/ionicons";
-import { NativeSymbol } from "../native-symbol";
+import { Glass } from "./glass";
 import { useMobileTokens } from "../../lib/native";
+import { NativeSymbol } from "../native-symbol";
 
 type GlassButtonProps = {
   onPress: () => void;
@@ -13,13 +15,14 @@ type GlassButtonProps = {
   iconSize?: number;
   active?: boolean;
   primary?: boolean;
+  disabled?: boolean;
   children?: ReactNode;
 };
 
 /**
- * Circular 44pt bar button. Press feedback lands on press-in (background
- * highlight, never scale on rows; subtle opacity here), with a selection
- * tick on the same frame. One accent only: primary = inverted CTA.
+ * Circular liquid-glass bar button. One accent only: primary is the inverted
+ * CTA. Press feedback is opacity-only per DESIGN.MD (no scale pops); the
+ * haptics tick lands on the same frame as the visual.
  */
 export function GlassButton({
   onPress,
@@ -30,43 +33,74 @@ export function GlassButton({
   iconSize = 18,
   active = false,
   primary = false,
+  disabled = false,
   children,
 }: GlassButtonProps) {
   const tokens = useMobileTokens();
-  const backgroundColor = primary
-    ? tokens.primary
-    : active
-      ? tokens.accent
-      : `${tokens.card}E6`;
-  const foreground = primary ? tokens.primaryForeground : tokens.foreground;
-  return (
-    <Pressable
-      accessibilityRole="button"
-      accessibilityLabel={accessibilityLabel}
-      accessibilityState={{ selected: active }}
-      hitSlop={6}
-      // Wire expo-haptics selection tick here when the dep lands
-      // (native-controls law: haptics are punctuation, same frame as visual).
-      onPress={onPress}
-      style={({ pressed }) => [
-        {
+  if (primary) {
+    return (
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={accessibilityLabel}
+        accessibilityState={{ disabled }}
+        disabled={disabled}
+        hitSlop={6}
+        onPress={() => {
+          void Haptics.selectionAsync().catch(() => undefined);
+          onPress();
+        }}
+        style={({ pressed }) => ({
           width: size,
           height: size,
           borderRadius: size / 2,
           borderCurve: "continuous",
-          borderWidth: StyleSheet.hairlineWidth,
-          borderColor: primary ? "transparent" : tokens.border,
-          backgroundColor,
+          backgroundColor: tokens.primary,
           alignItems: "center",
           justifyContent: "center",
           overflow: "hidden",
-          opacity: pressed ? 0.7 : 1,
-        },
-      ]}
+          opacity: disabled ? 0.5 : pressed ? 0.85 : 1,
+        })}
+      >
+        {children ?? (
+          <NativeSymbol
+            ios={ios}
+            android={android}
+            size={iconSize}
+            color={tokens.primaryForeground}
+          />
+        )}
+      </Pressable>
+    );
+  }
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={accessibilityLabel}
+      accessibilityState={{ selected: active, disabled }}
+      disabled={disabled}
+      hitSlop={6}
+      onPress={() => {
+        void Haptics.selectionAsync().catch(() => undefined);
+        onPress();
+      }}
+      style={({ pressed }) => ({
+        width: size,
+        height: size,
+        opacity: disabled ? 0.5 : pressed ? 0.7 : 1,
+      })}
     >
-      {children ?? (
-        <NativeSymbol ios={ios} android={android} size={iconSize} color={foreground} />
-      )}
+      <Glass
+        interactive
+        style={{
+          width: size,
+          height: size,
+          borderRadius: size / 2,
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        {children ?? <NativeSymbol ios={ios} android={android} size={iconSize} />}
+      </Glass>
     </Pressable>
   );
 }

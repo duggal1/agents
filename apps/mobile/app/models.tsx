@@ -1470,8 +1470,7 @@ function createModelsStyles() {
     activeModel: {
       color: native.label,
       fontSize: 19,
-      fontWeight: "600",
-      marginTop: 6,
+      marginTop: 8,
     },
     secondary: {
       color: native.secondaryLabel,
@@ -1506,7 +1505,6 @@ function createModelsStyles() {
     providerName: {
       color: native.label,
       fontSize: 16,
-      fontWeight: "600",
     },
     groupLabel: {
       color: native.tertiaryLabel,
@@ -1640,7 +1638,6 @@ function createModelsStyles() {
     primaryLabel: {
       color: native.page,
       fontSize: 16,
-      fontWeight: "700",
     },
     outlineButton: {
       minHeight: 48,
@@ -1655,7 +1652,6 @@ function createModelsStyles() {
     outlineLabel: {
       color: native.label,
       fontSize: 16,
-      fontWeight: "600",
     },
     error: {
       color: tokens.destructive,

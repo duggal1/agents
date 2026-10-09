@@ -16,6 +16,7 @@ import { loadDeviceVoiceEnabled, saveDeviceVoiceEnabled } from "../lib/device-vo
 import { useI18n } from "../lib/i18n";
 import { native, useThemedStyles } from "../lib/native";
 import { speakText } from "../lib/voice";
+import { NativeSymbol } from "../components/native-symbol";
 
 type VoiceCatalogEntry = {
   id: string;
@@ -39,6 +40,7 @@ type VoiceInfo = { id: string; label: string; description?: string };
 
 export default function VoiceSettings() {
   const styles = useThemedStyles(createVoiceStyles);
+  const tokens = mobileTokens();
   const { t } = useI18n();
   const [catalog, setCatalog] = useState<VoiceCatalogEntry[]>([]);
   const [credentials, setCredentials] = useState<VoiceCredential[]>([]);
@@ -340,7 +342,14 @@ export default function VoiceSettings() {
                     style={[styles.voiceRow, pending !== null && styles.disabled]}
                   >
                     <Text style={styles.voiceLabel}>{voice.label}</Text>
-                    {voiceId === voice.id ? <Text style={styles.check}>✓</Text> : null}
+                    {voiceId === voice.id ? (
+                      <NativeSymbol
+                        ios="checkmark"
+                        android="checkmark"
+                        size={17}
+                        color={tokens.success}
+                      />
+                    ) : null}
                   </Pressable>
                 ))}
               </View>
@@ -396,7 +405,7 @@ function createVoiceStyles() {
       alignItems: "center",
     },
     disabled: { opacity: 0.4 },
-    buttonLabel: { color: tokens.primaryForeground, fontWeight: "600" },
+    buttonLabel: { color: tokens.primaryForeground },
     voices: { marginTop: 12, borderRadius: 12, borderWidth: 1, borderColor: tokens.border },
     voiceRow: {
       flexDirection: "row",
@@ -407,7 +416,6 @@ function createVoiceStyles() {
       borderBottomColor: tokens.border,
     },
     voiceLabel: { color: native.label },
-    check: { color: tokens.success },
     secondary: { marginTop: 16, alignItems: "center" },
     secondaryLabel: { color: native.secondaryLabel, fontSize: 15 },
   });

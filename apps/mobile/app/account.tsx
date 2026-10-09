@@ -17,6 +17,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useAvatarStyle } from "../components/avatar-style";
 import { BotAvatar } from "../components/bot-avatar";
+import { NativeSymbol } from "../components/native-symbol";
 import type { MobileBot, MobileMe } from "../lib/api";
 import {
   currentApiBase,
@@ -268,7 +269,12 @@ export default function Account() {
           style={({ pressed }) => [styles.settingsButton, pressed && styles.pressed]}
         >
           <Text style={styles.settingsTitle}>{t("Change password")}</Text>
-          <Text style={styles.chevron}>›</Text>
+          <NativeSymbol
+            ios="chevron.right"
+            android="chevron-forward"
+            size={14}
+            color={native.secondaryLabel}
+          />
         </Pressable>
 
         <View accessibilityLabel={t("Appearance")} style={styles.avatarSection}>
@@ -353,7 +359,12 @@ export default function Account() {
           <Text style={styles.settingsTitle}>{t("Language")}</Text>
           <View style={styles.settingsTrailing}>
             <Text style={styles.settingsValue}>{UI_LOCALE_LABELS[locale]}</Text>
-            <Text style={styles.chevron}>›</Text>
+            <NativeSymbol
+            ios="chevron.right"
+            android="chevron-forward"
+            size={14}
+            color={native.secondaryLabel}
+          />
           </View>
         </Pressable>
         {localeError ? <Text style={styles.error}>{localeError}</Text> : null}
@@ -422,7 +433,12 @@ export default function Account() {
           style={({ pressed }) => [styles.settingsButton, pressed && styles.pressed]}
         >
           <Text style={styles.settingsTitle}>{t("Models")}</Text>
-          <Text style={styles.chevron}>›</Text>
+          <NativeSymbol
+            ios="chevron.right"
+            android="chevron-forward"
+            size={14}
+            color={native.secondaryLabel}
+          />
         </Pressable>
 
         <Pressable
@@ -432,7 +448,12 @@ export default function Account() {
           style={({ pressed }) => [styles.settingsButton, pressed && styles.pressed]}
         >
           <Text style={styles.settingsTitle}>{t("Voice")}</Text>
-          <Text style={styles.chevron}>›</Text>
+          <NativeSymbol
+            ios="chevron.right"
+            android="chevron-forward"
+            size={14}
+            color={native.secondaryLabel}
+          />
         </Pressable>
 
         <Pressable
@@ -442,7 +463,12 @@ export default function Account() {
           style={({ pressed }) => [styles.settingsButton, pressed && styles.pressed]}
         >
           <Text style={styles.settingsTitle}>{t("Integrations")}</Text>
-          <Text style={styles.chevron}>›</Text>
+          <NativeSymbol
+            ios="chevron.right"
+            android="chevron-forward"
+            size={14}
+            color={native.secondaryLabel}
+          />
         </Pressable>
 
         {me?.isDeploymentOwner ? (
@@ -463,7 +489,12 @@ export default function Account() {
           style={({ pressed }) => [styles.settingsButton, pressed && styles.pressed]}
         >
           <Text style={styles.settingsTitle}>{t("Advanced")}</Text>
-          <Text style={styles.chevron}>{advancedOpen ? "⌃" : "›"}</Text>
+          <NativeSymbol
+            ios={advancedOpen ? "chevron.up" : "chevron.down"}
+            android={advancedOpen ? "chevron-up" : "chevron-down"}
+            size={14}
+            color={native.secondaryLabel}
+          />
         </Pressable>
         {advancedOpen ? (
           <View style={styles.avatarSection}>
@@ -627,7 +658,7 @@ function createAccountStyles() {
     name: {
       color: native.label,
       fontSize: 20,
-      fontWeight: "600",
+      fontWeight: "400",
     },
     email: {
       color: native.secondaryLabel,
@@ -643,7 +674,7 @@ function createAccountStyles() {
     buttonLabel: {
       color: native.label,
       fontSize: 17,
-      fontWeight: "600",
+      fontWeight: "400",
     },
     archivedSection: {
       borderRadius: 16,
@@ -654,7 +685,7 @@ function createAccountStyles() {
     sectionTitle: {
       color: native.secondaryLabel,
       fontSize: 14,
-      fontWeight: "600",
+      fontWeight: "400",
     },
     archivedRow: {
       flexDirection: "row",
@@ -669,7 +700,7 @@ function createAccountStyles() {
     restoreLabel: {
       color: native.label,
       fontSize: 14,
-      fontWeight: "600",
+      fontWeight: "400",
     },
     archivedDeleteLabel: {
       color: tokens.destructive,
@@ -711,7 +742,7 @@ function createAccountStyles() {
     appearanceLabel: {
       color: native.label,
       fontSize: 14,
-      fontWeight: "600",
+      fontWeight: "400",
     },
     avatarOptions: {
       flexDirection: "row",
@@ -734,12 +765,12 @@ function createAccountStyles() {
     avatarLabel: {
       color: native.label,
       fontSize: 14,
-      fontWeight: "600",
+      fontWeight: "400",
     },
     settingsTitle: {
       color: native.label,
       fontSize: 17,
-      fontWeight: "600",
+      fontWeight: "400",
     },
     switchRow: {
       minHeight: 44,
@@ -762,11 +793,7 @@ function createAccountStyles() {
       color: native.secondaryLabel,
       fontSize: 15,
     },
-    chevron: {
-      color: native.secondaryLabel,
-      fontSize: 28,
-      fontWeight: "300",
-    },
+
     versionFooter: {
       marginTop: 4,
       alignItems: "center",
@@ -787,7 +814,7 @@ function createAccountStyles() {
     dangerTitle: {
       color: tokens.destructive,
       fontSize: 17,
-      fontWeight: "600",
+      fontWeight: "400",
     },
     password: {
       height: 48,
@@ -814,7 +841,6 @@ function createAccountStyles() {
     deleteLabel: {
       color: tokens.destructiveForeground,
       fontSize: 16,
-      fontWeight: "700",
     },
     disabled: {
       opacity: 0.45,

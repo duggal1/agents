@@ -72,7 +72,7 @@ export function MarkdownArtifactPreview({
         >
           <Text
             numberOfLines={1}
-            style={{ flex: 1, color: tokens.foreground, fontSize: 15, fontWeight: "500" }}
+            style={{ flex: 1, color: tokens.foreground, fontSize: 15 }}
           >
             {target.name}
           </Text>
