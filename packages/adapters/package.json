@@ -30,15 +30,14 @@
     "@sapphire/core": "workspace:*",
     "@sapphire/db": "workspace:*",
     "@sapphire/logging": "workspace:*",
+    "better-sqlite3": "12.11.1",
     "chat": "4.40.0",
     "chat-adapter-lark": "0.3.1",
     "chat-adapter-sendblue": "0.2.0",
     "d3-dsv": "3.0.1",
-    "graphile-worker": "0.17.3",
     "jsdom": "30.0.1",
     "koffi": "3.2.1",
     "nodemailer": "10.0.3",
-    "pg": "8.23.0",
     "sendblue": "3.16.1",
     "sharp": "0.35.4",
     "shell-quote": "1.10.0",
@@ -47,10 +46,10 @@
   },
   "devDependencies": {
     "@chat-adapter/tests": "4.40.0",
+    "@types/better-sqlite3": "9.6.0",
     "@types/d3-dsv": "3.0.7",
     "@types/jsdom": "30.0.0",
     "@types/nodemailer": "8.0.1",
-    "@types/pg": "8.23.1",
     "typescript": "7.0.2",
     "vitest": "4.1.11"
   }

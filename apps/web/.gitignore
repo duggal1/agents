@@ -3,3 +3,5 @@
 src/locales/**/*.mjs
 src/locales/**/*.js
 scripts/msgids.json
+e2e/test-diag.spec.ts
+e2e/test-local-selector.spec.ts

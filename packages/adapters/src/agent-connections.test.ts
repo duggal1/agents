@@ -150,6 +150,11 @@ function createDeps(
         outboundRows.push(...data);
         return { count: data.length };
       }),
+      create: vi.fn(async ({ data }: { data: Record<string, unknown> }) => {
+        const row = { id: `out-${outboundRows.length + 1}`, ...data };
+        outboundRows.push(row);
+        return row;
+      }),
       deleteMany: vi.fn(async ({ where }: { where: { idempotencyKey?: string } }) => {
         const before = outboundRows.length;
         for (let i = outboundRows.length - 1; i >= 0; i -= 1) {

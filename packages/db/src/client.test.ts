@@ -1,40 +1,49 @@
+import { mkdtempSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import Database from "better-sqlite3";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   createDb,
-  createPool,
   isTooManyDatabaseConnections,
   parsePositiveInteger,
   retryOnTooManyConnections,
 } from "./client.js";
 
-const pools: Array<{ end: () => Promise<void> }> = [];
+const created: Array<{ $disconnect: () => Promise<void> }> = [];
 
 afterEach(async () => {
-  await Promise.all(pools.splice(0).map((pool) => pool.end()));
+  await Promise.all(created.splice(0).map((db) => db.$disconnect()));
 });
 
+function tempDbPath(): string {
+  return join(mkdtempSync(join(tmpdir(), "sapphire-db-test-")), "test.db");
+}
+
 describe("createDb", () => {
-  it("caps the pg pool and swallows idle-client errors so they cannot crash the process", () => {
-    const { pool } = createDb("postgres://rakazo:rakazo@127.0.0.1:9/rakazo", {
-      poolMax: 3,
-      applicationName: "rakazo-test",
-    });
-    pools.push(pool);
+  it("creates parent directories and opens a WAL sqlite database", async () => {
+    const filePath = tempDbPath();
+    const { prisma } = createDb(filePath);
+    created.push(prisma);
 
-    expect(pool.options.max).toBe(3);
-    expect(pool.options.connectionTimeoutMillis).toBe(10_000);
-    expect(pool.options.idleTimeoutMillis).toBe(0);
-    expect(pool.options.application_name).toBe("rakazo-test");
-    expect(pool.listenerCount("error")).toBeGreaterThan(0);
-    expect(pool.listenerCount("connect")).toBeGreaterThan(0);
-
-    expect(() => pool.emit("error", new Error("idle client lost"))).not.toThrow();
-  });
-
-  it("defaults to a four-connection pool", () => {
-    const { pool } = createDb("postgres://rakazo:rakazo@127.0.0.1:9/rakazo");
-    pools.push(pool);
-    expect(pool.options.max).toBe(4);
+    expect(prisma).toBeDefined();
+    const check = new Database(filePath, { readonly: true });
+    try {
+      // journal_mode persists on the database; the other pragmas are
+      // per-connection, so they are verified through the adapter below.
+      expect(check.pragma("journal_mode", { simple: true })).toBe("wal");
+    } finally {
+      check.close();
+    }
+    const busy = (await prisma.$queryRawUnsafe("PRAGMA busy_timeout")) as Array<{
+      timeout: number | bigint;
+    }>;
+    expect(Number(busy[0]?.timeout)).toBe(10000);
+    const fk = (await prisma.$queryRawUnsafe("PRAGMA foreign_keys")) as Array<{
+      foreign_keys: number | bigint;
+    }>;
+    expect(Number(fk[0]?.foreign_keys)).toBe(1);
+    await expect(prisma.$queryRaw`SELECT 1`).resolves.toBeDefined();
   });
 });
 
@@ -48,68 +57,33 @@ describe("parsePositiveInteger", () => {
 });
 
 describe("isTooManyDatabaseConnections", () => {
-  it("recognises Prisma P2037 and Postgres 53300", () => {
-    expect(isTooManyDatabaseConnections({ code: "P2037" })).toBe(true);
-    expect(isTooManyDatabaseConnections({ code: "53300" })).toBe(true);
+  it("never matches on sqlite, which serializes writers instead", () => {
+    expect(isTooManyDatabaseConnections({ code: "P2037" })).toBe(false);
+    expect(isTooManyDatabaseConnections({ code: "53300" })).toBe(false);
     expect(
       isTooManyDatabaseConnections(
         new Error("Too many database connections opened: sorry, too many clients already"),
       ),
-    ).toBe(true);
-    expect(isTooManyDatabaseConnections(new Error("relation does not exist"))).toBe(false);
+    ).toBe(false);
     expect(isTooManyDatabaseConnections(undefined)).toBe(false);
-  });
-
-  it("walks a nested cause, matching the pg-pool unhandledRejection shape", () => {
-    const root = Object.assign(new Error("sorry, too many clients already"), { code: "53300" });
-    expect(isTooManyDatabaseConnections(new Error("pool.connect failed", { cause: root }))).toBe(
-      true,
-    );
   });
 });
 
 describe("retryOnTooManyConnections", () => {
-  it("retries 53300 and returns the first success", async () => {
+  it("runs the operation once and returns its result", async () => {
     const sleep = vi.fn(async () => undefined);
-    let attempts = 0;
-    const result = await retryOnTooManyConnections(
-      async () => {
-        attempts += 1;
-        if (attempts < 3) {
-          throw Object.assign(new Error("sorry, too many clients already"), { code: "53300" });
-        }
-        return "ok";
-      },
-      { sleep },
-    );
-    expect(result).toBe("ok");
-    expect(attempts).toBe(3);
-    expect(sleep).toHaveBeenCalledTimes(2);
+    await expect(
+      retryOnTooManyConnections(async () => "ok", { sleep }),
+    ).resolves.toBe("ok");
+    expect(sleep).not.toHaveBeenCalled();
   });
 
-  it("does not retry unrelated failures", async () => {
-    const error = new Error("relation does not exist");
+  it("propagates failures without retrying", async () => {
+    const error = new Error("boom");
     await expect(
       retryOnTooManyConnections(async () => {
         throw error;
       }),
     ).rejects.toBe(error);
-  });
-});
-
-describe("createPool", () => {
-  it("builds a bounded pool with connect-retry and idle-error listeners", () => {
-    const pool = createPool("postgres://rakazo:rakazo@127.0.0.1:9/rakazo", {
-      poolMax: 2,
-      applicationName: "rakazo-pool-test",
-    });
-    pools.push(pool);
-    expect(pool.options.max).toBe(2);
-    expect(pool.options.connectionTimeoutMillis).toBe(10_000);
-    expect(pool.options.idleTimeoutMillis).toBe(0);
-    expect(pool.options.application_name).toBe("rakazo-pool-test");
-    expect(pool.listenerCount("error")).toBeGreaterThan(0);
-    expect(pool.listenerCount("connect")).toBeGreaterThan(0);
-    expect(() => pool.emit("error", new Error("idle client lost"))).not.toThrow();
   });
 });

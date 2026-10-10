@@ -55,6 +55,21 @@ function SessionApp() {
     markAfterPaint("rk:renderer:session-painted");
   }, [session.isPending]);
 
+  // Every hook in this component lives above every early return: the first
+  // renders are gate === "loading" and return early, so hooks declared below
+  // those returns would run on later renders only — React error #310
+  // ("more hooks than during the previous render") unmounting into a blank
+  // window. Keep this block directly under the layout effect above.
+  const [localReady, setLocalReady] = useState(false);
+  const localProbe = useRef(false);
+  useEffect(() => {
+    if (session.isPending || session.data?.user || localProbe.current) return;
+    localProbe.current = true;
+    void takeInitialBootstrap()
+      .then(() => setLocalReady(true))
+      .catch(() => undefined);
+  }, [session.isPending, session.data?.user]);
+
   if (showSessionUnavailable(gate, nextHolding)) {
     return <SessionUnavailable refetch={session.refetch} />;
   }
@@ -75,15 +90,6 @@ function SessionApp() {
   // Local mode (no login on the Mac path): the API serves every request as the
   // fixed owner actor, so a reachable bootstrap means "signed in" — no session
   // cookie needed. Anywhere else the bootstrap rejects and auth routes stay.
-  const [localReady, setLocalReady] = useState(false);
-  const localProbe = useRef(false);
-  useEffect(() => {
-    if (session.isPending || session.data?.user || localProbe.current) return;
-    localProbe.current = true;
-    void takeInitialBootstrap()
-      .then(() => setLocalReady(true))
-      .catch(() => undefined);
-  }, [session.isPending, session.data?.user]);
   const authed = Boolean(user) || localReady;
   // Local mode skips onboarding-into-signup loops: no account exists to create.
   const signInTarget = localReady ? "/app" : "/sign-in";
@@ -108,7 +114,10 @@ function SessionApp() {
               authed ? <Navigate to="/app" replace /> : <AuthPage key="forgot" mode="forgot" />
             }
           />
-          <Route path="/reset-password" element={<PasswordResetPage />} />
+          <Route
+            path="/reset-password"
+            element={authed ? <PasswordResetPage /> : <Navigate to={signInTarget} replace />}
+          />
           <Route
             path="/onboarding"
             element={authed ? <OnboardingPage /> : <Navigate to={signInTarget} replace />}

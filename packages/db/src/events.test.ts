@@ -2442,7 +2442,21 @@ describe("claimSteering", () => {
         }),
       },
       steeringMessage: {
-        findMany: vi.fn().mockResolvedValue([]),
+        findMany: vi.fn().mockResolvedValue([
+          {
+            id: "steer-dm",
+            messageId: "message-dm",
+            message: { blocks: [{ kind: "text", text: "And privately?" }], seq: 1 },
+          },
+          {
+            id: "steer-channel",
+            messageId: "message-channel",
+            message: {
+              blocks: [{ kind: "channel_message", channelId: "chan-1", text: "Hey all" }],
+              seq: 2,
+            },
+          },
+        ]),
         updateMany: vi.fn(),
       },
     };
@@ -2450,7 +2464,7 @@ describe("claimSteering", () => {
       $transaction: vi.fn(async (callback: (client: typeof tx) => unknown) => callback(tx)),
     } as unknown as PrismaClient;
 
-    await claimSteering(prisma, {
+    const claimed = await claimSteering(prisma, {
       threadId: "thread-1",
       botId: "bot-1",
       runId: "run-dm",
@@ -2463,13 +2477,16 @@ describe("claimSteering", () => {
       expect.objectContaining({
         where: expect.objectContaining({
           OR: [{ runId: null, originTrigger: "messaging" }, { runId: "run-dm" }],
-          message: {
-            threadId: "thread-1",
-            NOT: { blocks: { array_contains: [{ kind: "channel_message" }] } },
-          },
+          message: { threadId: "thread-1" },
         }),
       }),
     );
+    // The channel row is filtered in JS (SQLite has no array_contains); only the DM is claimed.
+    expect(claimed.map((item) => item.id)).toEqual(["steer-dm"]);
+    expect(tx.steeringMessage.updateMany).toHaveBeenCalledWith({
+      where: { id: { in: ["steer-dm"] }, claimedAt: null },
+      data: { runId: "run-dm", claimedAt: expect.any(Date) },
+    });
   });
 });
 

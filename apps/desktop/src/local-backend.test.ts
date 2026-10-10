@@ -136,6 +136,10 @@ describe("service manifests", () => {
     expect(serviceEnv.api.API_PORT).toBe("45173");
     for (const env of [serviceEnv.api, serviceEnv.worker]) {
       expect(env[RUNTIME_EXEC_PATH_ENV]).toBe("1");
+      // Local-first: no login on the packaged path. Both services serve the
+      // fixed owner actor; the name stays RAKAZO_-prefixed because the API
+      // and self-host .env files share that contract.
+      expect(env.RAKAZO_LOCAL_MODE).toBe("1");
       for (const value of Object.values(env)) {
         expect(value).not.toContain("0.0.0.0");
       }

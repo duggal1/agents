@@ -169,6 +169,12 @@ export function buildServiceManifests(input: {
     NODE_ENV: input.nodeEnv,
     [RUNTIME_EXEC_PATH_ENV]: "1",
     DATA_DIR: input.appDataDir,
+    // Local-first: the packaged backend is single-user with no login, so the
+    // API serves every request as the fixed owner actor (apps/api local-actor)
+    // instead of enforcing Better Auth sessions. The name intentionally keeps
+    // the RAKAZO_ prefix: it is a server-shared contract also read from
+    // self-host .env files, and renaming one side would silently flip auth.
+    RAKAZO_LOCAL_MODE: "1",
     ...input.sandboxEnv,
   };
   const manifests: Record<LocalServiceId, LocalServiceManifest> = {

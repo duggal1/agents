@@ -1,28 +1,19 @@
 import type { MessageBlock } from "@sapphire/contracts";
+import { messagingChannelId } from "@sapphire/core";
 import type { Prisma, PrismaClient } from "./client.js";
 import { withTransactionRetry } from "./transaction-retry.js";
 
 /** Group turns use channel inputs and their own outputs, never private thread history. */
-export function loadRunHistoryMessages(
+export async function loadRunHistoryMessages(
   prisma: PrismaClient,
   run: { id: string; threadId: string },
   limit: number,
   channelId?: string,
 ) {
-  return prisma.message.findMany({
+  const rows = await prisma.message.findMany({
     where: {
       threadId: run.threadId,
-      ...(channelId
-        ? {
-            OR: [
-              {
-                role: "user",
-                blocks: { array_contains: [{ kind: "channel_message", channelId }] },
-              },
-              { role: "bot", runId: run.id },
-            ],
-          }
-        : {}),
+      ...(channelId ? { OR: [{ role: "user" }, { role: "bot", runId: run.id }] } : {}),
     },
     orderBy: { seq: "desc" },
     take: limit,
@@ -38,6 +29,17 @@ export function loadRunHistoryMessages(
       replyTo: { select: { id: true, threadId: true, role: true, blocks: true } },
     },
   });
+  if (!channelId) return rows;
+  // SQLite has no array_contains on Json: match the channel block in JS.
+  // take applies before the filter, so a window crowded with private messages
+  // may return fewer than limit rows rather than leaking other channels in.
+  return rows
+    .filter(
+      (row) =>
+        row.role !== "user" ||
+        messagingChannelId(row.blocks as MessageBlock[] | undefined) === channelId,
+    )
+    .slice(0, limit);
 }
 
 export interface CreateThreadMessageInput {

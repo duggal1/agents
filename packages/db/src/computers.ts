@@ -1,6 +1,6 @@
 import type { ComputerMode } from "@sapphire/contracts";
-import type { PrismaClient } from "./client.js";
-import { Prisma } from "./client.js";
+import type { Prisma, PrismaClient } from "./client.js";
+import { withNamedLock } from "./locks.js";
 import { withTransactionRetry } from "./transaction-retry.js";
 
 export type { ComputerMode } from "@sapphire/contracts";
@@ -80,15 +80,11 @@ async function countInUseComputersForUser(
 
 /**
  * Serialize existence check + in-use count + Computer create for one user.
- * Seed 1 keeps this keyspace apart from lockSpaceForContentCreation (seed 0).
+ * Callers hold the per-user quota lock across the whole critical section;
+ * this helper only documents the keyspace (seed 1 apart from space-content 0).
  */
-async function lockUserForComputerQuota(
-  tx: Pick<Prisma.TransactionClient, "$queryRaw">,
-  userId: string,
-): Promise<void> {
-  await tx.$queryRaw(Prisma.sql`
-    SELECT pg_advisory_xact_lock(hashtextextended(${userId}, 1))::text AS "lock"
-  `);
+export function computerQuotaLockName(userId: string): string {
+  return `computer-quota:${userId}`;
 }
 
 /**
@@ -133,7 +129,6 @@ export async function restoreBotUnderComputerQuota(
 
   async function restore(tx: RestoreTx) {
     if (limit > 0) {
-      await lockUserForComputerQuota(tx, input.userId);
       await assertComputerQuotaForRestore(tx, input);
     }
     await tx.bot.update({ where: { id: input.botId }, data: { archivedAt: null } });
@@ -147,7 +142,9 @@ export async function restoreBotUnderComputerQuota(
     return;
   }
   if (typeof prisma.$transaction === "function") {
-    return withTransactionRetry(() => prisma.$transaction!((tx) => restore(tx)));
+    return withNamedLock(computerQuotaLockName(input.userId), () =>
+      withTransactionRetry(() => prisma.$transaction!((tx) => restore(tx))),
+    );
   }
   throw new Error("Computer quota enforcement requires a Prisma transaction");
 }
@@ -200,10 +197,10 @@ async function ensureComputerRecordWithQuota(
   limit: number,
   scopeKey: string,
 ) {
-  await lockUserForComputerQuota(tx, input.userId);
   // Only a new row consumes quota: the upsert below reuses the existing team
   // computer on every bot created in that space, and reusing it with the count
   // already at the cap would wrongly refuse a second bot on a shared computer.
+  // Callers hold computerQuotaLockName(input.userId) across this whole check.
   const existing = await tx.computer.findUnique({
     where: { scopeKey },
     select: { id: true },
@@ -243,14 +240,16 @@ export async function ensureComputerRecord(
   const scopeKey = computerScopeKey(input.mode, input.spaceId, input.botId);
   if (limit <= 0) return upsertComputerRecord(prisma, input, scopeKey);
 
-  // Cap is set: hold a per-user advisory lock across find + count + create so
+  // Cap is set: hold a per-user lock across find + count + create so
   // concurrent creates for different spaces cannot both pass the check.
   if (isTransactionClient(prisma)) {
     return ensureComputerRecordWithQuota(prisma, input, limit, scopeKey);
   }
   if (typeof prisma.$transaction === "function") {
-    return withTransactionRetry(() =>
-      prisma.$transaction!((tx) => ensureComputerRecordWithQuota(tx, input, limit, scopeKey)),
+    return withNamedLock(computerQuotaLockName(input.userId), () =>
+      withTransactionRetry(() =>
+        prisma.$transaction!((tx) => ensureComputerRecordWithQuota(tx, input, limit, scopeKey)),
+      ),
     );
   }
   throw new Error("Computer quota enforcement requires a Prisma transaction");

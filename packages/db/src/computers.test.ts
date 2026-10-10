@@ -273,7 +273,9 @@ describe("ensureComputerRecord", () => {
       ComputerLimitError,
     );
     expect(prisma.computer.upsert).not.toHaveBeenCalled();
-    expect(prisma.$queryRaw).toHaveBeenCalledOnce();
+    // The per-user lock is now a named SQLite lock outside the Prisma client, so
+    // the quota check's count is the observable proof it ran under it.
+    expect(prisma.computer.count).toHaveBeenCalledOnce();
   });
 
   it("does not count archived-bot computers against the cap", async () => {

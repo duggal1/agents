@@ -512,28 +512,30 @@ export async function claimSteering(
       : channelId
         ? { runId: null }
         : { runId: null, originTrigger: null };
-    const steering = await tx.steeringMessage.findMany({
-      where: {
-        botId: input.botId,
-        id: input.seenIds.length ? { notIn: input.seenIds } : undefined,
-        // A routine or webhook turn only takes steering addressed to it; pending user messages
-        // wait for the conversational continuation that starts once it finishes.
-        OR: isConversationalRun(run.trigger)
-          ? [pendingWhere, { runId: input.runId }]
-          : [{ runId: input.runId }],
-        message: {
-          threadId: input.threadId,
-          // Private follow-ups remain unclaimed for the existing private continuation.
-          ...(channelId
-            ? { blocks: { array_contains: [{ kind: "channel_message", channelId }] } }
-            : directMessage
-              ? { NOT: { blocks: { array_contains: [{ kind: "channel_message" }] } } }
-              : {}),
+    const steering = (
+      await tx.steeringMessage.findMany({
+        where: {
+          botId: input.botId,
+          id: input.seenIds.length ? { notIn: input.seenIds } : undefined,
+          // A routine or webhook turn only takes steering addressed to it; pending user messages
+          // wait for the conversational continuation that starts once it finishes.
+          OR: isConversationalRun(run.trigger)
+            ? [pendingWhere, { runId: input.runId }]
+            : [{ runId: input.runId }],
+          message: { threadId: input.threadId },
         },
-      },
-      include: { message: { select: { blocks: true, seq: true } } },
-      orderBy: [{ message: { seq: "asc" } }, { id: "asc" }],
-    });
+        include: { message: { select: { blocks: true, seq: true } } },
+        orderBy: [{ message: { seq: "asc" } }, { id: "asc" }],
+      })
+    ).filter((item) =>
+      // SQLite has no array_contains on Json: match the channel block in JS.
+      // Private follow-ups remain unclaimed for the existing private continuation.
+      channelId
+        ? messagingChannelId(item.message.blocks as MessageBlock[] | undefined) === channelId
+        : directMessage
+          ? messagingChannelId(item.message.blocks as MessageBlock[] | undefined) === undefined
+          : true,
+    );
     if (steering.length === 0) return [];
     await tx.steeringMessage.updateMany({
       where: { id: { in: steering.map((item) => item.id) }, claimedAt: null },

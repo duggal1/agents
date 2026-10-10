@@ -27,7 +27,6 @@ describePostgres("provisionMessagingIdentity (PostgreSQL)", () => {
     prisma = db.prisma;
     close = async () => {
       await db.prisma.$disconnect();
-      await db.pool.end();
     };
 
     const result = await provisionMessagingIdentity(

@@ -18,7 +18,6 @@ export interface AppEnv {
   nodeEnv: string;
   desktopStackToken?: string;
   databaseUrl: string;
-  realtimeDatabaseUrl: string;
   authSecret: string;
   authUrl: string;
   webOrigin: string;
@@ -119,8 +118,9 @@ export function loadEnv(source: NodeJS.ProcessEnv = process.env): AppEnv {
   const runtimeSettings = readLocalRuntimeSettingsFile(runtimeSettingsPath);
   return {
     nodeEnv: source.NODE_ENV ?? "",
-    databaseUrl: required(source, "DATABASE_URL"),
-    realtimeDatabaseUrl: source.REALTIME_DATABASE_URL ?? required(source, "DATABASE_URL"),
+    // SQLite file URL. A bare path also works; both are normalized by the db
+    // client. Defaults next to DATA_DIR so a fresh self-host needs no config.
+    databaseUrl: source.DATABASE_URL ?? `file:${source.DATA_DIR ?? "./data"}/sapphire.db`,
     desktopStackToken: optional(source.RAKAZO_DESKTOP_STACK_TOKEN),
     authSecret,
     authUrl: source.BETTER_AUTH_URL ?? source.WEB_ORIGIN ?? "http://127.0.0.1:5173",
@@ -184,7 +184,7 @@ export function loadEnv(source: NodeJS.ProcessEnv = process.env): AppEnv {
     teamChatJudgeModel: optional(source.TEAM_CHAT_JUDGE_MODEL),
     defaultProvider: deploymentModel.provider,
     defaultModel: deploymentModel.model,
-    wakeupDriver: source.WAKEUP_DRIVER ?? "graphile",
+    wakeupDriver: source.WAKEUP_DRIVER ?? "sqlite",
     mcpStdioEnabled: source.MCP_STDIO_ENABLED === "true",
     mcpStdioAllowedCommands: (source.MCP_STDIO_ALLOWED_COMMANDS ?? "")
       .split(",")

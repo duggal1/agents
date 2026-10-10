@@ -18,18 +18,18 @@
     "test": "vitest run --root ../.. packages/db/src"
   },
   "dependencies": {
+    "@prisma/adapter-better-sqlite3": "8.1.0-dev.9",
+    "@prisma/client": "8.1.0-dev.9",
     "@sapphire/adapter-kit": "workspace:*",
-    "@prisma/adapter-pg": "7.10.0",
-    "@prisma/client": "7.10.0",
     "@sapphire/contracts": "workspace:*",
     "@sapphire/core": "workspace:*",
     "@sapphire/logging": "workspace:*",
-    "pg": "8.23.0",
+    "better-sqlite3": "12.11.1",
     "dotenv": "17.4.2"
   },
   "devDependencies": {
-    "@types/pg": "8.23.1",
-    "prisma": "7.10.0",
+    "@types/better-sqlite3": "9.6.0",
+    "prisma": "8.1.0-dev.9",
     "typescript": "7.0.2",
     "vitest": "4.1.11"
   }

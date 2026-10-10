@@ -96,7 +96,6 @@ describe.skipIf(!databaseAvailable)("offline Pi computer approval", () => {
         const { createApp } = await import("../../../apps/api/src/app.ts");
         const handles = await createApp({
           databaseUrl: process.env.DATABASE_URL!,
-          realtimeDatabaseUrl: process.env.DATABASE_URL!,
           authUrl: fixtureOrigin,
           webOrigin: fixtureOrigin,
           dataDir,

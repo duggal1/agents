@@ -4,7 +4,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
 }
 
 model AiDataConsent {
@@ -488,7 +488,7 @@ model Thread {
   nextEventSeq                Int        @default(0)
   nextMessageSeq              Int        @default(0)
   historyCompactedUpToSeq     Int?
-  historyCompactionSummary    String?    @db.Text
+  historyCompactionSummary    String?
   historyCompactionGeneration Int        @default(0)
   unread                      Boolean    @default(false)
   messages                    Message[]
@@ -721,7 +721,7 @@ model Routine {
   thread         Thread?   @relation(fields: [threadId], references: [id], onDelete: SetNull)
   name           String
   prompt         String
-  crons          String[]
+  crons          String           @default("[]")
   timezone       String    @default("UTC")
   active         Boolean   @default(false)
   notify         Boolean   @default(true)
@@ -767,8 +767,8 @@ model TaughtSkill {
   name      String    @default("")
   goal      String
   status    String
-  playbook  Json      @default("{}")
-  recording Json      @default("{\"events\":[],\"snapshots\":[]}")
+  playbook  Json      @default(dbgenerated("'{}'"))
+  recording Json      @default(dbgenerated("'{\"events\":[],\"snapshots\":[]}'"))
   startedAt DateTime?
   expiresAt DateTime?
   stoppedAt DateTime?
@@ -814,7 +814,7 @@ model Connection {
   status      String
   secretId    String?
   providerRef String?
-  metadata    Json     @default("{}")
+  metadata    Json     @default(dbgenerated("'{}'"))
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -833,7 +833,7 @@ model CapabilityInstall {
   version   String?
   digest    String?
   secretId  String?
-  config    Json     @default("{}")
+  config    Json     @default(dbgenerated("'{}'"))
   createdAt DateTime @default(now())
 
   @@index([spaceId, userId])
@@ -1087,9 +1087,9 @@ model McpServer {
   transport     String
   endpoint      String?
   command       String?
-  args          Json              @default("[]")
-  env           Json              @default("{}")
-  headers       Json              @default("{}")
+  args          Json              @default(dbgenerated("'[]'"))
+  env           Json              @default(dbgenerated("'{}'"))
+  headers       Json              @default(dbgenerated("'{}'"))
   secretId      String?
   secret        Secret?           @relation(fields: [secretId], references: [id], onDelete: SetNull)
   enabled       Boolean           @default(true)
@@ -1130,7 +1130,7 @@ model BotMcpServer {
   server        McpServer @relation(fields: [serverId], references: [id], onDelete: Cascade)
   userId        String
   allowAllTools Boolean   @default(true)
-  allowedTools  Json      @default("[]")
+  allowedTools  Json      @default(dbgenerated("'[]'"))
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
@@ -1267,10 +1267,10 @@ model ExternalConversation {
   externalKey              String
   conversationId           String
   displayName              String?
-  participantNames         String[]          @default([])
+  participantNames         String            @default("[]")
   teamChatAmbientEnabled   Boolean?
   teamChatRules            String?
-  automatedSenderPolicies  Json              @default("{}")
+  automatedSenderPolicies  Json              @default(dbgenerated("'{}'"))
   spaceId                  String
   space                    Space             @relation(fields: [spaceId], references: [id], onDelete: Cascade)
   botId                    String

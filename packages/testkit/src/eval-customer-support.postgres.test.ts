@@ -85,7 +85,6 @@ describe.skipIf(!databaseAvailable)("offline Slack customer-support eval", () =>
           return createApp({
             sandbox,
             databaseUrl: process.env.DATABASE_URL!,
-            realtimeDatabaseUrl: process.env.DATABASE_URL!,
             authUrl: "http://127.0.0.1:5173",
             webOrigin: "http://127.0.0.1:5173",
             dataDir,

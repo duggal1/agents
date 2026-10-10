@@ -1,13 +1,9 @@
 import type { BackgroundJob, JobPublisher } from "@sapphire/adapter-kit";
 import { stuckWorkStatusMessages } from "@sapphire/core";
-import type { Pool, PrismaClient, ThreadEvents } from "@sapphire/db";
+import type { PrismaClient, ThreadEvents } from "@sapphire/db";
 import { describe, expect, it, vi } from "vitest";
 import { returnBotMessageOutcome } from "./bot-messages.js";
-import {
-  createJobReconciler,
-  createPostgresReconciliationLeadership,
-  type ReconciliationLeadership,
-} from "./job-reconciler.js";
+import { createJobReconciler } from "./job-reconciler.js";
 
 vi.mock("./bot-messages.js", () => ({ returnBotMessageOutcome: vi.fn() }));
 
@@ -348,26 +344,6 @@ describe("createJobReconciler", () => {
     });
   });
 
-  it("does not scan when another replica is the reconciliation leader", async () => {
-    const prisma = fakePrisma();
-    const leadership: ReconciliationLeadership = {
-      tryAcquire: vi.fn(async () => false),
-      release: vi.fn(async () => undefined),
-    };
-    const { jobs, enqueue } = publisher();
-    const reconciler = createJobReconciler({ prisma, jobs, leadership });
-
-    await reconciler.reconcileOnce();
-    await reconciler.stop();
-
-    expect(prisma.run.findMany).not.toHaveBeenCalled();
-    expect(prisma.routine.findMany).not.toHaveBeenCalled();
-    expect(prisma.computer.findMany).not.toHaveBeenCalled();
-    expect(prisma.messagingOutbound.findFirst).not.toHaveBeenCalled();
-    expect(enqueue).not.toHaveBeenCalled();
-    expect(leadership.release).toHaveBeenCalledOnce();
-  });
-
   it("retries terminal bot outcomes that were not returned", async () => {
     const terminalRun = {
       id: "run-terminal",
@@ -627,51 +603,5 @@ describe("createJobReconciler", () => {
       "status",
     );
     expect(prisma.message.findMany).not.toHaveBeenCalled();
-  });
-});
-
-describe("createPostgresReconciliationLeadership", () => {
-  it("retains leadership for one replica and transfers it after release", async () => {
-    let locked = false;
-    const clients: Array<{
-      query: ReturnType<typeof vi.fn>;
-      release: ReturnType<typeof vi.fn>;
-      once: ReturnType<typeof vi.fn>;
-      removeListener: ReturnType<typeof vi.fn>;
-    }> = [];
-    const pool = {
-      connect: vi.fn(async () => {
-        const client = {
-          query: vi.fn(async (sql: string) => {
-            if (sql.includes("pg_try_advisory_lock")) {
-              const acquired = !locked;
-              if (acquired) locked = true;
-              return { rows: [{ acquired }] };
-            }
-            const released = locked;
-            locked = false;
-            return { rows: [{ released }] };
-          }),
-          release: vi.fn(),
-          once: vi.fn(),
-          removeListener: vi.fn(),
-        };
-        clients.push(client);
-        return client;
-      }),
-    } as unknown as Pick<Pool, "connect">;
-    const first = createPostgresReconciliationLeadership(pool);
-    const second = createPostgresReconciliationLeadership(pool);
-
-    await expect(first.tryAcquire()).resolves.toBe(true);
-    await expect(first.tryAcquire()).resolves.toBe(true);
-    await expect(second.tryAcquire()).resolves.toBe(false);
-    expect(pool.connect).toHaveBeenCalledTimes(2);
-    expect(clients[1]?.release).toHaveBeenCalledOnce();
-
-    await first.release();
-    await expect(second.tryAcquire()).resolves.toBe(true);
-    expect(clients[0]?.removeListener).toHaveBeenCalledWith("error", expect.any(Function));
-    expect(clients[0]?.release).toHaveBeenCalledWith(false);
   });
 });

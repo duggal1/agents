@@ -6,7 +6,7 @@ import { describe, expect, it } from "vitest";
 const migrationSql = readFileSync(
   join(
     dirname(fileURLToPath(import.meta.url)),
-    "../prisma/migrations/20260901120000_messaging_surface/migration.sql",
+    "../prisma/migrations-archive-postgres/20260901120000_messaging_surface/migration.sql",
   ),
   "utf8",
 );

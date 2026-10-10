@@ -153,7 +153,6 @@ async function main() {
           const handles = await createApp({
             sandbox,
             databaseUrl,
-            realtimeDatabaseUrl: databaseUrl,
             dataDir: path.join(dataDir, `${scenario.id}-${planned.trial}`),
             sandboxProvider: "fake",
             agentRuntime: "pi",

@@ -34,7 +34,6 @@ describePostgres("cloud agent lifecycle and recovery (PostgreSQL + Cursor emulat
     await prisma.organization.deleteMany({ where: { id: { in: users } } });
     await prisma.user.deleteMany({ where: { id: { in: users } } });
     await db.prisma.$disconnect();
-    await db.pool.end();
   });
 
   async function setup() {

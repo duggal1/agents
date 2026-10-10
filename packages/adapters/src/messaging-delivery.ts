@@ -7,9 +7,26 @@ import type {
 import { messagingDeliverJob, runContinueJob } from "@sapphire/adapter-kit";
 import type { MessageBlock } from "@sapphire/contracts";
 import { botMessageHopExhausted, nextBotMessageHop } from "@sapphire/core";
-import type { PrismaClient, ThreadEvents } from "@sapphire/db";
+import type { Prisma, PrismaClient, ThreadEvents } from "@sapphire/db";
 import { appendEventInTransaction, createThreadMessageInTransaction } from "@sapphire/db";
 import { getLogger } from "@sapphire/logging";
+
+function isUniqueConstraintError(error: unknown) {
+  return Boolean(error && typeof error === "object" && "code" in error && error.code === "P2002");
+}
+
+// SQLite has no createMany(skipDuplicates): insert row by row, letting a
+// concurrent deliver win the idempotencyKey race without throwing P2002.
+async function insertOutboundIgnoreConflicts(
+  prisma: PrismaClient,
+  rows: Prisma.MessagingOutboundCreateInput[],
+) {
+  for (const data of rows) {
+    await prisma.messagingOutbound.create({ data }).catch((error: unknown) => {
+      if (!isUniqueConstraintError(error)) throw error;
+    });
+  }
+}
 
 /**
  * Margin under vendor consecutive-outbound caps (sendblue enforces one hard):
@@ -114,7 +131,7 @@ async function mirrorRun(deps: MessagingDeliveryDeps, runId: string): Promise<vo
   if (rows.length === 0) return;
   // Atomic dedupe: a concurrent messaging.deliver for the same run loses on
   // the idempotencyKey unique key instead of throwing P2002.
-  await deps.prisma.messagingOutbound.createMany({ data: rows, skipDuplicates: true });
+  await insertOutboundIgnoreConflicts(deps.prisma, rows);
 }
 
 /**
@@ -162,16 +179,16 @@ async function mirrorChannelRun(
     .filter((entry) => entry.text);
   if (messages.length === 0) return;
 
-  await deps.prisma.messagingOutbound.createMany({
-    data: messages.map(({ message, text }) => ({
+  await insertOutboundIgnoreConflicts(
+    deps.prisma,
+    messages.map(({ message, text }) => ({
       idempotencyKey: `msg:${message.id}`,
       kind: "group",
       threadId: channel.threadId,
       body: `${fromLabel}: ${text}`,
       sourceMessageId: message.id,
     })),
-    skipDuplicates: true,
-  });
+  );
 
   const hop = nextBotMessageHop(channelBlock.hop);
   const peers = await deps.prisma.messagingChannelMember.findMany({

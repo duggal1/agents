@@ -140,7 +140,9 @@ export function isAppearancePreference(
 export function normalizeAppearancePreference(
   raw: string | null | undefined,
 ): AppearancePreference {
-  return isAppearancePreference(raw) ? raw : "system";
+  // Product default is dark: with nothing (valid) stored, the app renders
+  // the black theme. An explicit "system" or "light" choice still wins.
+  return isAppearancePreference(raw) ? raw : "dark";
 }
 
 export type ResolveAppearancePreferenceOptions = {

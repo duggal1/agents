@@ -141,6 +141,16 @@ function createDeps(overrides: {
         }
         return { count };
       }),
+      create: vi.fn(async ({ data }: { data: Record<string, unknown> }) => {
+        const duplicate =
+          rows.some((row) => row.idempotencyKey === data.idempotencyKey) ||
+          (overrides.existingOutbox as { idempotencyKey?: string } | null)?.idempotencyKey ===
+            data.idempotencyKey;
+        if (duplicate) throw Object.assign(new Error("Unique constraint failed"), { code: "P2002" });
+        const row = { id: `out-${rows.length + 1}`, status: "pending", ...data };
+        rows.push(row);
+        return row;
+      }),
       update: vi.fn(async ({ where, data }: { where: { id: string }; data: unknown }) => {
         const row = rows.find((candidate) => candidate.id === where.id);
         if (row) Object.assign(row, data);
@@ -702,6 +712,11 @@ function createChannelDeps(
         for (const item of data)
           rows.push({ id: `out-${rows.length + 1}`, status: "pending", ...item });
         return { count: data.length };
+      }),
+      create: vi.fn(async ({ data }: { data: Record<string, unknown> }) => {
+        const row = { id: `out-${rows.length + 1}`, status: "pending", ...data };
+        rows.push(row);
+        return row;
       }),
       update: vi.fn(async ({ where, data }: { where: { id: string }; data: unknown }) => {
         const row = rows.find((candidate) => candidate.id === where.id);

@@ -6,6 +6,7 @@ import {
 } from "@sapphire/contracts";
 import type { PrismaClient } from "./client.js";
 import { IsolationError } from "./scope.js";
+import { parseStringList } from "./string-list.js";
 import { previewFromBlocks } from "./thread-listing.js";
 
 export function createExternalConversationRepos(prisma: PrismaClient) {
@@ -60,7 +61,7 @@ export function createExternalConversationRepos(prisma: PrismaClient) {
           botId: conversation.botId,
           provider: conversation.provider,
           displayName: conversation.displayName,
-          participantNames: conversation.participantNames,
+          participantNames: parseStringList(conversation.participantNames),
           teamChatAmbientEnabled: conversation.teamChatAmbientEnabled,
           teamChatRules: conversation.teamChatRules,
           automatedSenderPolicies: AutomatedSenderPoliciesSchema.parse(

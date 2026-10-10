@@ -209,9 +209,10 @@ async function closeServerCards(
   serverId: string,
 ): Promise<ThreadSeq[]> {
   const messages = await client.message.findMany({
+    // SQLite has no Json array_contains: load the thread's messages and match
+    // the approval card in JS below (the loop already skips non-matching rows).
     where: {
       thread: { spaceId: actor.spaceId, userId: actor.userId },
-      blocks: { array_contains: [{ kind: "mcp_approval", serverId }] },
     },
     select: {
       id: true,

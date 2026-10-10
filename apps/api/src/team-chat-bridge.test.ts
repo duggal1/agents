@@ -1718,7 +1718,8 @@ describe("team chat bridge", () => {
         create: expect.objectContaining({
           botId: "bot-1",
           displayName: "Leadership",
-          participantNames: ["Ada", "Grace", "Arthur"],
+          // SQLite stores the list as JSON text.
+          participantNames: JSON.stringify(["Ada", "Grace", "Arthur"]),
           thread: { create: { spaceId: "space-1", userId: "owner-1" } },
         }),
       }),

@@ -2927,7 +2927,7 @@ describe("routines.update", () => {
     userId: "user-1",
     name: "Later",
     prompt: "say done",
-    crons: ["@once"],
+    crons: JSON.stringify(["@once"]),
     timezone: "UTC",
     active: false,
     notify: false,

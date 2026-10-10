@@ -11,6 +11,7 @@ import type {
   ThreadEvents,
 } from "@sapphire/db";
 import {
+  createManyIgnoringConflicts,
   createThreadMessage,
   normalizeMessagingLinkCode,
   redeemMessagingLinkCode,
@@ -444,10 +445,9 @@ async function writeConfirmation(
   body: string,
 ): Promise<void> {
   await tx.messagingOutbound.deleteMany({ where: { idempotencyKey: key } });
-  await tx.messagingOutbound.createMany({
-    data: [{ idempotencyKey: key, kind: "dm", identityId: identity.id, body }],
-    skipDuplicates: true,
-  });
+  await createManyIgnoringConflicts(tx.messagingOutbound, [
+    { idempotencyKey: key, kind: "dm", identityId: identity.id, body },
+  ]);
 }
 
 async function enqueueDeliverJob(deps: MessagingInboundDeps): Promise<void> {
@@ -465,10 +465,9 @@ async function enqueueConfirmation(
   // Keys are stable per membership/connection across approval cycles; clear
   // the prior cycle's row or skipDuplicates would swallow the new text.
   await deps.prisma.messagingOutbound.deleteMany({ where: { idempotencyKey: key } });
-  await deps.prisma.messagingOutbound.createMany({
-    data: [{ idempotencyKey: key, kind: "dm", identityId: identity.id, body }],
-    skipDuplicates: true,
-  });
+  await createManyIgnoringConflicts(deps.prisma.messagingOutbound, [
+    { idempotencyKey: key, kind: "dm", identityId: identity.id, body },
+  ]);
   await deps.jobs.enqueue(messagingDeliverJob()).catch((error) => {
     getLogger().error("messaging confirmation enqueue error", error);
   });
@@ -549,17 +548,14 @@ async function handleChannelEvent(
   }
 
   if (hasUnlinked && !channel.introPostedAt) {
-    await deps.prisma.messagingOutbound.createMany({
-      data: [
-        {
-          idempotencyKey: `intro:${channel.id}`,
-          kind: "intro",
-          threadId: channel.threadId,
-          body: "Hi. This line hosts Sapphire personal agents. Some people in this group haven't messaged it yet; send any message to this line first if you want your own agent here.",
-        },
-      ],
-      skipDuplicates: true,
-    });
+    await createManyIgnoringConflicts(deps.prisma.messagingOutbound, [
+      {
+        idempotencyKey: `intro:${channel.id}`,
+        kind: "intro",
+        threadId: channel.threadId,
+        body: "Hi. This line hosts Sapphire personal agents. Some people in this group haven't messaged it yet; send any message to this line first if you want your own agent here.",
+      },
+    ]);
     await deps.prisma.messagingChannel.update({
       where: { id: channel.id },
       data: { introPostedAt: new Date() },
@@ -640,17 +636,14 @@ async function inviteMember(
   await deps.prisma.messagingOutbound.deleteMany({
     where: { idempotencyKey: `invite:${channel.id}:${identity.id}` },
   });
-  await deps.prisma.messagingOutbound.createMany({
-    data: [
-      {
-        idempotencyKey: `invite:${channel.id}:${identity.id}`,
-        kind: "dm",
-        identityId: identity.id,
-        body: `"${name}" was linked to your Sapphire agent. Reply YES to let your agent join the conversation there, or NO to stay out.`,
-      },
-    ],
-    skipDuplicates: true,
-  });
+  await createManyIgnoringConflicts(deps.prisma.messagingOutbound, [
+    {
+      idempotencyKey: `invite:${channel.id}:${identity.id}`,
+      kind: "dm",
+      identityId: identity.id,
+      body: `"${name}" was linked to your Sapphire agent. Reply YES to let your agent join the conversation there, or NO to stay out.`,
+    },
+  ]);
   const thread = await deps.prisma.thread.findFirst({ where: { botId: identity.botId } });
   if (thread) {
     const note = await createThreadMessage(deps.prisma, {

@@ -14,7 +14,9 @@
     <script>
       (() => {
         const key = "rakazo.uiAppearance";
-        let preference = "system";
+        // Default is dark (see normalizeAppearancePreference): first paint
+        // must already be black, before React applies the resolved theme.
+        let preference = "dark";
         try {
           const stored = localStorage.getItem(key);
           if (stored === "system" || stored === "light" || stored === "dark") preference = stored;

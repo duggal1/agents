@@ -259,19 +259,14 @@ describe("resolveMcpApprovalCards", () => {
       },
     ];
     const { deps, actor, tx } = fixture(blocks);
-    tx.message.findMany = vi.fn(
-      async (query: { where?: { blocks?: { array_contains?: unknown } } }) => {
-        const needle = query.where?.blocks?.array_contains;
-        if (needle === undefined) return [];
-        return rows.filter((row) => jsonContains(row.blocks, needle));
-      },
-    );
+    // SQLite has no Json array_contains: the store returns the thread's
+    // messages and the dismissal matches the approval card in JS.
+    tx.message.findMany = vi.fn(async () => rows);
     await dismissMcpServerApprovals(deps, actor, "srv-a");
     expect(deps.prisma.thread.findMany).not.toHaveBeenCalled();
     expect(tx.message.findMany).toHaveBeenCalledWith({
       where: {
         thread: { spaceId: "space", userId: "user" },
-        blocks: { array_contains: [{ kind: "mcp_approval", serverId: "srv-a" }] },
       },
       select: {
         id: true,

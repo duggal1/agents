@@ -3,7 +3,7 @@ import { type AgentRuntime, type JobPublisher, runJobKey } from "@sapphire/adapt
 import { MessagingTeamChatEmulator } from "@sapphire/adapters";
 import type { ModelConnectInput, RunStatus } from "@sapphire/contracts";
 import { ACTIVE_RUN_STATUSES, isTerminal } from "@sapphire/core";
-import type { createDb } from "@sapphire/db";
+import { parseStringList, type createDb } from "@sapphire/db";
 import { discardBotIntroRun } from "../discard-bot-intro.js";
 import { sessionCookieHeader } from "../index.js";
 import type { EvalCase, Evidence } from "./cases.js";
@@ -372,10 +372,13 @@ export async function runTrial(
     const memories = await rpc<Array<{ content: string }>>(handles.app, cookie, "memory/list", {
       botId,
     });
-    const routines = await handles.prisma.routine.findMany({
-      where: { botId },
-      select: { name: true, prompt: true, crons: true, active: true },
-    });
+    // SQLite stores crons as JSON text; Evidence exposes the parsed list.
+    const routines = (
+      await handles.prisma.routine.findMany({
+        where: { botId },
+        select: { name: true, prompt: true, crons: true, active: true },
+      })
+    ).map((routine) => ({ ...routine, crons: parseStringList(routine.crons) }));
     await captureTools();
     const evidence: Evidence = {
       text: lastText,

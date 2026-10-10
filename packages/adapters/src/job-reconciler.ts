@@ -2,9 +2,8 @@ import type { JobPublisher, NotificationProvider } from "@sapphire/adapter-kit";
 import { messagingDeliverJob, routineWakeupJob, runContinueJob } from "@sapphire/adapter-kit";
 import type { MessageBlock } from "@sapphire/contracts";
 import { stuckWorkStatusMessages } from "@sapphire/core";
-import type { Pool, PrismaClient, ThreadEvents } from "@sapphire/db";
+import type { PrismaClient, ThreadEvents } from "@sapphire/db";
 import { getLogger } from "@sapphire/logging";
-import type { PoolClient } from "pg";
 import { returnBotMessageOutcome } from "./bot-messages.js";
 import { scheduleComputerControlExpiry } from "./computer-control.js";
 import { reconcileStuckWork } from "./stuck-work.js";
@@ -14,87 +13,8 @@ const DEFAULT_INTERVAL_MS = 30_000;
 const DEFAULT_BATCH_SIZE = 100;
 const ROUTINE_LOOKAHEAD_MS = 60_000;
 const CONTROL_LOOKAHEAD_MS = 60_000;
-// Two keys give Sapphire's lock a namespace without relying on a hash that might collide
-// with an application using the one-key advisory-lock API.
-const RECONCILIATION_LOCK_NAMESPACE = 1_380_019_075;
-const RECONCILIATION_LOCK_ID = 1;
-
 type Cursor = { at: Date; id: string };
 type ControlCursor = { at: Date | null; id: string };
-
-export interface ReconciliationLeadership {
-  tryAcquire(): Promise<boolean>;
-  release(): Promise<void>;
-}
-
-/**
- * Holds a session advisory lock for the lifetime of the elected reconciler. Followers
- * retry on every reconciliation interval, so a disconnected or stopped leader is
- * replaced without coordinating through application state.
- */
-export function createPostgresReconciliationLeadership(
-  pool: Pick<Pool, "connect">,
-  options: { lockId?: number } = {},
-): ReconciliationLeadership {
-  const lockId = options.lockId ?? RECONCILIATION_LOCK_ID;
-  let leaderClient: PoolClient | undefined;
-  let leaderErrorListener: (() => void) | undefined;
-
-  const loseClient = (client: PoolClient) => {
-    if (leaderClient !== client) return;
-    leaderClient = undefined;
-    leaderErrorListener = undefined;
-    client.release(true);
-  };
-
-  return {
-    async tryAcquire() {
-      if (leaderClient) return true;
-
-      const candidate = await pool.connect();
-      try {
-        const result = await candidate.query<{ acquired: boolean }>(
-          "SELECT pg_try_advisory_lock($1::integer, $2::integer) AS acquired",
-          [RECONCILIATION_LOCK_NAMESPACE, lockId],
-        );
-        if (!result.rows[0]?.acquired) {
-          candidate.release();
-          return false;
-        }
-
-        leaderClient = candidate;
-        leaderErrorListener = () => loseClient(candidate);
-        candidate.once("error", leaderErrorListener);
-        return true;
-      } catch (error) {
-        candidate.release(true);
-        throw error;
-      }
-    },
-
-    async release() {
-      const client = leaderClient;
-      if (!client) return;
-      leaderClient = undefined;
-      if (leaderErrorListener) client.removeListener("error", leaderErrorListener);
-      leaderErrorListener = undefined;
-
-      let destroy = false;
-      try {
-        const result = await client.query<{ released: boolean }>(
-          "SELECT pg_advisory_unlock($1::integer, $2::integer) AS released",
-          [RECONCILIATION_LOCK_NAMESPACE, lockId],
-        );
-        destroy = result.rows[0]?.released !== true;
-      } catch {
-        // Never return a connection with an uncertain session lock to the pool.
-        destroy = true;
-      } finally {
-        client.release(destroy);
-      }
-    },
-  };
-}
 
 export function createJobReconciler(
   deps: {
@@ -102,7 +22,6 @@ export function createJobReconciler(
     jobs: JobPublisher;
     events?: ThreadEvents;
     notifications?: NotificationProvider;
-    leadership?: ReconciliationLeadership;
     reconcileComputerUpdates?: () => Promise<void>;
     reconcileCloudAgents?: () => Promise<void>;
   },
@@ -121,8 +40,6 @@ export function createJobReconciler(
   const reconcileOnce = async () => {
     if (reconciling) return reconciling;
     reconciling = (async () => {
-      if (deps.leadership && !(await deps.leadership.tryAcquire())) return;
-
       const auxiliary = await Promise.allSettled(
         [deps.reconcileCloudAgents, deps.reconcileComputerUpdates].map(async (reconcile) =>
           reconcile?.(),
@@ -383,7 +300,6 @@ export function createJobReconciler(
       if (timer) clearInterval(timer);
       timer = undefined;
       await reconciling?.catch(() => undefined);
-      await deps.leadership?.release();
     },
   };
 }

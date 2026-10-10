@@ -25,7 +25,6 @@ describePostgres("memory commits (PostgreSQL)", () => {
     store = new MarkdownMemoryStore(prisma);
     close = async () => {
       await prisma.$disconnect();
-      await db.pool.end();
     };
     await prisma.organization.create({
       data: {

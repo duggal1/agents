@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { Prisma, type PrismaClient } from "./client.js";
+import { withNamedLock } from "./locks.js";
 import { IsolationError } from "./scope.js";
 import { withTransactionRetry } from "./transaction-retry.js";
 
@@ -239,14 +240,18 @@ type EmptySpaceDeleteInput = {
   spaceId: string;
 };
 
+/** Lock name serializing content creation with the empty-space deletion claim. */
+export function spaceContentLockName(spaceId: string): string {
+  return `space-content:${spaceId}`;
+}
+
 /** Serialize content creation with the empty-space deletion claim. */
 export async function lockSpaceForContentCreation(
   tx: Prisma.TransactionClient,
   input: { spaceId: string; userId: string },
 ): Promise<{ organizationId: string }> {
-  await tx.$queryRaw(Prisma.sql`
-    SELECT pg_advisory_xact_lock(hashtextextended(${input.spaceId}, 0))::text AS "lock"
-  `);
+  // Callers hold spaceContentLockName across the whole transaction; the
+  // membership/deletingAt check below is the actual gate.
   const membership = await tx.spaceMember.findUnique({
     where: { spaceId_userId: { spaceId: input.spaceId, userId: input.userId } },
     select: {
@@ -257,12 +262,6 @@ export async function lockSpaceForContentCreation(
   if (!membership) throw new IsolationError();
   if (membership.space.deletingAt) throw new SpaceDeletionInProgressError();
   return { organizationId: membership.organizationId };
-}
-
-async function lockSpaceDeletion(tx: Prisma.TransactionClient, spaceId: string): Promise<void> {
-  await tx.$queryRaw(Prisma.sql`
-    SELECT pg_advisory_xact_lock(hashtextextended(${spaceId}, 0))::text AS "lock"
-  `);
 }
 
 type ClaimedSpaceDeleteInput = EmptySpaceDeleteInput & { claimId: string };
@@ -361,31 +360,32 @@ export async function claimEmptySpaceDeletionForMember(
   computers: Array<{ homeKey: string; kind: string; providerRef: string }>;
 }> {
   const claimId = randomUUID();
-  return withTransactionRetry(() =>
-    prisma.$transaction(
-      async (tx) => {
-        await lockSpaceDeletion(tx, input.spaceId);
-        const planned = await assertEmptySpaceDeletable(tx, input);
-        const lifecycle = await tx.space.findUnique({
-          where: { id: input.spaceId },
-          select: { deletingAt: true },
-        });
-        const claimedBefore = new Date(Date.now() - SPACE_DELETION_CLAIM_TIMEOUT_MS);
-        const claimed = await tx.space.updateMany({
-          where: {
-            id: input.spaceId,
-            OR: [{ deletingAt: null }, { deletingAt: { lt: claimedBefore } }],
-          },
-          data: { deletingAt: new Date(), deletionClaimId: claimId },
-        });
-        if (claimed.count === 0) throw new SpaceDeletionInProgressError();
-        return {
-          claimId,
-          recovered: Boolean(lifecycle?.deletingAt),
-          computers: planned.computers,
-        };
-      },
-      { isolationLevel: Prisma.TransactionIsolationLevel.Serializable },
+  return withNamedLock(spaceContentLockName(input.spaceId), () =>
+    withTransactionRetry(() =>
+      prisma.$transaction(
+        async (tx) => {
+          const planned = await assertEmptySpaceDeletable(tx, input);
+          const lifecycle = await tx.space.findUnique({
+            where: { id: input.spaceId },
+            select: { deletingAt: true },
+          });
+          const claimedBefore = new Date(Date.now() - SPACE_DELETION_CLAIM_TIMEOUT_MS);
+          const claimed = await tx.space.updateMany({
+            where: {
+              id: input.spaceId,
+              OR: [{ deletingAt: null }, { deletingAt: { lt: claimedBefore } }],
+            },
+            data: { deletingAt: new Date(), deletionClaimId: claimId },
+          });
+          if (claimed.count === 0) throw new SpaceDeletionInProgressError();
+          return {
+            claimId,
+            recovered: Boolean(lifecycle?.deletingAt),
+            computers: planned.computers,
+          };
+        },
+        { isolationLevel: Prisma.TransactionIsolationLevel.Serializable },
+      ),
     ),
   );
 }
@@ -438,28 +438,30 @@ export async function deleteEmptySpaceForMember(
   prisma: PrismaClient,
   input: ClaimedSpaceDeleteInput,
 ): Promise<{ id: string }> {
-  return withTransactionRetry(() =>
-    prisma.$transaction(
-      async (tx) => {
-        await lockSpaceDeletion(tx, input.spaceId);
-        const claim = await tx.space.findFirst({
-          where: { id: input.spaceId, deletionClaimId: input.claimId },
-          select: { id: true },
-        });
-        if (!claim) throw new SpaceDeletionInProgressError();
-        const planned = await assertEmptySpaceDeletable(tx, input);
-        await tx.space.delete({ where: { id: input.spaceId } });
-        if (input.spaceId !== input.currentSpaceId) {
-          return { id: input.currentSpaceId };
-        }
-        const remaining = planned.memberships.filter(
-          (membership) => membership.spaceId !== input.spaceId,
-        );
-        const fallback = remaining.find((membership) => membership.space.isDefault) ?? remaining[0];
-        if (!fallback) throw new CannotDeleteLastSpaceError();
-        return { id: fallback.spaceId };
-      },
-      { isolationLevel: Prisma.TransactionIsolationLevel.Serializable },
+  return withNamedLock(spaceContentLockName(input.spaceId), () =>
+    withTransactionRetry(() =>
+      prisma.$transaction(
+        async (tx) => {
+          const claim = await tx.space.findFirst({
+            where: { id: input.spaceId, deletionClaimId: input.claimId },
+            select: { id: true },
+          });
+          if (!claim) throw new SpaceDeletionInProgressError();
+          const planned = await assertEmptySpaceDeletable(tx, input);
+          await tx.space.delete({ where: { id: input.spaceId } });
+          if (input.spaceId !== input.currentSpaceId) {
+            return { id: input.currentSpaceId };
+          }
+          const remaining = planned.memberships.filter(
+            (membership) => membership.spaceId !== input.spaceId,
+          );
+          const fallback =
+            remaining.find((membership) => membership.space.isDefault) ?? remaining[0];
+          if (!fallback) throw new CannotDeleteLastSpaceError();
+          return { id: fallback.spaceId };
+        },
+        { isolationLevel: Prisma.TransactionIsolationLevel.Serializable },
+      ),
     ),
   );
 }

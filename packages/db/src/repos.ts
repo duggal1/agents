@@ -8,10 +8,11 @@ import {
 } from "@sapphire/contracts";
 import { userVisibleMessages } from "@sapphire/core";
 import type { PrismaClient } from "./client.js";
-import { type ComputerMode, ensureComputerRecord, parseComputerMode } from "./computers.js";
+import { type ComputerMode, computerQuotaLockName, ensureComputerRecord, parseComputerMode } from "./computers.js";
+import { withNamedLock } from "./locks.js";
 import { createThreadMessageInTransaction } from "./messages.js";
 import { BotSectionNameConflictError, IsolationError } from "./scope.js";
-import { lockSpaceForContentCreation } from "./spaces.js";
+import { lockSpaceForContentCreation, spaceContentLockName } from "./spaces.js";
 import { activeRunSelection, previewFromBlocks } from "./thread-listing.js";
 import { withTransactionRetry } from "./transaction-retry.js";
 
@@ -209,15 +210,20 @@ export function createRepos(prisma: PrismaClient) {
           where: { spaceId: actor.spaceId, userId: actor.userId },
           _max: { position: true },
         });
-        await tx.botSection.createMany({
-          data: {
-            spaceId: actor.spaceId,
-            userId: actor.userId,
-            name,
-            position: (aggregate._max.position ?? -1) + 1,
-          },
-          skipDuplicates: true,
-        });
+        // SQLite has no createMany(skipDuplicates): insert-or-ignore the
+        // section, letting a concurrent insert win via the unique constraint.
+        await tx.botSection
+          .create({
+            data: {
+              spaceId: actor.spaceId,
+              userId: actor.userId,
+              name,
+              position: (aggregate._max.position ?? -1) + 1,
+            },
+          })
+          .catch((error: unknown) => {
+            if (!isUniqueViolation(error)) throw error;
+          });
         const section = await tx.botSection.findUniqueOrThrow({
           where: {
             spaceId_userId_name: {
@@ -425,11 +431,13 @@ export function createRepos(prisma: PrismaClient) {
       const kind =
         envKind === "docker" && settings?.computerHost === "this-mac" ? "desktop" : envKind;
       const insertBot = () =>
-        prisma.$transaction(async (tx) => {
-          await lockSpaceForContentCreation(tx, {
-            spaceId: actor.spaceId,
-            userId: actor.userId,
-          });
+        withNamedLock(spaceContentLockName(actor.spaceId), () =>
+          withNamedLock(computerQuotaLockName(actor.userId), () =>
+            prisma.$transaction(async (tx) => {
+              await lockSpaceForContentCreation(tx, {
+                spaceId: actor.spaceId,
+                userId: actor.userId,
+              });
           const positions = await tx.bot.aggregate({
             where: { spaceId: actor.spaceId, userId: actor.userId },
             _max: { position: true },
@@ -503,7 +511,9 @@ export function createRepos(prisma: PrismaClient) {
             where: { id: created.id },
             include: { thread: true, computer: true },
           });
-        });
+            }),
+          ),
+        );
 
       const findBySpawnKey = async () => {
         if (!input.spawnKey) return null;
@@ -577,21 +587,23 @@ export function createRepos(prisma: PrismaClient) {
       const kind = bot.computer.kind;
       // Keep ensure + bot link in one transaction so a capped quota lock covers
       // both steps (a computer row alone does not count until a live bot refs it).
-      const updated = await withTransactionRetry(() =>
-        prisma.$transaction(async (tx) => {
-          const computer = await ensureComputerRecord(tx, {
-            mode,
-            spaceId: actor.spaceId,
-            userId: actor.userId,
-            botId,
-            kind,
-          });
-          return tx.bot.update({
-            where: { id: botId },
-            data: { computerId: computer.id },
-            include: { thread: true, computer: true },
-          });
-        }),
+      const updated = await withNamedLock(computerQuotaLockName(actor.userId), () =>
+        withTransactionRetry(() =>
+          prisma.$transaction(async (tx) => {
+            const computer = await ensureComputerRecord(tx, {
+              mode,
+              spaceId: actor.spaceId,
+              userId: actor.userId,
+              botId,
+              kind,
+            });
+            return tx.bot.update({
+              where: { id: botId },
+              data: { computerId: computer.id },
+              include: { thread: true, computer: true },
+            });
+          }),
+        ),
       );
       return mapBot(updated);
     },

@@ -8,6 +8,7 @@ import { runContinueJob } from "@sapphire/adapter-kit";
 import { AutomatedSenderPoliciesSchema, type MessageBlock } from "@sapphire/contracts";
 import { BOT_MESSAGE_MAX_HOPS } from "@sapphire/core";
 import type { PrismaClient, ThreadEvents } from "@sapphire/db";
+import { serializeStringList } from "@sapphire/db";
 import { getLogger } from "@sapphire/logging";
 import type { TeamChatEngagementJudge } from "./team-chat-judge.js";
 import {
@@ -221,7 +222,7 @@ export class TeamChatBridge {
         externalKey: message.conversationKey,
         conversationId: message.conversationId,
         displayName: message.conversationName,
-        participantNames: message.participantNames ?? [],
+        participantNames: serializeStringList(message.participantNames ?? []),
         spaceId: target.spaceId,
         botId: target.id,
         userId: target.userId,
@@ -230,7 +231,9 @@ export class TeamChatBridge {
       update: {
         conversationId: message.conversationId,
         ...(message.conversationName ? { displayName: message.conversationName } : {}),
-        ...(message.participantNames?.length ? { participantNames: message.participantNames } : {}),
+        ...(message.participantNames?.length
+          ? { participantNames: serializeStringList(message.participantNames) }
+          : {}),
       },
       include: { thread: { select: { id: true } } },
     });

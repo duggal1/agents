@@ -107,6 +107,7 @@ import {
   type Prisma,
   type PrismaClient,
   parseComputerMode,
+  parseStringList,
   retireModelCredential,
   SpaceLimitError,
   type ThreadEvents,
@@ -3040,6 +3041,7 @@ export function createRunExecutor(deps: ExecutorDeps) {
       if (!Number.isFinite(scheduledAt.getTime())) return;
       const routine = await deps.prisma.routine.findUnique({ where: { id: routineId } });
       if (!routine?.active || routine.nextRunAt?.getTime() !== scheduledAt.getTime()) return;
+      const crons = parseStringList(routine.crons);
       if (await deferFutureRoutine(deps.jobs, routineId, scheduledAt)) return;
       const bot = await deps.prisma.bot.findUnique({
         where: { id: routine.botId },
@@ -3077,10 +3079,10 @@ export function createRunExecutor(deps: ExecutorDeps) {
       // legacy row accepted before cron validation was added) fires the
       // already-due run once, then nextRunAt stays null and the routine
       // pauses rather than crash-looping the wakeup job.
-      const nextRunAt = isOneShotRoutineCrons(routine.crons)
+      const nextRunAt = isOneShotRoutineCrons(crons)
         ? null
         : nextCronDateAcross(
-            routine.crons,
+            crons,
             new Date(Math.max(Date.now(), scheduledAt.getTime())),
             routine.timezone,
           );
@@ -3164,7 +3166,7 @@ export function createRunExecutor(deps: ExecutorDeps) {
       } catch {
         // Best effort: the run is already queued.
       }
-      if (isOneShotRoutineCrons(routine.crons)) {
+      if (isOneShotRoutineCrons(crons)) {
         try {
           await deps.jobs.cancel(routineJobKey(routine.id));
         } catch {

@@ -135,20 +135,23 @@ export async function connectAgent(
           throw new ConnectCreateRaceError();
         }
       }
-      // Fresh approval cycle: clear the old invite row or skipDuplicates would
-      // silently swallow the new request.
+      // Fresh approval cycle: clear the old invite row so the new request is
+      // not silently swallowed.
       await tx.messagingOutbound.deleteMany({ where: { idempotencyKey: inviteKey } });
-      await tx.messagingOutbound.createMany({
-        data: [
-          {
+      // SQLite has no createMany(skipDuplicates): a conflict here only comes
+      // from a concurrent invite, and swallowing it keeps the first writer.
+      await tx.messagingOutbound
+        .create({
+          data: {
             idempotencyKey: inviteKey,
             kind: "dm",
             identityId: targetIdentity.id,
             body: inviteBody,
           },
-        ],
-        skipDuplicates: true,
-      });
+        })
+        .catch((error: unknown) => {
+          if (!isUniqueConstraintError(error)) throw error;
+        });
       return { ok: true as const, status: "pending" as const };
     });
 

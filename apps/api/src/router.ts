@@ -173,6 +173,9 @@ import {
   newestVoiceCredentialOrder,
   Prisma,
   parseComputerMode,
+  createManyIgnoringConflicts,
+  parseStringList,
+  serializeStringList,
   releaseSpaceDeletionClaim,
   renewSpaceDeletionClaim,
   restoreBotUnderComputerQuota,
@@ -3031,7 +3034,7 @@ export function createRouter(deps: RouterDeps) {
             userId: context.actor.userId,
             name: input.name,
             prompt: input.prompt,
-            crons: input.crons,
+            crons: serializeStringList(input.crons),
             timezone: input.timezone,
             notify: input.notify,
             active: input.active,
@@ -3068,7 +3071,7 @@ export function createRouter(deps: RouterDeps) {
         if (!existing) throw new ORPCError("NOT_FOUND");
         const bot = await repos.getBot(context.actor, existing.botId);
         const active = input.active ?? existing.active;
-        const crons = input.crons ?? existing.crons;
+        const crons = input.crons ?? parseStringList(existing.crons);
         const timezone = input.timezone ?? existing.timezone;
         const webhookEnabled = input.webhookEnabled ?? existing.webhookEnabled;
         const githubEnabled = input.githubEnabled ?? existing.githubEnabled;
@@ -3085,7 +3088,7 @@ export function createRouter(deps: RouterDeps) {
           });
         }
         if (active && isOneShotRoutineCrons(crons)) {
-          if (!isOneShotRoutineCrons(existing.crons)) {
+          if (!isOneShotRoutineCrons(parseStringList(existing.crons))) {
             throw new ORPCError("BAD_REQUEST", {
               message: "One-shot schedules must be created from chat.",
             });
@@ -3099,7 +3102,7 @@ export function createRouter(deps: RouterDeps) {
         const scheduleChanged =
           (!existing.active && active) ||
           (input.crons !== undefined &&
-            JSON.stringify(input.crons) !== JSON.stringify(existing.crons)) ||
+            JSON.stringify(input.crons) !== JSON.stringify(parseStringList(existing.crons))) ||
           (input.timezone !== undefined && input.timezone !== existing.timezone);
         const recalculatedNextRunAt =
           crons.length > 0 &&
@@ -3140,7 +3143,7 @@ export function createRouter(deps: RouterDeps) {
             data: {
               name: input.name,
               prompt: input.prompt,
-              crons: input.crons,
+              crons: input.crons === undefined ? undefined : serializeStringList(input.crons),
               timezone: input.timezone,
               active: input.active,
               notify: input.notify,
@@ -5068,17 +5071,14 @@ export function createRouter(deps: RouterDeps) {
             // A re-approved pair starts a fresh cycle; clear the stale row or
             // skipDuplicates would swallow the new confirmation.
             await tx.messagingOutbound.deleteMany({ where: { idempotencyKey: key } });
-            await tx.messagingOutbound.createMany({
-              data: [
-                {
-                  idempotencyKey: key,
-                  kind: "dm",
-                  identityId: requesterIdentity.id,
-                  body: "Your connection request was accepted. Your agents can now message each other.",
-                },
-              ],
-              skipDuplicates: true,
-            });
+            await createManyIgnoringConflicts(tx.messagingOutbound, [
+              {
+                idempotencyKey: key,
+                kind: "dm",
+                identityId: requesterIdentity.id,
+                body: "Your connection request was accepted. Your agents can now message each other.",
+              },
+            ]);
             return { updated: row, notifyRequester: true };
           });
           if (notifyRequester) {
@@ -5426,7 +5426,7 @@ export function createRouter(deps: RouterDeps) {
           routines: routines.map((r) => ({
             name: r.name,
             prompt: r.prompt,
-            crons: r.crons,
+            crons: parseStringList(r.crons),
             timezone: r.timezone,
           })),
           files,
@@ -6212,7 +6212,7 @@ function mapRoutine(row: {
   botId: string;
   name: string;
   prompt: string;
-  crons: string[];
+  crons: string;
   timezone: string;
   active: boolean;
   notify: boolean;
@@ -6228,7 +6228,7 @@ function mapRoutine(row: {
     botId: row.botId,
     name: row.name,
     prompt: row.prompt,
-    crons: row.crons,
+    crons: parseStringList(row.crons),
     timezone: row.timezone,
     active: row.active,
     notify: row.notify,

@@ -8,6 +8,7 @@ import {
   ONCE_ROUTINE_CRON,
 } from "@sapphire/core";
 import type { PrismaClient, ThreadEvents } from "@sapphire/db";
+import { parseStringList, serializeStringList } from "@sapphire/db";
 
 export { isOneShotRoutineCron, ONCE_ROUTINE_CRON };
 
@@ -230,7 +231,7 @@ export async function createScheduleFromTool(
       threadId: input.threadId,
       name,
       prompt,
-      crons: [resolved.cron],
+      crons: serializeStringList([resolved.cron]),
       timezone,
       notify: true,
       active: true,
@@ -269,7 +270,7 @@ export async function createScheduleFromTool(
     ok: true as const,
     routineId: row.id,
     name: row.name,
-    cron: row.crons[0],
+    cron: parseStringList(row.crons)[0],
     nextRunAt: row.nextRunAt?.toISOString() ?? null,
     oneShot: resolved.oneShot,
   };
@@ -290,15 +291,18 @@ export async function listSchedulesFromTool(
     orderBy: { createdAt: "desc" },
   });
   return {
-    routines: rows.map((row) => ({
-      routineId: row.id,
-      name: row.name,
-      prompt: row.prompt,
-      crons: row.crons,
-      active: row.active,
-      nextRunAt: row.nextRunAt?.toISOString() ?? null,
-      oneShot: isOneShotRoutineCrons(row.crons),
-    })),
+    routines: rows.map((row) => {
+      const crons = parseStringList(row.crons);
+      return {
+        routineId: row.id,
+        name: row.name,
+        prompt: row.prompt,
+        crons,
+        active: row.active,
+        nextRunAt: row.nextRunAt?.toISOString() ?? null,
+        oneShot: isOneShotRoutineCrons(crons),
+      };
+    }),
   };
 }
 

@@ -25,7 +25,6 @@ describePostgres("default Space membership trigger (PostgreSQL)", () => {
     prisma = db.prisma;
     close = async () => {
       await db.prisma.$disconnect();
-      await db.pool.end();
     };
 
     const createdAt = new Date();

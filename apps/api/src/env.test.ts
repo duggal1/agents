@@ -2,16 +2,16 @@ import { describe, expect, it } from "vitest";
 import { loadEnv } from "./env.js";
 
 const base = {
-  DATABASE_URL: "postgres://rakazo:rakazo@127.0.0.1:5433/rakazo",
+  DATABASE_URL: "file:/tmp/sapphire-test.db",
   NODE_ENV: "test",
 };
 
 describe("loadEnv", () => {
-  it("defaults the product path to Pi, Docker, and Graphile Worker", () => {
+  it("defaults the product path to Pi, Docker, and the SQLite job queue", () => {
     const env = loadEnv(base);
     expect(env.agentRuntime).toBe("pi");
     expect(env.sandboxProvider).toBe("docker");
-    expect(env.wakeupDriver).toBe("graphile");
+    expect(env.wakeupDriver).toBe("sqlite");
     expect(env.apiHost).toBe("127.0.0.1");
     expect(env.nodeEnv).toBe("test");
   });

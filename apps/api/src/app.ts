@@ -36,7 +36,6 @@ import {
   EmailEmulator,
   EncryptedSecretStore,
   ExpoPushProvider,
-  GraphileJobPublisher,
   InMemoryJobQueue,
   InMemoryRealtimeFanout,
   InstalledConnectorProvider,
@@ -53,7 +52,7 @@ import {
   PiAgentRuntime,
   PiOAuthLogins,
   PipedreamConnector,
-  PostgresRealtimeFanout,
+  PollingRealtimeFanout,
   pipedreamConfigFromEnv,
   piSessionsRoot,
   pushTokenPath,
@@ -64,18 +63,18 @@ import {
   SmtpEmailProvider,
   SpaceMemoryProviderResolver,
   sandboxProviderOptionsFromEnv,
+  SqliteJobQueue,
   toTeamChatInbound,
 } from "@sapphire/adapters";
 import { createAuth, isBlockedAuthPath, loopbackTwinOrigins } from "@sapphire/auth";
 import { signupAllowlistBootUpdate, signupPolicyFromEnv } from "@sapphire/core";
-import type { Pool, PrismaClient } from "@sapphire/db";
+import type { PrismaClient } from "@sapphire/db";
 import {
   createDb,
-  createPool,
   createThreadEvents,
-  parsePositiveInteger,
   provisionMessagingIdentity,
   requireMembership,
+  sqliteDbFileFromDatabaseUrl,
 } from "@sapphire/db";
 import type { Logger } from "@sapphire/logging";
 import {
@@ -170,21 +169,16 @@ export async function createApp(
   const env = { ...loadEnv(process.env), ...envOverrides };
   const logger = loggerOverride ?? createServiceLogger({ service: SERVICE_NAMES.api });
   installLogger(logger);
-  const created = prismaOverride
-    ? { prisma: prismaOverride, pool: undefined }
-    : createDb(env.databaseUrl, {
-        poolMax: parsePositiveInteger(process.env.DB_POOL_MAX, 4),
-        applicationName: "rakazo-api",
-      });
+  // SQLite: env.databaseUrl is a `file:` URL (or bare path) to the shared db.
+  const dbFile = sqliteDbFileFromDatabaseUrl(env.databaseUrl) ?? env.databaseUrl;
+  const jobKind = env.wakeupDriver;
+  const created = prismaOverride ? { prisma: prismaOverride } : createDb(dbFile);
   const { prisma } = created;
   const realtime =
     realtimeOverride ??
-    (created.pool
-      ? new PostgresRealtimeFanout({
-          connectionString: env.realtimeDatabaseUrl,
-          publisher: created.pool,
-        })
-      : new InMemoryRealtimeFanout());
+    (jobKind === "memory"
+      ? new InMemoryRealtimeFanout()
+      : new PollingRealtimeFanout({ path: dbFile }));
   const secrets = new EncryptedSecretStore(env.encryptionKey);
   const events = createThreadEvents(prisma, realtime, {
     runSecretWriter: createRunSecretWriter(secrets),
@@ -228,27 +222,8 @@ export async function createApp(
     }
   }
 
-  const jobKind = env.wakeupDriver;
   const inMemoryJobs = jobKind === "memory" ? new InMemoryJobQueue() : undefined;
-  // prismaOverride skips createDb, so there is no shared pool. The previous
-  // GraphileJobPublisher(databaseUrl) path opened its own connections; keep a
-  // bounded pool for that override path instead of passing undefined.
-  let ownedJobPool: Pool | undefined;
-  if (!inMemoryJobs && !created.pool) {
-    ownedJobPool = createPool(env.databaseUrl, {
-      poolMax: parsePositiveInteger(process.env.DB_POOL_MAX, 4),
-      applicationName: "rakazo-api-jobs",
-    });
-  }
-  const jobPool = created.pool ?? ownedJobPool;
-  const jobs = inMemoryJobs
-    ? inMemoryJobs
-    : new GraphileJobPublisher(
-        jobPool ??
-          (() => {
-            throw new Error("Graphile job publisher requires a PostgreSQL pool");
-          })(),
-      );
+  const jobs: JobPublisher = inMemoryJobs ?? new SqliteJobQueue({ path: dbFile });
   const sandbox: SandboxProvider =
     sandboxOverride ??
     createRunSandbox(env.sandboxProvider, {
@@ -918,8 +893,6 @@ export async function createApp(
       await connector.stop();
       await mcp.close();
       await prisma.$disconnect().catch(() => undefined);
-      await created.pool?.end().catch(() => undefined);
-      await ownedJobPool?.end().catch(() => undefined);
       await logger.flush({ timeoutMs: 2_000 });
     },
   };

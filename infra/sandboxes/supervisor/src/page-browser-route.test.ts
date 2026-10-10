@@ -25,6 +25,8 @@ beforeEach(() => {
   mock.exec.mockImplementation(async (options: { Cmd: string[] }) => ({
     // Docker's hijacked exec stream is duplex: stdin is written, output is read.
     start: async () =>
+      // @types/node omits Node's documented `Duplex.from({ readable, writable })`
+      // object form (supported at runtime since v16.8), so the test double casts.
       Duplex.from({
         readable: Readable.from([
           Buffer.from(
@@ -45,7 +47,7 @@ beforeEach(() => {
             callback();
           },
         }),
-      }),
+      } as unknown as NodeJS.ReadableStream),
     inspect: async () => ({ ExitCode: 0 }),
   }));
 });
