@@ -1,7 +1,6 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
-import { POSTGRES_MAJOR_VERSION } from "./local-postgres.js";
 import {
   DESKTOP_MINIMUM_MACOS,
   RUNTIME_MANIFEST_FILE,
@@ -24,12 +23,15 @@ describe("runtime packaging", () => {
     expect(buildScript).toContain(`const DESKTOP_MINIMUM_MACOS = "${DESKTOP_MINIMUM_MACOS}"`);
   });
 
-  it("pins PostgreSQL 16 and both Mac architectures", () => {
-    expect(buildScript).toContain("POSTGRES_MAJOR_VERSION = 16");
+  it("stages both Mac architectures and no PostgreSQL distribution", () => {
     expect(buildScript).toMatch(/koffi-darwin-\$\{arch\}/);
     expect(buildScript).toContain("arm64");
     expect(buildScript).toContain("x64");
-    expect(POSTGRES_MAJOR_VERSION).toBe(16);
+    // The app opens a SQLite file inside its user data; shipping a database
+    // server distribution again would silently reintroduce the bundled cluster.
+    expect(buildScript).not.toContain("POSTGRES_MAJOR_VERSION");
+    expect(buildScript).not.toContain("provision-postgres");
+    expect(buildScript).not.toContain("postgresArches");
   });
 
   it("declares each service's readiness line the same way the supervisor does", () => {
@@ -47,43 +49,7 @@ describe("runtime packaging", () => {
   });
 });
 
-describe("pinned PostgreSQL provisioning", () => {
-  const provisionScript = readFileSync(
-    path.join(desktopDir, "scripts", "provision-postgres.mjs"),
-    "utf8",
-  );
-
-  it("pins the 16.15 source tarball with a verified checksum", () => {
-    expect(provisionScript).toContain('"16.15"');
-    expect(provisionScript).toContain(
-      "c1575341fa7bd40f5274ea465b34390f4dc64cdd0770af327005caaeb9f6b7ed",
-    );
-    expect(provisionScript).toContain("https://ftp.postgresql.org/pub/source");
-    expect(provisionScript).toContain("sha256");
-  });
-
-  it("targets the same macOS minimum as the supervisor contract", () => {
-    expect(provisionScript).toContain(`"${DESKTOP_MINIMUM_MACOS}"`);
-    expect(provisionScript).toContain("MACOSX_DEPLOYMENT_TARGET");
-  });
-
-  it("builds hermetically and proves the result before staging", () => {
-    for (const flag of ["--without-readline", "--without-zlib", "--without-icu"]) {
-      expect(provisionScript).toContain(flag);
-    }
-    expect(provisionScript).not.toContain("--with-ssl=");
-    expect(provisionScript).toContain("--universal");
-    // The fat build must carry both slices; the staged result must prove SCRAM logins work.
-    expect(provisionScript).toContain("lipo");
-    expect(provisionScript).toContain("scram-sha-256");
-  });
-
-  it("provisions missing architectures instead of failing closed", () => {
-    expect(buildScript).toContain("SAPPHIRE_POSTGRES_BUILD");
-    expect(buildScript).toContain("provision-postgres.mjs");
-    expect(buildScript).toContain("ensurePostgresSources");
-  });
-
+describe("native runtime staging", () => {
   it("bundles services with --outdir so native assets ride along", () => {    // The supervisor graph emits a hashed .node binary beside index.js, which
     // --outfile rejects; every entry is index.ts so --outdir keeps the same
     // services/<id>/index.js layout the manifest reads.
@@ -92,10 +58,11 @@ describe("pinned PostgreSQL provisioning", () => {
     expect(buildScript).toContain('endsWith(".node")');
   });
 
-  it("prunes architectures from a previous wider build", () => {
-    // A single-arch run after a universal one must not leave a stale arch
-    // directory the manifest denies, nor ship it in the app.
-    expect(buildScript).toContain("previous wider build");
+  it("prunes any database server directory a previous build left behind", () => {
+    // A stale runtime/postgres from an older version would otherwise ride into
+    // the installer and reinstate the bundled cluster this version removed.
+    expect(buildScript).toContain('path.join(OUT_DIR, "postgres")');
+    expect(buildScript).toContain('path.join(OUT_DIR, "postgres-deps")');
   });
 
   it("stages the Prisma migrate tooling the packaged backend runs", () => {
@@ -119,13 +86,26 @@ describe("pinned PostgreSQL provisioning", () => {
     }
   });
 
-  it("relocates staged binaries off the temp build prefix", () => {    // PostgreSQL bakes the build prefix into every binary; the temp dir is
-    // deleted after staging, so without this the app dies with dyld
-    // "Library not loaded". References become @loader_path-relative and
-    // touched files are re-signed; --relocate-only repairs old provisions.
-    for (const token of ["install_name_tool", "@loader_path", "codesign", "--relocate-only"]) {
-      expect(provisionScript).toContain(token);
-    }
+  it("pins the Prisma engine matching the installed CLI release", () => {
+    // The engines commit is the fail-closed guard: a dependency bump that
+    // moves it must update the pin, never silently ship a mismatched engine.
+    // d1b3f377ca835d73fd50954a5e22128b9ebdd6b8 is Prisma 8.1.0-dev.9's
+    // engines release (the SQLite migration); the old 0edf323 pin was 7.10.
+    expect(buildScript).toContain("d1b3f377ca835d73fd50954a5e22128b9ebdd6b8");
+    expect(buildScript).not.toContain("0edf323efd1d98336f3f0a68684b56f689b900d3");
+    // Engine lookups must follow the staged CLI's own dependency edge, not
+    // scan the install store where an older Prisma 7 copy can win.
+    expect(buildScript).toContain("stagedEnginesDir");
+    expect(buildScript).toContain("stagedPrismaDir");
+  });
+
+  it("stages the SQLite native binding the service bundles load", () => {
+    // The API/worker bundles inline better-sqlite3's JS but not its .node
+    // binary; without the staged copy boot fails with "Could not locate
+    // the bindings file".
+    expect(buildScript).toContain("better_sqlite3.node");
+    expect(buildScript).toContain("RUNTIME_NATIVE_ADDONS");
+    expect(buildScript).toContain("build/Release/better_sqlite3.node");
   });
 
   it("bundles the Electron main process so no workspace .ts ships", () => {

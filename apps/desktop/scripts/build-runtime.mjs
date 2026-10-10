@@ -1,18 +1,12 @@
 #!/usr/bin/env node
 // Builds the native runtime resources the packaged macOS app launches: bundled API and
-// worker entry points, their runtime assets, and a pinned PostgreSQL 16 distribution.
+// worker entry points, their runtime assets, and the staged Prisma migrate tooling.
 //
-// The two service bundles are architecture-independent JavaScript; only PostgreSQL is
-// per architecture, so a universal app carries one service copy and two database copies.
-//
-//   SAPPHIRE_POSTGRES_DIR   stage an already-built PostgreSQL bin directory (CI cache or
-//                           a local source build). The minimum macOS version is verified.
-//   SAPPHIRE_POSTGRES_BUILD provision the pinned PostgreSQL 16 from a verified source
-//                           tarball (scripts/provision-postgres.mjs) whenever a needed
-//                           architecture directory is missing. Set to "1" in release CI.
-//   SAPPHIRE_POSTGRES_VERSION  pinned PostgreSQL 16 minor (default 16.15).
+// The database itself is a SQLite file inside the app's user data, so no database
+// server is bundled or staged; the only per-architecture native artifact is the
+// Prisma schema engine beside the migrate CLI.
 import { execFileSync } from "node:child_process";
-import { cp, chmod, mkdir, readdir, readFile, rm, stat, writeFile } from "node:fs/promises";
+import { cp, chmod, mkdir, readdir, readFile, realpath, rm, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -24,7 +18,6 @@ const SERVICES_DIR = path.join(OUT_DIR, "services");
 /** Must match `DESKTOP_MINIMUM_MACOS` in src/local-runtime.ts. */
 const DESKTOP_MINIMUM_MACOS = "13.0";
 const RUNTIME_MANIFEST_VERSION = 1;
-const POSTGRES_MAJOR_VERSION = 16;
 const SERVICES = [
   {
     id: "api",
@@ -67,6 +60,21 @@ const COMPUTER_CONTEXT_FILES = [
   "fluxbox.init",
   "fluxbox.apps",
   "fluxbox.menu",
+];
+
+/**
+ * Native addons the service bundles load at startup. Bundlers inline the
+ * JavaScript but not these binaries, so each one is staged where the
+ * `bindings` lookup finds it next to the bundle. Verified against a real
+ * local run of the packaged services.
+ */
+const RUNTIME_NATIVE_ADDONS = [
+  // better-sqlite3 resolves build/Release/better_sqlite3.node relative to
+  // its package root; the services share one copy at services/build/Release.
+  {
+    package: "better-sqlite3",
+    files: [["build/Release/better_sqlite3.node", "build/Release/better_sqlite3.node"]],
+  },
 ];
 
 /**
@@ -133,6 +141,28 @@ async function findPackageJson(specifier) {
   return path.join(await findPackageDir(name), "package.json");
 }
 
+/**
+ * Resolves the `prisma` CLI this build stages: the workspace db package's own
+ * install, so engine lookups below follow the exact CLI that ships.
+ */
+async function stagedPrismaDir() {
+  return realpath(path.join(REPO_ROOT, "packages/db/node_modules/prisma"));
+}
+
+/**
+ * Resolves the `@prisma/engines` package the staged CLI runs with, by
+ * following its own dependency edge instead of scanning the store.
+ */
+async function stagedEnginesDir() {
+  const prismaDir = await stagedPrismaDir();
+  const linkTarget = path.join(path.dirname(prismaDir), "@prisma", "engines");
+  try {
+    return await realpath(linkTarget);
+  } catch {
+    return findPackageDir("@prisma/engines");
+  }
+}
+
 function parseArch(argv) {
   const index = argv.indexOf("--arch");
   const arch = index === -1 ? process.arch : argv[index + 1];
@@ -192,6 +222,23 @@ async function copyRuntimeAssets(outDir, arches) {
       await cp(path.join(packageRoot, from), destination, { recursive: true });
     }
   }
+  // Native addons resolve relative to a package root that no longer exists
+  // inside the bundle, so stage the binary where the lookup probes: the
+  // `bindings` package walks up from the requiring file, and both service
+  // bundles sit one level under services/, making services/build the shared
+  // root it finds first.
+  for (const addon of RUNTIME_NATIVE_ADDONS) {
+    const packageRoot = await findPackageDir(addon.package);
+    for (const [from, to] of addon.files) {
+      const source = path.join(packageRoot, from);
+      if (!(await exists(source))) {
+        throw new Error(`Runtime is missing ${addon.package}/${from}; reinstall dependencies.`);
+      }
+      const destination = path.join(outDir, to);
+      await mkdir(path.dirname(destination), { recursive: true });
+      await cp(source, destination);
+    }
+  }
   // koffi resolves `../../../@koromix/koffi-<platform>-<arch>` from its own source file,
   // so the architecture packages sit beside it under the shared node_modules.
   const koffiRoot = await findPackageDir("koffi");
@@ -229,15 +276,31 @@ async function stageComputerContext(outDir) {
  * bump that moves the commit fails closed here instead of shipping a
  * mismatched engine.
  */
-const PRISMA_ENGINES_COMMIT = "0edf323efd1d98336f3f0a68684b56f689b900d3";
+const PRISMA_ENGINES_COMMIT = "d1b3f377ca835d73fd50954a5e22128b9ebdd6b8";
 const PRISMA_ENGINE_TARGETS = { arm64: "darwin-arm64", x64: "darwin" };
 
 function prismaEngineFile(arch) {
   return `schema-engine-${arch}`;
 }
 
-/** Reads the engines commit the installed prisma CLI was released with. */
+/** Reads the engines commit the staged prisma CLI was released with. */
 async function installedEnginesCommit() {
+  // Follow the CLI's own dependency edge: the engines package's sibling
+  // @prisma/engines-version is the exact release it was built against.
+  const enginesDir = await stagedEnginesDir();
+  const candidate = path.join(path.dirname(enginesDir), "engines-version");
+  let resolved = candidate;
+  try {
+    resolved = await realpath(candidate);
+  } catch {
+    // Fall through to the existence check below.
+  }
+  if (await exists(path.join(resolved, "package.json"))) {
+    const meta = JSON.parse(await readFile(path.join(resolved, "package.json"), "utf8"));
+    if (meta.prisma?.enginesVersion) return String(meta.prisma.enginesVersion);
+    const match = String(meta.version).match(/([0-9a-f]{40})$/);
+    if (match) return match[1];
+  }
   const meta = JSON.parse(
     await readFile(path.join(await findPackageDir("@prisma/engines-version"), "package.json"), "utf8"),
   );
@@ -266,7 +329,7 @@ async function prismaEngineSource(arch, cacheDir) {
     );
   }
   try {
-    const dir = await findPackageDir("@prisma/engines");
+    const dir = await stagedEnginesDir();
     // The store names binaries per platform (schema-engine-darwin-arm64);
     // the staged copy uses the normalized schema-engine-<arch> name.
     for (const name of [file, `schema-engine-darwin-${arch}`]) {
@@ -373,105 +436,9 @@ await import(bundle.href);
   }
   return dest;
 }
-/** Reads the Mach-O minimum macOS version so a build can never silently raise it. */
-function minimumMacos(binary) {
-  const output = execFileSync("vtool", ["-show-build", binary], { encoding: "utf8" });
-  const match = output.match(/minos\s+([\d.]+)/);
-  if (!match) throw new Error(`Could not read the minimum macOS version of ${binary}`);
-  return match[1];
-}
-
-function maxVersion(left, right) {
-  return compareVersions(left, right) >= 0 ? left : right;
-}
-
-function compareVersions(left, right) {
-  const a = left.split(".").map(Number);
-  const b = right.split(".").map(Number);
-  for (let index = 0; index < Math.max(a.length, b.length); index += 1) {
-    const difference = (a[index] ?? 0) - (b[index] ?? 0);
-    if (difference !== 0) return difference;
-  }
-  return 0;
-}
-
-/**
- * Resolves the source PostgreSQL directory for an architecture. A universal build needs
- * one per architecture, supplied either as `<dir>/<arch>` subdirectories or as
- * `SAPPHIRE_POSTGRES_DIR_ARM64` / `SAPPHIRE_POSTGRES_DIR_X64` overrides. With
- * `SAPPHIRE_POSTGRES_BUILD=1` the pinned provision script fills the default
- * dependency directory instead of failing closed (see `ensurePostgresSources`).
- */
-async function postgresSource(arch) {
-  const base = process.env.SAPPHIRE_POSTGRES_DIR;
-  const candidates = [
-    process.env[`SAPPHIRE_POSTGRES_DIR_${arch.toUpperCase()}`],
-    base ? path.join(base, arch) : undefined,
-    base,
-  ].filter((candidate) => typeof candidate === "string" && candidate !== "");
-  for (const candidate of candidates) {
-    if (await exists(path.join(candidate, "bin", "postgres"))) return candidate;
-  }
-  throw new Error(
-    `No PostgreSQL ${POSTGRES_MAJOR_VERSION} bin directory for ${arch}. Set SAPPHIRE_POSTGRES_DIR ` +
-      `(or SAPPHIRE_POSTGRES_DIR_${arch.toUpperCase()}) to a build made against macOS ${DESKTOP_MINIMUM_MACOS}, ` +
-      `or set SAPPHIRE_POSTGRES_BUILD=1 to provision the pinned build from a verified source tarball.`,
-  );
-}
-
-/** Default dependency directory the provision script writes per-arch builds to. */
-function postgresDepsDir() {
-  return process.env.SAPPHIRE_POSTGRES_DIR ?? path.join(REPO_ROOT, "runtime", "postgres-deps");
-}
-
-/**
- * Provisions whichever architectures have no usable source directory yet, using
- * the pinned, checksum-verified source build. Explicit per-arch directories are
- * never overwritten; a fat universal provision serves both arches at once.
- */
-async function ensurePostgresSources(arches, universal) {
-  if (process.env.SAPPHIRE_POSTGRES_BUILD !== "1") return;
-  const missing = [];
-  for (const arch of arches) {
-    try {
-      await postgresSource(arch);
-    } catch {
-      missing.push(arch);
-    }
-  }
-  if (missing.length === 0) return;
-  const provision = path.join(REPO_ROOT, "apps", "desktop", "scripts", "provision-postgres.mjs");
-  const out = postgresDepsDir();
-  console.log(`Provisioning pinned PostgreSQL for ${missing.join(", ")}...`);
-  if (universal) {
-    run(process.execPath, [provision, "--universal", "--out", out]);
-  } else {
-    for (const arch of missing) run(process.execPath, [provision, "--arch", arch, "--out", out]);
-  }
-  if (process.env.SAPPHIRE_POSTGRES_DIR === undefined) process.env.SAPPHIRE_POSTGRES_DIR = out;
-}
-
-/** Copies a verified PostgreSQL 16 distribution, or fails clearly when it is missing. */
-async function stagePostgres(arch, destination) {
-  const source = await postgresSource(arch);
-  const postgres = path.join(source, "bin", "postgres");
-  const version = execFileSync(postgres, ["--version"], { encoding: "utf8" }).trim();
-  if (!version.includes(` ${POSTGRES_MAJOR_VERSION}.`)) {
-    throw new Error(`${postgres} is not PostgreSQL ${POSTGRES_MAJOR_VERSION}: ${version}`);
-  }
-  const minimum = minimumMacos(postgres);
-  if (compareVersions(minimum, DESKTOP_MINIMUM_MACOS) > 0) {
-    throw new Error(
-      `${postgres} requires macOS ${minimum}, which is newer than the app minimum of ${DESKTOP_MINIMUM_MACOS}. Build PostgreSQL with MACOSX_DEPLOYMENT_TARGET=${DESKTOP_MINIMUM_MACOS}.`,
-    );
-  }
-  await mkdir(destination, { recursive: true });
-  await cp(source, destination, { recursive: true, dereference: true });
-  return minimum;
-}
 
 /** Writes the manifest the Electron main process reads to launch the services. */
-async function writeManifest(outDir, appVersion, postgresMinimum, koffiArches, postgresArches) {
+async function writeManifest(outDir, appVersion, koffiArches) {
   const manifest = {
     version: RUNTIME_MANIFEST_VERSION,
     appVersion,
@@ -485,8 +452,6 @@ async function writeManifest(outDir, appVersion, postgresMinimum, koffiArches, p
       restart: { maxRestarts: 3, backoffMs: 500 },
       shutdown: { signal: "SIGTERM", timeoutMs: 15000 },
     })),
-    postgres: { minimumMacos: postgresMinimum, major: POSTGRES_MAJOR_VERSION },
-    postgresArches,
     koffiArches,
   };
   await writeFile(
@@ -496,16 +461,13 @@ async function writeManifest(outDir, appVersion, postgresMinimum, koffiArches, p
   return manifest;
 }
 
-/** Fails the build when a service entry, asset, or PostgreSQL binary is absent. */
+/** Fails the build when a service entry, asset, native addon, or Prisma engine is absent. */
 async function verifyLayout(manifest, arches) {
   const required = [
     [OUT_DIR, "runtime-manifest.json"],
-    ...manifest.postgresArches.flatMap((arch) => [
-      [OUT_DIR, `postgres/${arch}/bin/postgres`],
-      [OUT_DIR, `postgres/${arch}/bin/pg_ctl`],
-    ]),
     [SERVICES_DIR, "data/patch.json"],
     [SERVICES_DIR, "package.json"],
+    [SERVICES_DIR, "build/Release/better_sqlite3.node"],
     [SERVICES_DIR, "node_modules/koffi/package.json"],
     [SERVICES_DIR, "node_modules/mdn-data/css/at-rules.json"],
     [SERVICES_DIR, "supervisor/index.js"],
@@ -545,8 +507,12 @@ async function main() {
   ).version;
 
   await mkdir(OUT_DIR, { recursive: true });
-  // A fresh service copy per build; PostgreSQL is staged per architecture beside it.
+  // A fresh service copy per build; everything the app launches is regenerated.
   await rm(SERVICES_DIR, { recursive: true, force: true });
+  // Drop a PostgreSQL distribution left by a previous build: this app version
+  // opens a SQLite file and must never ship database server binaries.
+  await rm(path.join(OUT_DIR, "postgres"), { recursive: true, force: true });
+  await rm(path.join(OUT_DIR, "postgres-deps"), { recursive: true, force: true });
 
   console.log(`Bundling services...${universal ? " (universal)" : ` (${arch})`}`);
   for (const service of SERVICES) await bundleService(service, SERVICES_DIR);
@@ -559,39 +525,10 @@ async function main() {
   console.log("Staging Prisma migrate tooling...");
   await stagePrisma(OUT_DIR, arches);
 
-  // The default dependency directory is always consulted, so a one-time
-  // manual provision keeps working with no environment set. Network builds
-  // still require the explicit SAPPHIRE_POSTGRES_BUILD=1 opt-in below.
-  process.env.SAPPHIRE_POSTGRES_DIR ??= postgresDepsDir();
-  await ensurePostgresSources(arches, universal);
-  const postgresArches = [];
-  let postgresMinimum = null;
-  // Drop architectures left by a previous wider build so the manifest, the
-  // staged directories, and the packaged app never disagree with each other.
-  for (const entry of await readdir(path.join(OUT_DIR, "postgres")).catch(() => [])) {
-    if (!arches.includes(entry)) {
-      await rm(path.join(OUT_DIR, "postgres", entry), { recursive: true, force: true });
-    }
-  }
-  for (const postgresArch of arches) {
-    const postgresDir = path.join(OUT_DIR, "postgres", postgresArch);
-    await rm(postgresDir, { recursive: true, force: true });
-    console.log(`Staging PostgreSQL ${POSTGRES_MAJOR_VERSION} for ${postgresArch}...`);
-    const minimum = await stagePostgres(postgresArch, postgresDir);
-    postgresMinimum = postgresMinimum === null ? minimum : maxVersion(postgresMinimum, minimum);
-    postgresArches.push(postgresArch);
-  }
-
-  const manifest = await writeManifest(
-    OUT_DIR,
-    appVersion,
-    postgresMinimum ?? DESKTOP_MINIMUM_MACOS,
-    koffiArches,
-    postgresArches,
-  );
+  const manifest = await writeManifest(OUT_DIR, appVersion, koffiArches);
   await verifyLayout(manifest, arches);
   console.log(
-    `Runtime ready at ${OUT_DIR} (macOS ${postgresMinimum}+, ${manifest.services.length} services).`,
+    `Runtime ready at ${OUT_DIR} (macOS ${DESKTOP_MINIMUM_MACOS}+, ${manifest.services.length} services, SQLite database).`,
   );
 }
 
