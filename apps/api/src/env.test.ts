@@ -239,23 +239,24 @@ describe("loadEnv", () => {
       });
       const file = path.join(dir, "local-runtime-settings.json");
       await writeFile(file, JSON.stringify({ version: 1, allowDockerComputerFallback: true }));
-      expect(
-        loadEnv({ ...base, SAPPHIRE_LOCAL_RUNTIME_SETTINGS_PATH: file }).localRuntime,
-      ).toEqual({ settingsPath: file, allowDockerComputerFallback: true });
+      expect(loadEnv({ ...base, SAPPHIRE_LOCAL_RUNTIME_SETTINGS_PATH: file }).localRuntime).toEqual(
+        { settingsPath: file, allowDockerComputerFallback: true },
+      );
       // Packaged local mode without a key selects none, never implicit Docker.
-      expect(
-        loadEnv({ ...base, SAPPHIRE_LOCAL_RUNTIME_SETTINGS_PATH: file }).sandboxProvider,
-      ).toBe("none");
+      expect(loadEnv({ ...base, SAPPHIRE_LOCAL_RUNTIME_SETTINGS_PATH: file }).sandboxProvider).toBe(
+        "none",
+      );
       await writeFile(file, "{ corrupt");
-      expect(
-        loadEnv({ ...base, SAPPHIRE_LOCAL_RUNTIME_SETTINGS_PATH: file }).localRuntime,
-      ).toEqual({ settingsPath: file, allowDockerComputerFallback: false });
+      expect(loadEnv({ ...base, SAPPHIRE_LOCAL_RUNTIME_SETTINGS_PATH: file }).localRuntime).toEqual(
+        { settingsPath: file, allowDockerComputerFallback: false },
+      );
     } finally {
       await rm(dir, { recursive: true, force: true });
     }
   });
 
-  it("defaults the remote MCP private-endpoint escape to off", () => {    expect(loadEnv(base).mcpAllowPrivateEndpoint).toBe(false);
+  it("defaults the remote MCP private-endpoint escape to off", () => {
+    expect(loadEnv(base).mcpAllowPrivateEndpoint).toBe(false);
     expect(loadEnv({ ...base, MCP_ALLOW_PRIVATE_ENDPOINT: "true" }).mcpAllowPrivateEndpoint).toBe(
       true,
     );

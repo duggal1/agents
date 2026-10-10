@@ -11,22 +11,6 @@ vi.mock("@sapphire/db", async (original) => ({
   appendEventInTransaction: vi.fn(async () => ({ seq: 1 })),
 }));
 
-/** PostgreSQL jsonb `@>` containment, which Prisma `array_contains` compiles to. */
-function jsonContains(value: unknown, needle: unknown): boolean {
-  if (Array.isArray(needle)) {
-    return (
-      Array.isArray(value) &&
-      needle.every((item) => value.some((candidate) => jsonContains(candidate, item)))
-    );
-  }
-  if (needle !== null && typeof needle === "object") {
-    if (value === null || typeof value !== "object" || Array.isArray(value)) return false;
-    const record = value as Record<string, unknown>;
-    return Object.entries(needle).every(([key, item]) => jsonContains(record[key], item));
-  }
-  return value === needle;
-}
-
 function fixture(blocks: unknown[]) {
   const tx = {
     message: {

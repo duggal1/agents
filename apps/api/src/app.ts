@@ -21,6 +21,7 @@ import {
   applyMessagingOutboundStatus,
   ChatSdkMessagingSurface,
   CodexCatalogCache,
+  CodingCliRuntime,
   ComposioConnector,
   createBackgroundJobHandlers,
   createCloudAgentConnection,
@@ -43,7 +44,6 @@ import {
   isComposioEnabled,
   isMessagingSurfaceEnabled,
   isPipedreamEnabled,
-  CodingCliRuntime,
   LocalAgentHomeStore,
   LocalArtifactStore,
   McpConnector,
@@ -62,8 +62,8 @@ import {
   ScriptedAgentRuntime,
   SmtpEmailProvider,
   SpaceMemoryProviderResolver,
-  sandboxProviderOptionsFromEnv,
   SqliteJobQueue,
+  sandboxProviderOptionsFromEnv,
   toTeamChatInbound,
 } from "@sapphire/adapters";
 import { createAuth, isBlockedAuthPath, loopbackTwinOrigins } from "@sapphire/auth";

@@ -3,7 +3,7 @@ import { type AgentRuntime, type JobPublisher, runJobKey } from "@sapphire/adapt
 import { MessagingTeamChatEmulator } from "@sapphire/adapters";
 import type { ModelConnectInput, RunStatus } from "@sapphire/contracts";
 import { ACTIVE_RUN_STATUSES, isTerminal } from "@sapphire/core";
-import { parseStringList, type createDb } from "@sapphire/db";
+import { type createDb, parseStringList } from "@sapphire/db";
 import { discardBotIntroRun } from "../discard-bot-intro.js";
 import { sessionCookieHeader } from "../index.js";
 import type { EvalCase, Evidence } from "./cases.js";
