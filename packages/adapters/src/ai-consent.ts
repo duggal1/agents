@@ -1,6 +1,5 @@
 import { createHash } from "node:crypto";
 import type { AiDataUse, AiRecipient } from "@sapphire/contracts";
-import { localBaseUrl } from "./pi-local-provider.js";
 import { listPiCatalog } from "./pi-models.js";
 import { voiceCatalogEntry } from "./voice-factory.js";
 
@@ -9,6 +8,8 @@ const PRIVACY_URLS: Record<string, string> = {
   openrouter: "https://openrouter.ai/privacy",
   openai: "https://openai.com/policies/privacy-policy/",
   "openai-codex": "https://openai.com/policies/privacy-policy/",
+  "codex-cli": "https://openai.com/policies/privacy-policy/",
+  "claude-cli": "https://www.anthropic.com/legal/privacy",
   anthropic: "https://www.anthropic.com/legal/privacy",
   google: "https://policies.google.com/privacy",
   "vercel-ai-gateway": "https://vercel.com/legal/privacy-policy",
@@ -26,7 +27,7 @@ export function aiRecipient(input: {
   baseUrl?: string;
 }): Omit<AiRecipient, "allowed"> | null {
   if (input.provider === "scripted") return null;
-  const endpoint = input.baseUrl ?? (input.provider === "local" ? localBaseUrl() : undefined);
+  const endpoint = input.baseUrl;
   const origin = endpoint ? new URL(endpoint).origin : undefined;
   const name = recipientName(input.provider, input.use);
   // Bind custom connections to the full endpoint without exposing private URL components.

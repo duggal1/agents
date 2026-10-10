@@ -6,6 +6,7 @@ import {
   cloudflareGatewayRouting,
   isCloudflareAiGatewayProvider,
 } from "@sapphire/contracts";
+import { isCodingCliProvider } from "./coding-cli-providers.js";
 import { modelIdSupportsImages, updateModelImageCapabilities } from "./model-vision.js";
 import {
   CHATGPT_OAUTH_PROVIDER,
@@ -29,6 +30,11 @@ export function buildModelConnectPlaintext(
   previousPlaintext?: string,
   options?: BuildModelConnectOptions,
 ): string {
+  if (isCodingCliProvider(input.provider)) {
+    // Headless coding agents authenticate with the user's own CLI logins, not
+    // with a stored secret. The router verifies installed and signed in.
+    return serializeModelSecret({ kind: "cli" });
+  }
   if (input.provider === OPENAI_COMPATIBLE_PROVIDER_ID) {
     const prepared = prepareOpenAiCompatibleConnect(input);
     const previous = tryParseModelSecret(previousPlaintext);

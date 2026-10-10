@@ -27,6 +27,7 @@ import {
   isComposioEnabled,
   isMessagingSurfaceEnabled,
   isPipedreamEnabled,
+  CodingCliRuntime,
   LocalAgentHomeStore,
   LocalArtifactStore,
   localRuntimeSettingsPath,
@@ -90,7 +91,9 @@ async function main() {
         ? new OpencodeRuntime({
             baseUrl: process.env.OPENCODE_SERVER_URL?.trim() || "http://127.0.0.1:4096",
           })
-        : new PiAgentRuntime({ sessionRoot: resolvePiSessionRoot(dataDir) });
+        : new CodingCliRuntime({
+            delegate: new PiAgentRuntime({ sessionRoot: resolvePiSessionRoot(dataDir) }),
+          });
   // Same resolver the API uses, so both processes agree on provider, model and key.
   const { key: deploymentModelKey } = resolveDeploymentModel();
   // Electron-owned policy both processes read from the same schema; corrupt or

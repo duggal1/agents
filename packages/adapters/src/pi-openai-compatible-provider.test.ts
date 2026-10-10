@@ -11,7 +11,6 @@ import {
   OPENAI_COMPATIBLE_CATALOG_MODEL_ID,
   openAiCompatibleCatalogProvider,
   prepareOpenAiCompatibleConnect,
-  probeOpenAiCompatibleModels,
   registerOpenAiCompatibleRuntime,
 } from "./pi-openai-compatible-provider.js";
 
@@ -258,118 +257,7 @@ describe("openai-compatible provider", () => {
     expect(model?.contextWindow).toBe(65536);
   });
 
-  it("probes /v1/models with mocked fetch", async () => {
-    const fetchImpl = async () =>
-      new Response(JSON.stringify({ object: "list", data: [{ id: "a" }, { id: "b" }] }), {
-        status: 200,
-      });
-    await expect(
-      probeOpenAiCompatibleModels({ baseUrl: "http://127.0.0.1:8000/v1" }, fetchImpl),
-    ).resolves.toEqual(["a", "b"]);
-  });
-
-  it("still accepts legacy models[] probe responses", async () => {
-    const fetchImpl = async () =>
-      new Response(JSON.stringify({ models: [{ id: "legacy" }] }), { status: 200 });
-    await expect(
-      probeOpenAiCompatibleModels({ baseUrl: "http://127.0.0.1:8000/v1" }, fetchImpl),
-    ).resolves.toEqual(["legacy"]);
-  });
-
-  it("rejects redirect responses during probing", async () => {
-    const fetchImpl: typeof fetch = async (_input, init) => {
-      expect(init?.redirect).toBe("error");
-      return new Response(null, {
-        status: 302,
-        headers: { location: "http://127.0.0.1:9/blocked" },
-      });
-    };
-    await expect(
-      probeOpenAiCompatibleModels({ baseUrl: "http://127.0.0.1:8000/v1" }, fetchImpl),
-    ).rejects.toThrow(/redirect.*explicit model id/is);
-  });
-
-  it("clarifies non-2xx probe failures with status and hand-fill hint", async () => {
-    const fetchImpl = async () => new Response("nope", { status: 404 });
-    await expect(
-      probeOpenAiCompatibleModels({ baseUrl: "http://127.0.0.1:8000/v1" }, fetchImpl),
-    ).rejects.toThrow(/returned 404.*You can still Connect with an explicit model id/s);
-  });
-
-  it("clarifies missing models list with hand-fill hint", async () => {
-    const fetchImpl = async () => new Response(JSON.stringify({ object: "list" }), { status: 200 });
-    await expect(
-      probeOpenAiCompatibleModels({ baseUrl: "http://127.0.0.1:8000/v1" }, fetchImpl),
-    ).rejects.toThrow(/did not include a models list.*explicit model id/s);
-  });
-
-  it("clarifies invalid JSON probe bodies with hand-fill hint", async () => {
-    const fetchImpl = async () => new Response("{not-json", { status: 200 });
-    await expect(
-      probeOpenAiCompatibleModels({ baseUrl: "http://127.0.0.1:8000/v1" }, fetchImpl),
-    ).rejects.toThrow(/invalid JSON.*explicit model id/s);
-  });
-
-  it("clarifies empty probe responses with hand-fill hint", async () => {
-    const fetchImpl = async () => new Response(null, { status: 200 });
-    await expect(
-      probeOpenAiCompatibleModels({ baseUrl: "http://127.0.0.1:8000/v1" }, fetchImpl),
-    ).rejects.toThrow(/empty response.*explicit model id/s);
-  });
-
-  it("rejects oversized model lists", async () => {
-    const fetchImpl = async () => new Response("x".repeat(64 * 1024 + 1));
-    await expect(
-      probeOpenAiCompatibleModels({ baseUrl: "http://127.0.0.1:8000/v1" }, fetchImpl),
-    ).rejects.toThrow(/too large.*explicit model id/is);
-  });
-
-  it("cancels model responses whose declared size exceeds the limit", async () => {
-    let cancelled = false;
-    const fetchImpl = async () =>
-      new Response(
-        new ReadableStream({
-          cancel() {
-            cancelled = true;
-          },
-        }),
-        { headers: { "content-length": String(64 * 1024 + 1) } },
-      );
-    await expect(
-      probeOpenAiCompatibleModels({ baseUrl: "http://127.0.0.1:8000/v1" }, fetchImpl),
-    ).rejects.toThrow(/too large.*explicit model id/is);
-    expect(cancelled).toBe(true);
-  });
-
-  it("clarifies probe timeouts with hand-fill hint", async () => {
-    const fetchImpl: typeof fetch = async (_input, init) =>
-      new Promise((_, reject) => {
-        init?.signal?.addEventListener("abort", () => {
-          reject(new DOMException("The operation was aborted.", "AbortError"));
-        });
-      });
-    await expect(
-      probeOpenAiCompatibleModels({ baseUrl: "http://127.0.0.1:8000/v1" }, fetchImpl),
-    ).rejects.toThrow(/timed out.*explicit model id/is);
-  });
-
-  it("preserves caller AbortError without rewriting as timeout", async () => {
-    const caller = new AbortController();
-    caller.abort();
-    const fetchImpl: typeof fetch = async () => {
-      throw new DOMException("The operation was aborted.", "AbortError");
-    };
-    await expect(
-      probeOpenAiCompatibleModels(
-        { baseUrl: "http://127.0.0.1:8000/v1" },
-        fetchImpl,
-        caller.signal,
-      ),
-    ).rejects.toMatchObject({ name: "AbortError" });
-  });
-
-  it("lists openai-compatible in the catalog even without RAKAZO_LOCAL_MODELS", () => {
-    delete process.env.RAKAZO_LOCAL_MODELS;
+  it("lists openai-compatible in the catalog", () => {
     const entries = listPiCatalog().filter(
       (entry) => entry.provider === OPENAI_COMPATIBLE_PROVIDER_ID,
     );

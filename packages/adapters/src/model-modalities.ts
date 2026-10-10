@@ -2,7 +2,7 @@
  * Operator-declared input modalities for self-configured model endpoints.
  *
  * Pi's built-in catalog knows the modalities of hosted models, but a model
- * reached through `local` or `openai-compatible` is whatever the operator
+ * reached through `openai-compatible` is whatever the operator
  * points it at. Those providers therefore declare `["text"]`, which is the
  * safe default: `modelAcceptsImageInput` gates the screenshot-returning
  * computer tools on `input.includes("image")`, so guessing "image" for an

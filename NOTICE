@@ -1,8 +1,13 @@
 Sapphire
 Copyright Sapphire contributors
 
-Local model discovery (packages/adapters/src/local-inject.ts,
-packages/adapters/src/pi-local-provider.ts) adapts driver logic from
-OpenMausBot (server/drivers/local-inject.ts), Copyright 2026 Milind Soni
+Headless coding-agent execution (packages/adapters/src/coding-cli-*.ts)
+adapts driver logic from OpenMausBot (server/procs.ts, server/env-path.ts,
+server/drivers/claude.ts, server/drivers/codex.ts), Copyright 2026 Milind Soni
 and OpenMausBot contributors, used under the Apache License 2.0. The full
 license text is in third_party/openmausbot/LICENSE.
+
+Coding-agent brand marks (packages/ui-web/src/coding-agent-marks.tsx,
+apps/mobile/components/coding-agent-marks.tsx) adapt OpenMausBot's
+src/components/ProviderIcons.tsx, Copyright 2026 Milind Soni and OpenMausBot
+contributors, used under the Apache License 2.0 (same license file).

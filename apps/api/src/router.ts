@@ -38,6 +38,7 @@ import {
   buildMcpCredentialBlob,
   buildModelConnectPlaintext,
   CHATGPT_OAUTH_PROVIDER,
+  CODING_CLI_META,
   CodexCatalogCache,
   ComputerBusyError,
   cancelComputerRunWork,
@@ -53,12 +54,14 @@ import {
   deletePushToken,
   deploymentAutoReviewDefault,
   destroyBot,
+  detectCodingClis,
   displayBotWorkspacePath,
   enqueueTakeoverContinuation,
   expireComputerControl,
   extractComposioApiKey,
   forgetBotSecret,
   getBotSecretMetadata,
+  isCodingCliProvider,
   hasActiveComputerControl,
   isAutoReviewCheckerConfigured,
   isComputerScreenUnavailable,
@@ -79,7 +82,6 @@ import {
   planLiveConnectionSync,
   prepareApiInstall,
   prepareGraphqlInstall,
-  probeOpenAiCompatibleModels,
   provisionComputer,
   queueComputerUpdate,
   readStoredModelAuth,
@@ -1086,6 +1088,19 @@ export function createRouter(deps: RouterDeps) {
           plaintext = buildModelConnectPlaintext(input, previousPlaintext, {
             omitVisionModelIds,
           });
+          if (isCodingCliProvider(input.provider)) {
+            // Keyless by design: the CLI runs under the user's own login on
+            // this machine. Refuse to persist a credential the backend cannot use.
+            const statuses = await detectCodingClis();
+            const status = statuses.find((entry) => entry.provider === input.provider);
+            const name = CODING_CLI_META[input.provider].name;
+            if (!status?.installed) {
+              throw new Error(
+                `${name} is not installed on the machine running Sapphire. Install it, then reconnect.`,
+              );
+            }
+            if (!status.signedIn) throw new Error(status.loginHint);
+          }
         } catch (error) {
           throw new ORPCError("BAD_REQUEST", {
             message: error instanceof Error ? error.message : "Invalid model connection",
@@ -1109,18 +1124,9 @@ export function createRouter(deps: RouterDeps) {
           codexCatalog,
         );
       }),
-      probeOpenAiCompatible: authed.models.probeOpenAiCompatible.handler(
-        async ({ context, input }) => {
-          try {
-            const models = await probeOpenAiCompatibleModels(input, undefined, context.signal);
-            return { models };
-          } catch (error) {
-            throw new ORPCError("BAD_REQUEST", {
-              message: error instanceof Error ? error.message : "Could not list models",
-            });
-          }
-        },
-      ),
+      codingCliStatus: authed.models.codingCliStatus.handler(async () => {
+        return detectCodingClis();
+      }),
       beginOAuth: authed.models.beginOAuth.handler(async ({ context, input }) => {
         return deps.oauthLogins.begin({
           userId: context.actor.userId,

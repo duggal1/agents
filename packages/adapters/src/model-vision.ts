@@ -2,7 +2,6 @@ import type { Models } from "@earendil-works/pi-ai";
 import { builtinModels } from "@earendil-works/pi-ai/providers/all";
 import { DEFAULT_OPENROUTER_MODEL_ID } from "./deployment-model.js";
 import { supplementPiModels } from "./pi-current-models.js";
-import { registerLocalProviderSync } from "./pi-local-provider.js";
 import {
   OPENAI_COMPATIBLE_PROVIDER_ID,
   registerOpenAiCompatibleCatalog,
@@ -52,9 +51,7 @@ let catalogModelsCache: Models | undefined;
 
 function catalogModels(): Models {
   // Same catalog the runtime calls, including models added ahead of the bundled library.
-  catalogModelsCache ??= registerOpenAiCompatibleCatalog(
-    registerLocalProviderSync(supplementPiModels(builtinModels())),
-  );
+  catalogModelsCache ??= registerOpenAiCompatibleCatalog(supplementPiModels(builtinModels()));
   return catalogModelsCache;
 }
 

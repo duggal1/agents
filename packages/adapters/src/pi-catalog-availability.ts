@@ -11,11 +11,12 @@ export const OPENAI_CODEX_CHATGPT_SUBSCRIPTION_EXCLUDED_MODEL_IDS = new Set([
 export const UNAVAILABLE_MODEL_FOR_AUTH_MESSAGE =
   "This model is not available with your current sign-in. Choose another model in Settings.";
 
-export type ModelCredentialAuthKind = "oauth" | "api_key" | "openai_compatible";
+export type ModelCredentialAuthKind = "oauth" | "api_key" | "openai_compatible" | "cli";
 
 export function modelCredentialAuthKind(secret: StoredModelSecret): ModelCredentialAuthKind {
   if (secret.kind === "oauth") return "oauth";
   if (secret.kind === "openai_compatible") return "openai_compatible";
+  if (secret.kind === "cli") return "cli";
   return "api_key";
 }
 

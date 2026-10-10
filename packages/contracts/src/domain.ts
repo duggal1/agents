@@ -964,7 +964,30 @@ export const ModelCredentialSchema = z.object({
 });
 export type ModelCredential = z.infer<typeof ModelCredentialSchema>;
 
+export const CodingCliStatusSchema = z.object({
+  provider: z.string(),
+  name: z.string(),
+  installed: z.boolean(),
+  version: z.string().nullable(),
+  signedIn: z.boolean(),
+  loginHint: z.string(),
+});
+export type CodingCliStatus = z.infer<typeof CodingCliStatusSchema>;
+
 export const OPENAI_COMPATIBLE_PROVIDER_ID = "openai-compatible";
+
+/**
+ * Headless coding agents run on the user's own machine under their own
+ * logins. They authenticate with CLI state, never with a stored secret, so
+ * key-requiring validation must exempt them.
+ */
+export const CODING_CLI_PROVIDER_IDS = ["codex-cli", "claude-cli", "opencode-cli"] as const;
+
+export type CodingCliProviderId = (typeof CODING_CLI_PROVIDER_IDS)[number];
+
+export function isCodingCliProviderId(provider: string): provider is CodingCliProviderId {
+  return (CODING_CLI_PROVIDER_IDS as readonly string[]).includes(provider);
+}
 
 export const ModelConnectInputSchema = z
   .object({
@@ -1036,7 +1059,8 @@ export const ModelConnectInputSchema = z
       });
     }
     // An existing connection can update its output limit without a new key.
-    if (!apiKey && value.maxTokens === undefined) {
+    // Coding CLIs never use a key: they run under the user's own CLI login.
+    if (!isCodingCliProviderId(value.provider) && !apiKey && value.maxTokens === undefined) {
       ctx.addIssue({
         code: "custom",
         message: "API key must contain at least 8 characters",
@@ -1082,7 +1106,7 @@ export const ModelCatalogEntrySchema = z.object({
   id: z.string(),
   label: z.string(),
   billing: z.string(),
-  auth: z.enum(["api-key", "oauth", "both"]).optional(),
+  auth: z.enum(["api-key", "oauth", "both", "cli"]).optional(),
   oauthLabel: z.string().optional(),
   authHint: z.string().optional(),
   subscription: z.boolean().optional(),

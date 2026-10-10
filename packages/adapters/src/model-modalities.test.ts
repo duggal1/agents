@@ -2,7 +2,6 @@ import { OPENAI_COMPATIBLE_PROVIDER_ID } from "@sapphire/contracts";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 const VISION_ENV = "RAKAZO_OPENAI_COMPATIBLE_VISION_MODELS";
-const LOCAL_VISION_ENV = "RAKAZO_LOCAL_VISION_MODELS";
 
 /**
  * The vision gate memoizes its catalog at module scope, so every case has to
@@ -104,18 +103,6 @@ describe("operator-declared vision modalities", () => {
         "image",
       );
     });
-  });
-
-  it("applies the same declaration to the local provider", async () => {
-    await withEnv(
-      { RAKAZO_LOCAL_MODELS: "qwen3-vl,qwen3-text", [LOCAL_VISION_ENV]: "qwen3-vl" },
-      async () => {
-        const { localProvider } = await import("./pi-local-provider.js");
-        const models = localProvider()?.getModels() ?? [];
-        expect(models.find((m) => m.id === "qwen3-vl")?.input).toContain("image");
-        expect(models.find((m) => m.id === "qwen3-text")?.input).not.toContain("image");
-      },
-    );
   });
 
   it("dedupes a repeated id in the comma-separated vision env", async () => {

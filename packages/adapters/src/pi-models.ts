@@ -1,15 +1,15 @@
 import { getSupportedThinkingLevels } from "@earendil-works/pi-ai";
 import { builtinModels } from "@earendil-works/pi-ai/providers/all";
 import type { ModelOAuthSignInMode, ThinkingLevel } from "@sapphire/contracts";
+import { CODING_CLI_PROVIDERS, type CodingCliProvider } from "./coding-cli-providers.js";
 import { supplementPiModels } from "./pi-current-models.js";
-import { LOCAL_PROVIDER_ID, registerLocalProviderSync } from "./pi-local-provider.js";
 import { SUBSCRIPTION_SIGN_IN_PROVIDERS } from "./pi-oauth.js";
 import {
   OPENAI_COMPATIBLE_PROVIDER_ID,
   registerOpenAiCompatibleCatalog,
 } from "./pi-openai-compatible-provider.js";
 
-export type PiCatalogAuth = "api-key" | "oauth" | "both";
+export type PiCatalogAuth = "api-key" | "oauth" | "both" | "cli";
 
 export type PiCatalogEntry = {
   provider: string;
@@ -35,9 +35,7 @@ export function listPiCatalog(): PiCatalogEntry[] {
 let cachedCatalog: PiCatalogEntry[] | undefined;
 
 function buildPiCatalog(): PiCatalogEntry[] {
-  const models = registerOpenAiCompatibleCatalog(
-    registerLocalProviderSync(supplementPiModels(builtinModels())),
-  );
+  const models = registerOpenAiCompatibleCatalog(supplementPiModels(builtinModels()));
   const entries: PiCatalogEntry[] = [];
   for (const provider of models.getProviders()) {
     const apiKey = Boolean(provider.auth.apiKey);
@@ -76,6 +74,8 @@ function buildPiCatalog(): PiCatalogEntry[] {
     }
   }
 
+  entries.push(...codingCliCatalogEntries());
+
   const envDefaultModel = process.env.PI_DEFAULT_MODEL?.trim();
   const envDefaultProvider = process.env.PI_DEFAULT_PROVIDER?.trim() || "openrouter";
   if (
@@ -97,6 +97,41 @@ function buildPiCatalog(): PiCatalogEntry[] {
   }
 
   return entries;
+}
+
+const CODING_CLI_CATALOG: Record<
+  CodingCliProvider,
+  { providerName: string; label: string; billing: string }
+> = {
+  "codex-cli": {
+    providerName: "Codex",
+    label: "Codex default (your login)",
+    billing:
+      "Runs headlessly on this machine under your Codex login. No API key; usage bills your Codex plan, not Sapphire.",
+  },
+  "claude-cli": {
+    providerName: "Claude Code",
+    label: "Claude Code default (your login)",
+    billing:
+      "Runs headlessly on this machine under your Claude login. No API key; usage bills your Claude plan, not Sapphire.",
+  },
+  "opencode-cli": {
+    providerName: "OpenCode",
+    label: "OpenCode default (your login)",
+    billing: "Runs headlessly on this machine under your OpenCode login. No API key.",
+  },
+};
+
+export function codingCliCatalogEntries(): PiCatalogEntry[] {
+  return CODING_CLI_PROVIDERS.map((provider) => ({
+    provider,
+    providerName: CODING_CLI_CATALOG[provider].providerName,
+    id: "default",
+    label: CODING_CLI_CATALOG[provider].label,
+    billing: CODING_CLI_CATALOG[provider].billing,
+    auth: "cli" as const,
+    subscription: true,
+  }));
 }
 
 /**
@@ -142,9 +177,6 @@ function catalogBilling(
 ) {
   const signInMeta = SUBSCRIPTION_SIGN_IN_PROVIDERS[providerId];
   if (signInMeta) return signInMeta.billing;
-  if (providerId === LOCAL_PROVIDER_ID) {
-    return "Runs on infrastructure configured by the deployment owner. No model charges from Sapphire.";
-  }
   if (providerId === OPENAI_COMPATIBLE_PROVIDER_ID) {
     return "Runs on a URL you control. Sapphire does not pay for model usage.";
   }

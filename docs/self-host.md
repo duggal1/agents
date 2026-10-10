@@ -254,31 +254,13 @@ CREATEOS_SANDBOX_API_KEY= # when SANDBOX_PROVIDER=createos
 BOX_API_KEY=              # when SANDBOX_PROVIDER=box
 ```
 
-To use an operator-controlled OpenAI-compatible server such as Ollama, LM Studio, llama.cpp, or
-MLX, list its model IDs and an endpoint that both the API and worker processes can reach:
+Headless coding agents (Codex, Claude Code, OpenCode) run on the same
+machine as the backend under the operator's own CLI logins — no API key and
+no extra configuration. Users connect them from **Connect a model** /
+**Settings → Models**; models already connected keep working with no changes.
 
-```env
-RAKAZO_LOCAL_MODELS=qwen3:4b,llama3.1:8b,qwen3-vl
-RAKAZO_LOCAL_MODELS_URL=http://127.0.0.1:11434/v1
-RAKAZO_LOCAL_CONTEXT_WINDOW=32768
-RAKAZO_LOCAL_MAX_TOKENS=4096
-# Optional: model ids on this endpoint that accept images (screenshot computer tools).
-RAKAZO_LOCAL_VISION_MODELS=qwen3-vl
-```
-
-The loopback default is suitable when running Sapphire from a source checkout. From containers,
-prefer a stable LAN RFC1918 address (not Compose service DNS alone). On Docker Desktop,
-`host.docker.internal` also works.
-On Docker Desktop, a bot computer shell can often reach services bound to host `127.0.0.1`
-through that same hostname. Do not run sensitive unauthenticated services on loopback while
-bots run, or firewall / block that path. Linux does not get `host.docker.internal` the same
-way by default.
-Only configure an endpoint you control: prompts, attachments, and tool results sent to that model
-leave Sapphire through this URL. Leave `RAKAZO_LOCAL_MODELS` blank to disable the provider.
-
-Each user can also connect their own OpenAI-compatible endpoint from **Connect a model** /
-**Settings → Models** on web and mobile. Choose **OpenAI-compatible**, enter the server base URL
-(for example `http://127.0.0.1:8000/v1`), the exact model id, and an optional API key.
+Each user can also connect their own OpenAI-compatible endpoint. Stored
+connections keep working and stay manageable from **Settings → Models**.
 Public hosts and ordinary hostnames need `RAKAZO_OPENAI_COMPAT_ALLOW_PUBLIC=1` and HTTPS.
 Literal private IP, loopback, and `host.docker.internal` targets do not. If that endpoint's model
 accepts images, enable **Supports images** under **Advanced** when connecting so attachments and

@@ -44,6 +44,7 @@ import {
   isComposioEnabled,
   isMessagingSurfaceEnabled,
   isPipedreamEnabled,
+  CodingCliRuntime,
   LocalAgentHomeStore,
   LocalArtifactStore,
   McpConnector,
@@ -347,8 +348,10 @@ export async function createApp(
   const runtime =
     env.agentRuntime === "scripted"
       ? new ScriptedAgentRuntime()
-      : new PiAgentRuntime({
-          sessionRoot: env.piSessionRecording ? piSessionsRoot(env.dataDir) : undefined,
+      : new CodingCliRuntime({
+          delegate: new PiAgentRuntime({
+            sessionRoot: env.piSessionRecording ? piSessionsRoot(env.dataDir) : undefined,
+          }),
         });
   const notifications = new ExpoPushProvider(env.dataDir);
   const auth = createAuth(prisma, {

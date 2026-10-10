@@ -244,6 +244,7 @@ export function isRetiredModelCredentialError(error: unknown): boolean {
 export type StoredModelSecret =
   | { kind: "api_key"; key: string; maxTokens?: number; accountId?: string; gatewayId?: string }
   | { kind: "oauth"; credential: OAuthCredential; maxTokens?: number }
+  | { kind: "cli"; maxTokens?: undefined }
   | {
       kind: "openai_compatible";
       baseUrl: string;
@@ -393,6 +394,7 @@ export function parseModelSecret(plaintext: string): StoredModelSecret {
       ...(maxImagesPerPrompt !== undefined ? { maxImagesPerPrompt } : {}),
     };
   }
+  if (parsed.kind === "cli") return { kind: "cli" };
   if (parsed.kind === "api_key") {
     if (typeof parsed.key !== "string" || !parsed.key) {
       throw new Error(CORRUPT_MODEL_SECRET_MESSAGE);
@@ -428,6 +430,7 @@ export function parseModelSecret(plaintext: string): StoredModelSecret {
 }
 
 export function serializeModelSecret(secret: StoredModelSecret): string {
+  if (secret.kind === "cli") return JSON.stringify({ kind: "cli" });
   if (secret.kind === "oauth") {
     if (secret.maxTokens === undefined) return JSON.stringify(secret.credential);
     return JSON.stringify({
@@ -470,6 +473,7 @@ export function serializeModelSecret(secret: StoredModelSecret): string {
 export function secretValuesToRedact(secret: StoredModelSecret): string[] {
   if (secret.kind === "api_key") return secret.key ? [secret.key] : [];
   if (secret.kind === "openai_compatible") return secret.apiKey ? [secret.apiKey] : [];
+  if (secret.kind === "cli") return [];
   return [secret.credential.access, secret.credential.refresh].filter(Boolean);
 }
 
@@ -551,6 +555,7 @@ export async function resolveModelAuth(
 ): Promise<{ secret: StoredModelSecret; apiKey: string }> {
   const parsed = parseModelSecret(plaintext);
   if (parsed.kind === "api_key") return { secret: parsed, apiKey: parsed.key };
+  if (parsed.kind === "cli") return { secret: parsed, apiKey: "" };
   if (parsed.kind === "openai_compatible") {
     return { secret: parsed, apiKey: parsed.apiKey ?? "" };
   }

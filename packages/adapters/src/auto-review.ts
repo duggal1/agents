@@ -12,7 +12,6 @@ import type { AutoReviewJudgeDecision } from "@sapphire/core";
 import { redactSecrets } from "@sapphire/core";
 import { formatCurrentTimeInstruction } from "./current-time.js";
 import { resolveDeploymentModel } from "./deployment-model.js";
-import { LOCAL_PROVIDER_ID } from "./pi-local-provider.js";
 
 const DEFAULT_TIMEOUT_MS = 1_500;
 const MAX_TASK_CHARS = 400;
@@ -39,13 +38,6 @@ export const DEFAULT_AUTO_REVIEW_MIN_CONFIDENCE = 0.5;
 function envFlag(env: NodeJS.ProcessEnv, name: string): boolean {
   const value = env[name]?.trim().toLowerCase();
   return value === "1" || value === "true" || value === "yes" || value === "on";
-}
-
-function localModelIds(env: NodeJS.ProcessEnv): string[] {
-  return (env.RAKAZO_LOCAL_MODELS ?? "")
-    .split(",")
-    .map((id) => id.trim())
-    .filter((id) => id.length > 0);
 }
 
 /** Deployment default for the user toggle when no preference row exists. */
@@ -95,7 +87,7 @@ export function resolveAutoReviewProviderKind(
 }
 
 /**
- * Prefer explicit env overrides, then local models, then PI_DEFAULT_*.
+ * Prefer explicit env overrides, then PI_DEFAULT_*.
  * Returns null only when there is no model id to try.
  */
 export function resolveAutoReviewChecker(
@@ -118,11 +110,6 @@ export function resolveAutoReviewChecker(
     return { provider: overrideProvider, model: overrideModel };
   }
 
-  const localIds = localModelIds(env);
-  if (localIds[0]) {
-    return { provider: LOCAL_PROVIDER_ID, model: localIds[0]! };
-  }
-
   const deployment = resolveDeploymentModel(env);
   if (!deployment.model) return null;
   return { provider: deployment.provider, model: deployment.model };
@@ -130,7 +117,7 @@ export function resolveAutoReviewChecker(
 
 /**
  * Whether the checker can actually run without a hosted vendor being required for core.
- * Local models count; otherwise the checker provider needs a deployment key or a user key.
+ * The checker provider needs a deployment key or a user key.
  */
 export function isAutoReviewCheckerConfigured(input: {
   env?: NodeJS.ProcessEnv;
@@ -141,7 +128,6 @@ export function isAutoReviewCheckerConfigured(input: {
   if (!checker) return false;
   if (checker.provider === JEV_AUTO_REVIEW_PROVIDER) return Boolean(typesafeApiKey(env));
   if (checker.provider === SCRIPTED_AUTO_REVIEW_PROVIDER) return true;
-  if (checker.provider === LOCAL_PROVIDER_ID) return localModelIds(env).length > 0;
 
   const deployment = resolveDeploymentModel(env);
   if (checker.provider === deployment.provider && deployment.key) return true;

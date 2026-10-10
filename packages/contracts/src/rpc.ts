@@ -24,6 +24,7 @@ import {
   BotSchema,
   BotSectionSchema,
   CapabilityInstallSchema,
+  CodingCliStatusSchema,
   ComputerModeSchema,
   ComputerReleaseReasonSchema,
   ComputerStatusSchema,
@@ -204,14 +205,8 @@ export const appContract = {
     list: oc.output(z.array(ModelCatalogEntrySchema)),
     credentials: oc.output(z.array(ModelCredentialSchema)),
     connect: oc.input(ModelConnectInputSchema).output(ModelCredentialSchema),
-    probeOpenAiCompatible: oc
-      .input(
-        z.object({
-          baseUrl: z.string(),
-          apiKey: z.string().optional(),
-        }),
-      )
-      .output(z.object({ models: z.array(z.string()) })),
+    /** Headless coding agents on this machine: installed versions and login state. */
+    codingCliStatus: oc.output(z.array(CodingCliStatusSchema)),
     beginOAuth: oc
       .input(
         z.object({

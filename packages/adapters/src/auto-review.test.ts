@@ -17,20 +17,9 @@ describe("resolveAutoReviewChecker", () => {
       resolveAutoReviewChecker({
         RAKAZO_AUTO_REVIEW_PROVIDER: "openrouter",
         RAKAZO_AUTO_REVIEW_MODEL: "cheap/fast",
-        RAKAZO_LOCAL_MODELS: "local-a",
         PI_DEFAULT_MODEL: "other",
       }),
     ).toEqual({ provider: "openrouter", model: "cheap/fast" });
-  });
-
-  it("prefers local models when configured", () => {
-    expect(
-      resolveAutoReviewChecker({
-        RAKAZO_LOCAL_MODELS: " llama-local , other ",
-        PI_DEFAULT_PROVIDER: "openrouter",
-        PI_DEFAULT_MODEL: "deepseek/deepseek-v4-flash-0731",
-      }),
-    ).toEqual({ provider: "local", model: "llama-local" });
   });
 
   it("falls back to deployment defaults", () => {
@@ -107,11 +96,6 @@ describe("isAutoReviewCheckerConfigured", () => {
           PI_DEFAULT_MODEL: "x",
           OPENROUTER_API_KEY: "or-key",
         },
-      }),
-    ).toBe(true);
-    expect(
-      isAutoReviewCheckerConfigured({
-        env: { RAKAZO_LOCAL_MODELS: "local-1" },
       }),
     ).toBe(true);
     expect(
