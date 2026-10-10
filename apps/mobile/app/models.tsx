@@ -1,14 +1,13 @@
-import type { ModelOAuthBegin, ThinkingLevel } from "@sapphire/contracts";
+import type { CodingCliStatus, ModelOAuthBegin, ThinkingLevel } from "@sapphire/contracts";
 import {
   CLOUDFLARE_AI_GATEWAY_PROVIDER_ID,
   cloudflareGatewayRouting,
   DEFAULT_MODEL_CONTEXT_WINDOW,
   DEFAULT_MODEL_MAX_TOKENS,
+  isCodingCliProviderId,
   MAX_MODEL_CONTEXT_WINDOW,
   MAX_MODEL_MAX_TOKENS,
-  OPENAI_COMPATIBLE_BASE_URL_HINT,
   OPENAI_COMPATIBLE_PROVIDER_ID,
-  openAiCompatibleConnectReady,
   parseModelContextWindow,
   parseModelMaxImagesPerPrompt,
   parseModelMaxTokens,
@@ -16,10 +15,8 @@ import {
 import {
   COMPATIBLE_THINKING_LEVELS,
   clampCatalogThinkingLevel,
-  createModelProbe,
   featuredModelProviders,
   filterModelCatalog,
-  initialModelProbeState,
   pickCatalogModelId,
 } from "@sapphire/core";
 import * as Clipboard from "expo-clipboard";
@@ -40,6 +37,7 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { CodingAgentMark } from "../components/coding-agent-marks";
 import { type MobileMe, type MobileModel, type MobileModelCredential, rpc } from "../lib/api";
 import { mobileTokens } from "../lib/appearance";
 import { useI18n } from "../lib/i18n";
@@ -106,12 +104,40 @@ export default function Models() {
   const [contextWindow, setContextWindow] = useState(String(DEFAULT_MODEL_CONTEXT_WINDOW));
   const [supportsImages, setSupportsImages] = useState(false);
   const [maxImagesPerPrompt, setMaxImagesPerPrompt] = useState("");
-  const [showEndpointHelp, setShowEndpointHelp] = useState(false);
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [showApiKey, setShowApiKey] = useState(false);
-  const [{ models: probeModels, probing }, setProbe] = useState(initialModelProbeState);
-  const [modelProbe] = useState(() => createModelProbe(setProbe));
-  const resetOpenAiCompatibleProbe = modelProbe.reset;
+  const [agentStatuses, setAgentStatuses] = useState<CodingCliStatus[] | null>(null);
+  const [selectedAgent, setSelectedAgent] = useState<string | null>(null);
+
+  async function connectCodingAgent(agentProvider: string) {
+    setError(null);
+    setNotice(null);
+    setPending("connect");
+    try {
+      await rpc("models/connect", { provider: agentProvider, modelId: "default" });
+      await load({});
+      setNotice(t("Connected."));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t("Could not connect this coding agent"));
+    } finally {
+      setPending(null);
+    }
+  }
+
+  async function setCodingAgentDefault(agentProvider: string) {
+    setError(null);
+    setNotice(null);
+    setPending("default");
+    try {
+      await rpc("models/setDefault", { provider: agentProvider, modelId: "default" });
+      await load({});
+      setNotice(t("Now using this coding agent."));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t("Could not change the default model"));
+    } finally {
+      setPending(null);
+    }
+  }
   const [oauth, setOauth] = useState<ModelOAuthBegin | null>(null);
   const [pasteCode, setPasteCode] = useState("");
   const [loading, setLoading] = useState(true);
@@ -147,11 +173,15 @@ export default function Models() {
 
   const load = useCallback(async (preferred: ModelSelection = {}) => {
     setError(null);
-    const [nextMe, nextCatalog, nextCredentials] = await Promise.all([
+    const [nextMe, listedCatalog, nextCredentials, statuses] = await Promise.all([
       rpc<MobileMe>("me"),
       rpc<MobileModel[]>("models/list"),
       rpc<MobileModelCredential[]>("models/credentials"),
+      rpc<CodingCliStatus[]>("models/codingCliStatus").catch(() => []),
     ]);
+    // Coding agents live in their own section; the catalog stays API-only.
+    const nextCatalog = listedCatalog.filter((entry) => !isCodingCliProviderId(entry.provider));
+    setAgentStatuses(statuses);
     const nextProvider =
       (preferred.provider && nextCatalog.some((entry) => entry.provider === preferred.provider)
         ? preferred.provider
@@ -173,7 +203,6 @@ export default function Models() {
     setMe(nextMe);
     setCatalog(nextCatalog);
     setCredentials(nextCredentials);
-    resetOpenAiCompatibleProbe();
     setProvider(nextProvider);
     setModelSearch((current) =>
       current.provider === nextProvider ? current : { provider: nextProvider, query: "" },
@@ -216,7 +245,6 @@ export default function Models() {
         )
         .finally(() => setLoading(false));
       return () => {
-        modelProbe.invalidate();
         cancelOAuth();
       };
     }, [cancelOAuth, load]),
@@ -266,7 +294,11 @@ export default function Models() {
             .map((entry) => byId.get(entry.provider))
             .filter((group): group is (typeof groups)[number] => group !== undefined);
         })();
-    return list.filter((group) => !connectedProviderIds.has(group.id));
+    // Custom servers are management-only: stored connections stay reachable
+    // under Connected, but the browser never offers a new one.
+    return list.filter(
+      (group) => !connectedProviderIds.has(group.id) && group.id !== OPENAI_COMPATIBLE_PROVIDER_ID,
+    );
   }, [groups, featuredProviders, showAllProviders, connectedProviderIds]);
   const modelsForProvider = catalog.filter((entry) => entry.provider === provider);
   const selected = modelsForProvider.find((entry) => entry.id === modelId) ?? modelsForProvider[0];
@@ -326,22 +358,17 @@ export default function Models() {
   const thinkingDirty = !isOpenAiCompatible && (thinkingLevel ?? null) !== selectedStoredLevel;
   const busy = pending !== null || oauthPending;
   const effectiveBaseUrl = baseUrl.trim();
-  const openAiCompatibleReady = openAiCompatibleConnectReady({
-    baseUrl: effectiveBaseUrl,
-    modelId,
-  });
+  const openAiCompatibleReady = Boolean(effectiveBaseUrl && modelId.trim());
   const builtinLimitSave = !isOpenAiCompatible && Boolean(credential) && apiKey.trim().length === 0;
 
   function updateBaseUrl(nextBaseUrl: string) {
     setBaseUrl(nextBaseUrl);
-    resetOpenAiCompatibleProbe();
     setError(null);
     setNotice(null);
   }
 
   function updateApiKey(nextApiKey: string) {
     setApiKey(nextApiKey);
-    resetOpenAiCompatibleProbe();
   }
 
   function chooseProvider(nextProvider: string) {
@@ -379,34 +406,8 @@ export default function Models() {
     setApiKey("");
     setAccountId(nextCredential?.accountId ?? "");
     setGatewayId(nextCredential?.gatewayId ?? "");
-    resetOpenAiCompatibleProbe();
     setError(null);
     setNotice(null);
-  }
-
-  async function probeServerModels() {
-    if (!baseUrl.trim()) return;
-    setError(null);
-    setNotice(null);
-    await modelProbe.probe({
-      baseUrl,
-      apiKey,
-      request: (input) => rpc<{ models: string[] }>("models/probeOpenAiCompatible", input),
-      onSuccess: (models) => {
-        const next = modelId.trim() || models[0] || "";
-        if (next !== modelId) stageCompatibleModelId(next);
-        else setModelId(next);
-        setNotice(
-          models.length === 0
-            ? t("Server found. Enter a model name.")
-            : models.length === 1
-              ? t("Found {count} model.", { count: 1 })
-              : t("Found {count} models.", { count: models.length }),
-        );
-      },
-      onError: (err) =>
-        setError(err instanceof Error ? err.message : t("Could not reach this model server")),
-    });
   }
 
   async function setModelDefault() {
@@ -688,89 +689,18 @@ export default function Models() {
         style={styles.keyInput}
         value={baseUrl}
       />
-      <Pressable
-        accessibilityRole="button"
-        accessibilityState={{ expanded: showEndpointHelp }}
-        onPress={() => setShowEndpointHelp((visible) => !visible)}
-      >
-        <Text style={styles.helpLabel}>{t("Setup help")}</Text>
-      </Pressable>
-      {showEndpointHelp ? (
-        <Text style={styles.hint}>{t(OPENAI_COMPATIBLE_BASE_URL_HINT)}</Text>
-      ) : null}
-      <Pressable
-        accessibilityRole="button"
-        disabled={busy || probing || !effectiveBaseUrl}
-        onPress={() => void probeServerModels()}
-        style={({ pressed }) => [
-          styles.outlineButton,
-          (busy || probing || !effectiveBaseUrl) && styles.disabled,
-          pressed && styles.pressed,
-        ]}
-      >
-        <Text style={styles.outlineLabel}>{probing ? t("Finding…") : t("Find models")}</Text>
-      </Pressable>
       <Text style={[styles.sectionTitle, { marginTop: 12 }]}>{t("Model")}</Text>
-      {probeModels.length && probeModels.includes(modelId) ? (
-        <View style={styles.card}>
-          {probeModels.map((entry) => (
-            <Pressable
-              key={entry}
-              accessibilityRole="radio"
-              accessibilityState={{ selected: entry === modelId }}
-              disabled={probing}
-              onPress={() => stageCompatibleModelId(entry)}
-              style={({ pressed }) => [
-                styles.modelRow,
-                entry === modelId && styles.selectedRow,
-                probing && styles.disabled,
-                pressed && styles.pressed,
-              ]}
-            >
-              <View style={styles.radio}>
-                {entry === modelId ? <View style={styles.radioDot} /> : null}
-              </View>
-              <Text style={styles.modelLabel}>{entry}</Text>
-            </Pressable>
-          ))}
-          <Pressable
-            accessibilityRole="radio"
-            accessibilityState={{ selected: false }}
-            disabled={probing}
-            onPress={() => stageCompatibleModelId("")}
-            style={({ pressed }) => [
-              styles.modelRow,
-              probing && styles.disabled,
-              pressed && styles.pressed,
-            ]}
-          >
-            <View style={styles.radio} />
-            <Text style={styles.modelLabel}>{t("Other model…")}</Text>
-          </Pressable>
-        </View>
-      ) : (
-        <>
-          <TextInput
-            accessibilityLabel={t("Model id")}
-            autoCapitalize="none"
-            autoCorrect={false}
-            editable={!busy && !probing}
-            onChangeText={stageCompatibleModelId}
-            placeholder={t("exact-model-id")}
-            placeholderTextColor={native.tertiaryLabel}
-            style={styles.keyInput}
-            value={modelId}
-          />
-          {probeModels.length ? (
-            <Pressable
-              accessibilityRole="button"
-              onPress={() => stageCompatibleModelId(probeModels[0] ?? "")}
-            >
-              <Text style={styles.helpLabel}>{t("Use a found model")}</Text>
-            </Pressable>
-          ) : null}
-        </>
-      )}
+      <TextInput
+        accessibilityLabel={t("Model id")}
+        autoCapitalize="none"
+        autoCorrect={false}
+        editable={!busy}
+        onChangeText={stageCompatibleModelId}
+        placeholder={t("exact-model-id")}
+        placeholderTextColor={native.tertiaryLabel}
+        style={styles.keyInput}
+        value={modelId}
+      />
       <Pressable
         accessibilityRole="button"
         accessibilityState={{ expanded: showAdvanced }}
@@ -1319,7 +1249,10 @@ export default function Models() {
         <View style={styles.activeCard}>
           <Text style={styles.eyebrow}>{t("Active model")}</Text>
           <Text style={styles.activeModel}>
-            {currentEntry?.label ?? me?.defaultModel ?? t("Deployment default")}
+            {currentEntry?.label ??
+              agentStatuses?.find((entry) => entry.provider === me?.defaultProvider)?.name ??
+              me?.defaultModel ??
+              t("Deployment default")}
           </Text>
           <Text style={styles.secondary}>
             {currentEntry?.providerName ?? me?.defaultProvider ?? t("Configured by deployment")}
@@ -1331,6 +1264,91 @@ export default function Models() {
 
         {error ? <Text style={styles.error}>{error}</Text> : null}
         {notice ? <Text style={styles.notice}>{notice}</Text> : null}
+
+        <Text style={styles.sectionTitle}>{t("Coding agents")}</Text>
+        <View style={styles.card}>
+          {agentStatuses === null ? (
+            <Text style={styles.secondary}>{t("Checking installed coding agents…")}</Text>
+          ) : (
+            agentStatuses.map((status) => {
+              const connected = credentials.some((entry) => entry.provider === status.provider);
+              return (
+                <Pressable
+                  key={status.provider}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: selectedAgent === status.provider }}
+                  disabled={!status.installed}
+                  onPress={() => setSelectedAgent(status.provider)}
+                  style={({ pressed }) => [
+                    styles.providerRow,
+                    selectedAgent === status.provider && styles.selectedRow,
+                    pressed && styles.pressed,
+                  ]}
+                >
+                  <CodingAgentMark provider={status.provider} size={20} />
+                  <View style={styles.providerCopy}>
+                    <Text style={styles.providerName}>
+                      {status.name}
+                      {connected ? ` · ${t("Connected")}` : ""}
+                    </Text>
+                    <Text style={styles.secondary}>
+                      {!status.installed
+                        ? t("Not installed")
+                        : !status.signedIn
+                          ? t("Sign-in needed")
+                          : (status.version ?? t("Signed in"))}
+                    </Text>
+                  </View>
+                </Pressable>
+              );
+            })
+          )}
+        </View>
+        {(() => {
+          const status = agentStatuses?.find((entry) => entry.provider === selectedAgent);
+          if (!status || !selectedAgent) return null;
+          const connected = credentials.some((entry) => entry.provider === selectedAgent);
+          const isDefault = me?.defaultProvider === selectedAgent;
+          const agentProvider = selectedAgent;
+          return (
+            <View style={styles.card}>
+              {status.installed && !status.signedIn ? (
+                <Text style={styles.secondary}>{status.loginHint}</Text>
+              ) : null}
+              {!connected ? (
+                <Pressable
+                  accessibilityRole="button"
+                  disabled={busy || !status.installed || !status.signedIn}
+                  onPress={() => void connectCodingAgent(agentProvider)}
+                  style={({ pressed }) => [
+                    styles.primaryButton,
+                    (busy || !status.installed || !status.signedIn) && styles.disabled,
+                    pressed && styles.pressed,
+                  ]}
+                >
+                  <Text style={styles.primaryLabel}>
+                    {pending === "connect" ? t("Saving…") : t("Connect")}
+                  </Text>
+                </Pressable>
+              ) : !isDefault ? (
+                <Pressable
+                  accessibilityRole="button"
+                  disabled={busy}
+                  onPress={() => void setCodingAgentDefault(agentProvider)}
+                  style={({ pressed }) => [
+                    styles.primaryButton,
+                    busy && styles.disabled,
+                    pressed && styles.pressed,
+                  ]}
+                >
+                  <Text style={styles.primaryLabel}>
+                    {pending === "default" ? t("Switching…") : t("Use as default")}
+                  </Text>
+                </Pressable>
+              ) : null}
+            </View>
+          );
+        })()}
 
         <Text style={styles.sectionTitle}>{t("Providers")}</Text>
         <View style={styles.card}>

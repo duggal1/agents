@@ -98,11 +98,9 @@ describe("mobile i18n", () => {
     const { RU_MESSAGES } = await import("./locales/ru");
     const { DE_MESSAGES } = await import("./locales/de");
     const { EMPTY_PLUGIN_CATALOG_MESSAGE, SLASH_ACTIONS } = await import("@sapphire/core");
-    const { OPENAI_COMPATIBLE_BASE_URL_HINT } = await import("@sapphire/contracts");
     const mobileRoot = join(dirname(fileURLToPath(import.meta.url)), "..");
     const ids = new Set<string>([
       EMPTY_PLUGIN_CATALOG_MESSAGE,
-      OPENAI_COMPATIBLE_BASE_URL_HINT,
       ...SLASH_ACTIONS.map((action) => action.label),
       "Sign-in did not return a session",
       "Sign-up did not return a session",

@@ -11,7 +11,7 @@ const models = vi.hoisted(() => ({
   connect: vi.fn(),
   disconnect: vi.fn(),
   setDefault: vi.fn(),
-  probeOpenAiCompatible: vi.fn(),
+  codingCliStatus: vi.fn(),
   beginOAuth: vi.fn(),
   cancelOAuth: vi.fn(),
   completeOAuth: vi.fn(),
@@ -88,6 +88,8 @@ vi.mock("@sapphire/ui-web", () => {
     DialogHeader: Pass,
     DialogTitle: Pass,
     Input: (props: ComponentProps<"input">) => <input {...props} />,
+    CodingAgentMark: () => null,
+    cn: (...parts: Array<string | false | undefined>) => parts.filter(Boolean).join(" "),
     ModelThinkingOptions: () => null,
     NativeSelect: (props: ComponentProps<"select">) => <select {...props} />,
     NativeSelectOption: (props: ComponentProps<"option">) => <option {...props} />,
@@ -193,6 +195,7 @@ beforeEach(() => {
   models.credentials.mockResolvedValue([]);
   models.connect.mockResolvedValue({});
   models.disconnect.mockResolvedValue(undefined);
+  models.codingCliStatus.mockResolvedValue([]);
 });
 
 afterEach(() => {
@@ -321,6 +324,58 @@ it("shows Cloudflare account and gateway fields for a new and a saved connection
     ).toBe("gateway-1");
   } finally {
     await saved.unmount();
+  }
+});
+
+it("connects a signed-in coding agent from its card", async () => {
+  models.codingCliStatus.mockResolvedValue([
+    {
+      provider: "codex-cli",
+      name: "Codex",
+      installed: true,
+      version: "0.156.1",
+      signedIn: true,
+      loginHint: "",
+    },
+    {
+      provider: "claude-cli",
+      name: "Claude Code",
+      installed: true,
+      version: null,
+      signedIn: false,
+      loginHint: "Run `claude login` in a terminal, then reconnect.",
+    },
+    {
+      provider: "opencode-cli",
+      name: "OpenCode",
+      installed: false,
+      version: null,
+      signedIn: false,
+      loginHint: "Run `opencode auth login` in a terminal, then reconnect.",
+    },
+  ]);
+  const view = await renderSettings();
+  try {
+    await act(async () => {
+      await Promise.resolve();
+    });
+    await act(async () => {
+      buttons(view.container, "Codex")[0]?.click();
+    });
+    await act(async () => {
+      buttons(view.container, "Connect")[0]?.click();
+    });
+    await act(async () => {
+      await Promise.resolve();
+    });
+    expect(models.connect).toHaveBeenCalledWith({ provider: "codex-cli", modelId: "default" });
+
+    await act(async () => {
+      buttons(view.container, "Claude Code")[0]?.click();
+    });
+    expect(view.container.textContent).toContain("Run `claude login`");
+  } finally {
+    await view.unmount();
   }
 });
 

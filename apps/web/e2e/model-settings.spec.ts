@@ -13,11 +13,20 @@ test("custom connections persist reasoning support and bot thinking", async ({
   const userName = `Reasoning ${stamp}`;
   await signup(page, `reasoning-model-${stamp}@rakazo.test`, "password12", userName);
   await completeOnboarding(page);
+  // Custom servers have no creation UI; stored connections stay manageable.
+  await rpc(page, "models/connect", {
+    provider: "openai-compatible",
+    baseUrl: "http://127.0.0.1:8090/v1",
+    modelId: "arbitrary-model",
+    reasoning: true,
+    thinkingLevel: "low",
+    maxTokens: 8192,
+    contextWindow: 65536,
+    supportsImages: true,
+    maxImagesPerPrompt: 1,
+  });
   await openUserSettings(page, "models");
-  await page.getByPlaceholder("Search providers").fill("openai-compatible");
   await page.getByRole("button", { name: /OpenAI-compatible/ }).click();
-  await page.getByLabel("OpenAI-compatible server URL").fill("http://127.0.0.1:8090/v1");
-  await page.getByLabel("Model id").fill("arbitrary-model");
   await expect(page.getByRole("checkbox", { name: "Supports thinking" })).toBeHidden();
   await expect(page.getByRole("checkbox", { name: "Supports images" })).toBeHidden();
   await page.getByText("Advanced", { exact: true }).click();
@@ -170,46 +179,31 @@ test("connects, lists, and uses an OpenAI-compatible endpoint", async ({ page },
     await signup(page, `local-model-${stamp}@rakazo.test`, "password12", userName);
     await completeOnboarding(page);
 
+    // No probe or discovery UI: the endpoint is connected directly.
+    await rpc(page, "models/connect", {
+      provider: "openai-compatible",
+      baseUrl,
+      modelId: LOCAL_MODEL_ID,
+    });
+
     await openUserSettings(page, "models");
-    const providerSearch = page.getByPlaceholder("Search providers");
-    await providerSearch.fill("openai-compatible");
+    // Stored custom connections are managed under Connected; the browser
+    // never offers a new custom server.
+    await page.getByPlaceholder("Search providers").fill("openai-compatible");
+    await expect(page.getByRole("button", { name: /OpenAI-compatible/ })).toHaveCount(0);
+    await page.getByPlaceholder("Search providers").fill("");
     await page.getByRole("button", { name: /OpenAI-compatible/ }).click();
-    await expect(
-      page.getByText("Paste the OpenAI-compatible address", { exact: false }),
-    ).toBeHidden();
-    await page.getByText("Setup help", { exact: true }).click();
-    await expect(
-      page.getByText("Paste the OpenAI-compatible address", { exact: false }),
-    ).toBeVisible();
-    await page.getByText("Setup help", { exact: true }).click();
-    await expect(
-      page.getByText("Paste the OpenAI-compatible address", { exact: false }),
-    ).toBeHidden();
-    await page.getByLabel("OpenAI-compatible server URL").fill(baseUrl);
-    await page.getByLabel("Model id").fill("manual-model-not-listed");
-    await page.getByRole("button", { name: "Find models" }).click();
-
-    await expect(page.getByLabel("Model id")).toHaveValue("manual-model-not-listed");
-    await page.getByRole("button", { name: "Use a found model" }).click();
-    const discoveredModels = page.getByRole("combobox", { name: "Models from server" });
-    await expect(discoveredModels).toHaveValue(LOCAL_MODEL_ID);
-    await discoveredModels.selectOption("");
-    await expect(page.getByLabel("Model id")).toBeVisible();
-    await page.getByRole("button", { name: "Find models" }).click();
-    await expect(discoveredModels).toHaveValue(LOCAL_MODEL_ID);
-    await expect(page.getByText("Found 1 model.")).toBeVisible();
-    await expect(page.getByRole("button", { name: "Save" })).toBeEnabled();
-    await captureScreenshot(page, testInfo, "openai-compatible-model-discovery");
-
-    await page.getByRole("button", { name: "Save" }).click();
-    await expect(page.getByText("Saved.")).toBeVisible();
     await expect(page.getByRole("button", { name: /OpenAI-compatible/ })).toContainText(
       "Connected",
     );
+    await captureScreenshot(page, testInfo, "openai-compatible-stored");
+
+    await expect(page.getByRole("button", { name: "Save" })).toBeEnabled();
+    await page.getByRole("button", { name: "Save" }).click();
+    await expect(page.getByText("Saved.")).toBeVisible();
     await captureScreenshot(page, testInfo, "openai-compatible-connected");
 
     await page.getByLabel("OpenAI-compatible server URL").fill("");
-    await expect(page.getByRole("button", { name: "Find models" })).toBeDisabled();
     await expect(page.getByRole("button", { name: "Save" })).toBeDisabled();
     await page.getByLabel("OpenAI-compatible server URL").fill(baseUrl);
     await expect(page.getByRole("button", { name: "Save" })).toBeEnabled();

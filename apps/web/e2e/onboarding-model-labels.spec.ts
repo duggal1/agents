@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 import { captureScreenshot, signup } from "./helpers";
 
-test("onboarding uses compact model selects without misleading latest labels", async ({
+test("onboarding offers coding agents first and catalog models on toggle", async ({
   page,
 }, testInfo) => {
   await page.route("**/rpc/me", async (route) => {
@@ -26,13 +26,24 @@ test("onboarding uses compact model selects without misleading latest labels", a
     timeout: 20_000,
   });
 
+  // The default view is coding agents: brand cards, no provider dropdown,
+  // no server URL, and no API key anywhere on the front page.
+  await expect(page.getByRole("button", { name: /Codex/ })).toBeVisible();
+  await expect(page.getByRole("button", { name: /Claude Code/ })).toBeVisible();
+  await expect(page.getByRole("button", { name: /OpenCode/ })).toBeVisible();
+  await expect(page.getByRole("combobox", { name: "Provider" })).toHaveCount(0);
+  await expect(page.getByText("Server URL")).toHaveCount(0);
+  await expect(page.getByLabel(/API key/)).toHaveCount(0);
+
+  await page.getByRole("button", { name: "Use subscription or API models instead" }).click();
+
   const provider = page.getByRole("combobox", { name: "Provider" });
   await expect(provider).toContainText("OpenRouter");
   await page.getByLabel("API key").fill("openrouter-only-key");
   await provider.click();
   await expect(page.getByRole("option", { name: "ChatGPT" })).toBeVisible();
   await expect(page.getByRole("option", { name: "Vercel AI Gateway" })).toBeVisible();
-  await page.getByRole("option", { name: "Anthropic" }).click();
+  await expect(page.getByRole("option", { name: "Anthropic" })).click();
   await expect(provider).toContainText("Anthropic");
   await expect(page.getByLabel(/API key/)).toHaveValue("");
 
@@ -49,53 +60,14 @@ test("onboarding uses compact model selects without misleading latest labels", a
   await page.getByRole("option", { name: alias! }).click();
   await expect(models).toContainText(alias!);
 
-  await page.route("**/rpc/models/probeOpenAiCompatible", async (route) => {
-    await route.fulfill({
-      contentType: "application/json",
-      body: JSON.stringify({ json: { models: ["probed-model"] } }),
-    });
-  });
+  // Custom servers are gone from the picker: no compatible option, no probe UI.
   await provider.click();
-  await page.getByRole("option", { name: "OpenAI-compatible" }).click();
-  await page.getByLabel("OpenAI-compatible server URL").fill("http://127.0.0.1:8090/v1");
-  const manualModel = page.getByLabel("Model id");
-  await expect(manualModel).toBeVisible();
-  // Typing before the first probe must keep freeform even if the probe returns that id.
-  await manualModel.fill("probed-model");
-  const firstProbeResponse = page.waitForResponse("**/rpc/models/probeOpenAiCompatible");
-  await page.getByRole("button", { name: "Find models" }).click();
-  await firstProbeResponse;
-  await expect(manualModel).toBeVisible();
-  await expect(manualModel).toHaveValue("probed-model");
-  await expect(page.getByRole("combobox", { name: "Models from server" })).toHaveCount(0);
-  await page.getByRole("button", { name: "Use a found model" }).click();
-  const discovered = page.getByRole("combobox", { name: "Models from server" });
-  await expect(discovered).toBeVisible();
-  await expect(discovered).toContainText("probed-model");
-  await discovered.click();
-  await page.getByRole("option", { name: "Other model…" }).click();
-  await expect(manualModel).toBeVisible();
-  // Typing a discovered id (or its prefix) must keep the freeform field.
-  await manualModel.fill("probed-model");
-  await expect(manualModel).toBeVisible();
-  await expect(manualModel).toHaveValue("probed-model");
-  // Re-probe while the typed id matches a discovered model must stay freeform.
-  const reProbeResponse = page.waitForResponse("**/rpc/models/probeOpenAiCompatible");
-  await page.getByRole("button", { name: "Find models" }).click();
-  await reProbeResponse;
-  await expect(manualModel).toBeVisible();
-  await expect(manualModel).toHaveValue("probed-model");
-  await expect(page.getByRole("combobox", { name: "Models from server" })).toHaveCount(0);
-  // Editing the server URL must not drop Other model… mode either.
-  await page.getByLabel("OpenAI-compatible server URL").fill("http://127.0.0.1:8091/v1");
-  const editedUrlProbeResponse = page.waitForResponse("**/rpc/models/probeOpenAiCompatible");
-  await page.getByRole("button", { name: "Find models" }).click();
-  await editedUrlProbeResponse;
-  await expect(manualModel).toBeVisible();
-  await expect(manualModel).toHaveValue("probed-model");
-  await expect(page.getByRole("combobox", { name: "Models from server" })).toHaveCount(0);
-  await manualModel.fill("probed-model-custom");
-  await expect(manualModel).toHaveValue("probed-model-custom");
+  await expect(page.getByRole("option", { name: "OpenAI-compatible" })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Find models" })).toHaveCount(0);
+  await page.keyboard.press("Escape");
+
+  await page.getByRole("button", { name: "Use coding agents instead" }).click();
+  await expect(page.getByRole("button", { name: /Codex/ })).toBeVisible();
 
   await captureScreenshot(page, testInfo, "onboarding-model-labels");
 });

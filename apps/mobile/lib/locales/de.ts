@@ -293,6 +293,15 @@ export const DE_MESSAGES: Record<string, string> = {
   "Connect this provider to use it as your personal model.":
     "Verbinde diesen Anbieter, um ihn als persönliches Modell zu verwenden.",
   "Connected and using {label}.": "Verbunden, {label} ist aktiv.",
+  "Checking installed coding agents…": "Installierte Coding-Agenten werden geprüft…",
+  "Coding agents": "Coding-Agenten",
+  "Connected.": "Verbunden.",
+  "Could not connect this coding agent": "Dieser Coding-Agent konnte nicht verbunden werden",
+  "Not installed": "Nicht installiert",
+  "Now using this coding agent.": "Dieser Coding-Agent wird jetzt verwendet.",
+  "Sign-in needed": "Anmeldung erforderlich",
+  "Signed in": "Angemeldet",
+  "Use as default": "Als Standard verwenden",
   "Connected · {label}": "Verbunden · {label}",
   "Connected. Its tools are available from your next message.":
     "Verbunden. Seine Tools sind ab deiner nächsten Nachricht verfügbar.",

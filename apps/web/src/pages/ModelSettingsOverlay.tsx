@@ -7,19 +7,16 @@ import {
 import { HugeiconsIcon } from "@hugeicons/react";
 import { i18n } from "@lingui/core";
 import { Plural, Trans, useLingui } from "@lingui/react/macro";
-import type { Me, ThinkingLevel } from "@sapphire/contracts";
+import type { CodingCliStatus, Me, ThinkingLevel } from "@sapphire/contracts";
 import {
   CLOUDFLARE_AI_GATEWAY_PROVIDER_ID,
   cloudflareGatewayRouting,
   DEFAULT_MODEL_CONTEXT_WINDOW,
   DEFAULT_MODEL_MAX_TOKENS,
-  isLocalModelBaseUrl,
-  LOCAL_MODEL_BASE_URL,
+  isCodingCliProviderId,
   MAX_MODEL_CONTEXT_WINDOW,
   MAX_MODEL_MAX_TOKENS,
   OPENAI_COMPATIBLE_PROVIDER_ID,
-  openAiCompatibleConnectReady,
-  openAiCompatibleProbeSuccessMessage,
   parseModelContextWindow,
   parseModelMaxImagesPerPrompt,
   parseModelMaxTokens,
@@ -27,9 +24,7 @@ import {
 import {
   COMPATIBLE_THINKING_LEVELS,
   clampCatalogThinkingLevel,
-  createModelProbe,
   filterModelCatalog,
-  initialModelProbeState,
   pickCatalogModelId,
 } from "@sapphire/core";
 import {
@@ -63,6 +58,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { CodingAgentPicker } from "../components/models/CodingAgentPicker";
 import { useCopyText } from "../lib/copy-text";
 import { localizedProviderHint } from "../lib/localized-provider-hint";
 import type { ModelCatalogEntry, ModelCredential } from "../lib/model-auth";
@@ -104,9 +100,6 @@ export function ModelSettingsOverlay({
   const [contextWindow, setContextWindow] = useState(String(DEFAULT_MODEL_CONTEXT_WINDOW));
   const [supportsImages, setSupportsImages] = useState(false);
   const [maxImagesPerPrompt, setMaxImagesPerPrompt] = useState("");
-  const [{ models: probeModels, probing }, setProbe] = useState(initialModelProbeState);
-  const [modelProbe] = useState(() => createModelProbe(setProbe));
-  const resetOpenAiCompatibleProbe = modelProbe.reset;
   const [codeCopied, copyOAuthCode] = useCopyText();
   const [loading, setLoading] = useState(true);
   const [pending, setPending] = useState<"connect" | "default" | "disconnect" | null>(null);
@@ -117,7 +110,40 @@ export function ModelSettingsOverlay({
   const refreshRevisionRef = useRef(0);
   const selectionRevisionRef = useRef(0);
   const selectedLabelRef = useRef<string | undefined>(undefined);
-  const [localModels, setLocalModels] = useState<string[]>([]);
+  const [agentStatuses, setAgentStatuses] = useState<CodingCliStatus[] | null>(null);
+  const [selectedAgent, setSelectedAgent] = useState<string | null>(null);
+
+  async function connectCodingAgent(agentProvider: string) {
+    setError(null);
+    setNotice(null);
+    setPending("connect");
+    try {
+      await rpc.models.connect({ provider: agentProvider, modelId: "default" });
+      await refresh();
+      const statuses = await rpc.models.codingCliStatus().catch(() => null);
+      if (statuses) setAgentStatuses(statuses);
+      setNotice(t`Connected.`);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t`Could not connect this coding agent`);
+    } finally {
+      setPending(null);
+    }
+  }
+
+  async function setCodingAgentDefault(agentProvider: string) {
+    setError(null);
+    setNotice(null);
+    setPending("default");
+    try {
+      await rpc.models.setDefault({ provider: agentProvider, modelId: "default" });
+      await refresh();
+      setNotice(t`Now using this coding agent.`);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t`Could not change the default model`);
+    } finally {
+      setPending(null);
+    }
+  }
 
   const {
     oauth,
@@ -141,11 +167,14 @@ export function ModelSettingsOverlay({
   async function refresh() {
     const refreshRevision = ++refreshRevisionRef.current;
     const selectionRevision = selectionRevisionRef.current;
-    const [nextCatalog, nextCredentials, nextMe] = await Promise.all([
+    const [listedCatalog, nextCredentials, nextMe] = await Promise.all([
       rpc.models.list(),
       rpc.models.credentials(),
       rpc.me(),
     ]);
+    // Coding agents live in their own section; custom servers are
+    // management-only (stored connections stay editable, nothing new).
+    const nextCatalog = listedCatalog.filter((entry) => !isCodingCliProviderId(entry.provider));
     if (refreshRevision !== refreshRevisionRef.current) return;
     const nextProvider =
       provider && nextCatalog.some((entry) => entry.provider === provider)
@@ -168,7 +197,6 @@ export function ModelSettingsOverlay({
     setCredentials(nextCredentials);
     setMe(nextMe);
     if (selectionRevision === selectionRevisionRef.current) {
-      resetOpenAiCompatibleProbe();
       setProvider(nextProvider);
       setModelId(nextModel);
       if (nextProvider === OPENAI_COMPATIBLE_PROVIDER_ID) {
@@ -209,20 +237,14 @@ export function ModelSettingsOverlay({
       .finally(() => setLoading(false));
     return () => {
       refreshRevisionRef.current += 1;
-      modelProbe.invalidate();
     };
   }, []);
 
-  // Detect on-device model servers so local connects can lead the provider list.
   useEffect(() => {
     rpc.models
-      .probeOpenAiCompatible({ baseUrl: LOCAL_MODEL_BASE_URL })
-      .then((result) => {
-        setLocalModels(result.models);
-      })
-      .catch(() => {
-        // No local server running: the cloud providers stay the path.
-      });
+      .codingCliStatus()
+      .then(setAgentStatuses)
+      .catch(() => setAgentStatuses([]));
   }, []);
 
   const groups = useMemo(() => {
@@ -270,14 +292,15 @@ export function ModelSettingsOverlay({
     return [...matched].sort(
       (a, b) =>
         score(a) - score(b) ||
-        Number(connectedProviderIds.has(b.id)) - Number(connectedProviderIds.has(a.id)) ||
-        // A reachable local endpoint leads the unconnected list: free, keyless, on this machine.
-        Number(localModels.length > 0 && b.id === OPENAI_COMPATIBLE_PROVIDER_ID) -
-          Number(localModels.length > 0 && a.id === OPENAI_COMPATIBLE_PROVIDER_ID),
+        Number(connectedProviderIds.has(b.id)) - Number(connectedProviderIds.has(a.id)),
     );
-  }, [groups, providerQuery, connectedProviderIds, localModels.length]);
+  }, [groups, providerQuery, connectedProviderIds]);
   // Browsing separates connected providers into their own section; searching
-  // flattens back into one ranked list.
+  // flattens back into one ranked list. Custom servers are management-only:
+  // stored connections stay reachable under Connected, but the browser never
+  // offers a new one.
+  const browsableGroup = (group: (typeof groups)[number]) =>
+    group.id !== OPENAI_COMPATIBLE_PROVIDER_ID;
   const connectedGroups = useMemo(
     () => (searching ? [] : filteredGroups.filter((group) => connectedProviderIds.has(group.id))),
     [searching, filteredGroups, connectedProviderIds],
@@ -285,8 +308,10 @@ export function ModelSettingsOverlay({
   const otherGroups = useMemo(
     () =>
       searching
-        ? filteredGroups
-        : filteredGroups.filter((group) => !connectedProviderIds.has(group.id)),
+        ? filteredGroups.filter((group) => browsableGroup(group))
+        : filteredGroups.filter(
+            (group) => !connectedProviderIds.has(group.id) && browsableGroup(group),
+          ),
     [searching, filteredGroups, connectedProviderIds],
   );
   const modelsForProvider = catalog.filter((entry) => entry.provider === provider);
@@ -329,22 +354,17 @@ export function ModelSettingsOverlay({
   const thinkingDirty = !isOpenAiCompatible && (thinkingLevel ?? null) !== selectedStoredLevel;
   const busy = pending !== null || oauthPending;
   const effectiveBaseUrl = baseUrl.trim();
-  const openAiCompatibleReady = openAiCompatibleConnectReady({
-    baseUrl: effectiveBaseUrl,
-    modelId,
-  });
+  const openAiCompatibleReady = Boolean(effectiveBaseUrl && modelId.trim());
   const builtinLimitSave = !isOpenAiCompatible && Boolean(credential) && apiKey.trim().length === 0;
 
   function updateBaseUrl(nextBaseUrl: string) {
     setBaseUrl(nextBaseUrl);
-    resetOpenAiCompatibleProbe();
     setError(null);
     setNotice(null);
   }
 
   function updateApiKey(nextApiKey: string) {
     setApiKey(nextApiKey);
-    resetOpenAiCompatibleProbe();
   }
 
   function stageCompatibleModelId(nextModelId: string) {
@@ -392,28 +412,8 @@ export function ModelSettingsOverlay({
     setApiKey("");
     setAccountId(nextCredential?.accountId ?? "");
     setGatewayId(nextCredential?.gatewayId ?? "");
-    resetOpenAiCompatibleProbe();
     setError(null);
     setNotice(null);
-  }
-
-  async function probeServerModels() {
-    if (!baseUrl.trim()) return;
-    setError(null);
-    setNotice(null);
-    await modelProbe.probe({
-      baseUrl,
-      apiKey,
-      request: rpc.models.probeOpenAiCompatible,
-      onSuccess: (models) => {
-        const next = modelId.trim() || models[0] || "";
-        if (next !== modelId) stageCompatibleModelId(next);
-        else setModelId(next);
-        setNotice(openAiCompatibleProbeSuccessMessage(models.length));
-      },
-      onError: (err) =>
-        setError(err instanceof Error ? err.message : t`Could not reach this model server`),
-    });
   }
 
   async function setModelDefault() {
@@ -959,23 +959,20 @@ export function ModelSettingsOverlay({
   // OpenAI-compatible connections keep an optional key behind a disclosure.
   const compatKeyBlock = isOpenAiCompatible ? (
     <div className="mt-5">
-      {/* Local model hosts authenticate nothing, so never ask for a key. */}
-      {isLocalModelBaseUrl(effectiveBaseUrl) ? null : (
-        <details className="text-[13.5px] text-muted-foreground">
-          <summary className="w-fit cursor-pointer select-none">
-            <Trans>API key</Trans>
-          </summary>
-          <Input
-            aria-label={t`API key`}
-            value={apiKey}
-            onChange={(event) => updateApiKey(event.target.value)}
-            placeholder={credential?.hasKey ? t`Paste a replacement key` : t`Optional`}
-            type="password"
-            autoComplete="new-password"
-            className="mt-2 h-10 text-foreground"
-          />
-        </details>
-      )}
+      <details className="text-[13.5px] text-muted-foreground">
+        <summary className="w-fit cursor-pointer select-none">
+          <Trans>API key</Trans>
+        </summary>
+        <Input
+          aria-label={t`API key`}
+          value={apiKey}
+          onChange={(event) => updateApiKey(event.target.value)}
+          placeholder={credential?.hasKey ? t`Paste a replacement key` : t`Optional`}
+          type="password"
+          autoComplete="new-password"
+          className="mt-2 h-10 text-foreground"
+        />
+      </details>
       <Button
         type="button"
         variant="secondary"
@@ -1041,18 +1038,78 @@ export function ModelSettingsOverlay({
         <p className="px-6 pt-1 text-[13.5px] text-muted-foreground/70 sm:px-8">{description}</p>
       )}
 
+      <div className="mx-6 sm:mx-8">
+        <div className="mb-3 mt-6 text-[12.5px] uppercase tracking-[0.08em] text-muted-foreground/80">
+          <Trans>Coding agents</Trans>
+        </div>
+        <CodingAgentPicker
+          statuses={agentStatuses}
+          connectedProviders={credentials.map((entry) => entry.provider)}
+          selected={selectedAgent}
+          onSelect={setSelectedAgent}
+        />
+        {(() => {
+          const status = agentStatuses?.find((entry) => entry.provider === selectedAgent);
+          if (!status || !selectedAgent) return null;
+          const connected = credentials.some((entry) => entry.provider === selectedAgent);
+          const isDefault = me?.defaultProvider === selectedAgent;
+          return (
+            <div className="mt-3">
+              {status.installed && !status.signedIn ? (
+                <p className="text-[13px] text-muted-foreground">{status.loginHint}</p>
+              ) : null}
+              <div className="mt-2 flex gap-2">
+                {!connected ? (
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    className="rounded-full"
+                    size="sm"
+                    disabled={busy || !status.installed || !status.signedIn}
+                    onClick={() => void connectCodingAgent(selectedAgent)}
+                  >
+                    {pending === "connect" ? <Trans>Saving…</Trans> : <Trans>Connect</Trans>}
+                  </Button>
+                ) : !isDefault ? (
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    className="rounded-full"
+                    size="sm"
+                    disabled={busy}
+                    onClick={() => void setCodingAgentDefault(selectedAgent)}
+                  >
+                    {pending === "default" ? (
+                      <Trans>Switching…</Trans>
+                    ) : (
+                      <Trans>Use as default</Trans>
+                    )}
+                  </Button>
+                ) : null}
+              </div>
+            </div>
+          );
+        })()}
+      </div>
+
       <div className={`mx-6 sm:mx-8 ${embedded ? "mt-4" : "mt-5"}`}>
         <div className="flex items-baseline gap-3">
           <span className="shrink-0 text-[12.5px] uppercase tracking-[0.08em] text-muted-foreground/80">
             <Trans>Active model</Trans>
           </span>
           <span className="truncate text-[15px] text-foreground">
-            {currentEntry?.label ?? me?.defaultModel ?? t`Deployment default`}
+            {currentEntry?.label ??
+              agentStatuses?.find((entry) => entry.provider === me?.defaultProvider)?.name ??
+              me?.defaultModel ??
+              t`Deployment default`}
           </span>
           <span className="truncate text-[13px] text-muted-foreground">
-            {currentEntry?.providerName ?? me?.defaultProvider ?? (
-              <Trans>Configured by deployment</Trans>
-            )}
+            {currentEntry?.providerName ??
+              (agentStatuses?.some((entry) => entry.provider === me?.defaultProvider) ? (
+                <Trans>Coding agent</Trans>
+              ) : (
+                (me?.defaultProvider ?? <Trans>Configured by deployment</Trans>)
+              ))}
           </span>
           {activeThinkingLabel ? (
             <span className="shrink-0 text-[13px] text-muted-foreground">
@@ -1138,68 +1195,23 @@ export function ModelSettingsOverlay({
                       {t`Paste the OpenAI-compatible address from your server. Sapphire adds /v1 if needed.`}
                     </p>
                   </details>
-                  <div className="mt-3 flex items-center gap-2">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      disabled={busy || probing || !effectiveBaseUrl}
-                      onClick={() => void probeServerModels()}
-                    >
-                      {probing ? <Trans>Finding…</Trans> : <Trans>Find models</Trans>}
-                    </Button>
-                  </div>
                   <div className="mt-4 block">
                     <span>
                       <Trans>Model</Trans>
                     </span>
-                    {probeModels.length && probeModels.includes(modelId) ? (
-                      <NativeSelect
-                        className="mt-2 w-full text-foreground"
-                        value={modelId}
-                        onChange={(event) => {
-                          cancelOAuthAttempt();
-                          selectionRevisionRef.current += 1;
-                          stageCompatibleModelId(event.target.value);
-                          setError(null);
-                          setNotice(null);
-                        }}
-                        aria-label={t`Models from server`}
-                      >
-                        {probeModels.map((id) => (
-                          <NativeSelectOption key={id} value={id}>
-                            {id}
-                          </NativeSelectOption>
-                        ))}
-                        <NativeSelectOption value="">
-                          <Trans>Other model…</Trans>
-                        </NativeSelectOption>
-                      </NativeSelect>
-                    ) : (
-                      <Input
-                        value={modelId}
-                        onChange={(event) => {
-                          cancelOAuthAttempt();
-                          selectionRevisionRef.current += 1;
-                          stageCompatibleModelId(event.target.value);
-                          setError(null);
-                          setNotice(null);
-                        }}
-                        aria-label={t`Model id`}
-                        placeholder="exact-model-id"
-                        className="mt-2 h-10 text-foreground"
-                      />
-                    )}
-                    {probeModels.length && !probeModels.includes(modelId) ? (
-                      <Button
-                        type="button"
-                        variant="link"
-                        className="mt-2 h-auto px-0 text-[13px] text-muted-foreground underline"
-                        onClick={() => stageCompatibleModelId(probeModels[0] ?? "")}
-                      >
-                        <Trans>Use a found model</Trans>
-                      </Button>
-                    ) : null}
+                    <Input
+                      value={modelId}
+                      onChange={(event) => {
+                        cancelOAuthAttempt();
+                        selectionRevisionRef.current += 1;
+                        stageCompatibleModelId(event.target.value);
+                        setError(null);
+                        setNotice(null);
+                      }}
+                      aria-label={t`Model id`}
+                      placeholder="exact-model-id"
+                      className="mt-2 h-10 text-foreground"
+                    />
                   </div>
                   <ModelThinkingOptions
                     reasoning={reasoning}

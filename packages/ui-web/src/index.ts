@@ -12,6 +12,12 @@ export {
   resolvePersonaShape,
   Wordmark,
 } from "./bot-avatar.js";
+export {
+  ClaudeMark,
+  CodexMark,
+  CodingAgentMark,
+  OpenCodeMark,
+} from "./coding-agent-marks.js";
 export * from "./components/ui/alert-dialog.js";
 export * from "./components/ui/badge.js";
 export * from "./components/ui/button.js";
