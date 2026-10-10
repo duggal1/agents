@@ -135,6 +135,9 @@ async function launch(mode: FakeDockerMode | "missing") {
   const env: NodeJS.ProcessEnv = { ...process.env, SAPPHIRE_PERFORMANCE_USER_DATA: userData };
   // A stale SAPPHIRE_WEB_URL from the developer's shell would bypass setup entirely.
   delete env.SAPPHIRE_WEB_URL;
+  // This spec exercises the setup window's stack flow, which no longer gates
+  // first launch: force it on like the shared launcher does for bare runs.
+  env.SAPPHIRE_FORCE_SETUP = "1";
   return electron.launch({
     args: ["."],
     cwd: path.resolve(import.meta.dirname, ".."),

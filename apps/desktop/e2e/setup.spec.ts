@@ -70,7 +70,7 @@ async function launch(extraEnv: Record<string, string> = {}) {
   return launched.app;
 }
 
-test("first run asks whether to use a local or existing instance", async () => {
+test("setup offers a local or existing instance (forced for this spec)", async () => {
   app = await launch();
   if (process.env.SAPPHIRE_E2E_EXECUTABLE) {
     expect(await app.evaluate(({ app }) => app.isPackaged)).toBe(true);
@@ -503,14 +503,44 @@ test("the setup probe refuses redirects instead of following them", async () => 
   }
 });
 
-test("an unreachable saved server falls back to setup with a recovery message", async () => {
-  await writeFile(
-    path.join(userData, "setup.json"),
-    `${JSON.stringify({ mode: "existing", serverUrl: closedUrl }, null, 2)}\n`,
-    { encoding: "utf8", mode: 0o600 },
-  );
+test("first launch provisions the local server and opens the app without setup", async () => {
+  const launched = await launchApp({
+    executablePath: process.env.SAPPHIRE_E2E_EXECUTABLE,
+    extraEnv: { SAPPHIRE_FORCE_SETUP: "0" },
+  });
+  app = launched.app;
+  userData = launched.userData;
+  const appWindow = await app.firstWindow();
 
-  app = await launch();
+  // No setup screen: the first window is the app itself.
+  await expect(appWindow.locator("#setup")).toHaveCount(0);
+  // The Mac's local server is the silent default, persisted while the backend
+  // boots behind the window.
+  await expect
+    .poll(async () => {
+      try {
+        return JSON.parse(await readFile(path.join(userData, "setup.json"), "utf8"));
+      } catch {
+        return null;
+      }
+    })
+    .toMatchObject({ mode: "new" });
+});
+
+test("an unreachable saved server falls back to setup with a recovery message", async () => {
+  const launched = await launchApp({
+    executablePath: process.env.SAPPHIRE_E2E_EXECUTABLE,
+    extraEnv: { SAPPHIRE_FORCE_SETUP: "0" },
+    prepareUserData: async (dir) => {
+      await writeFile(
+        path.join(dir, "setup.json"),
+        `${JSON.stringify({ mode: "existing", serverUrl: closedUrl }, null, 2)}\n`,
+        { encoding: "utf8", mode: 0o600 },
+      );
+    },
+  });
+  app = launched.app;
+  userData = launched.userData;
   const setup = await app.firstWindow();
 
   await expect(setup.getByRole("heading", { name: "Welcome to Sapphire" })).toBeVisible();

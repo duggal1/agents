@@ -58,7 +58,7 @@ import {
   servesBundledRenderer,
   sessionPartitionForServerUrl,
 } from "./setup-config.js";
-import { clearSetup, readSetup, writeSetup } from "./setup-store.js";
+import { clearSetup, readSetup, setupFilePath, writeSetup } from "./setup-store.js";
 import { shouldOpenInAppPopup } from "./window-open.js";
 import {
   browserWindowOptions,
@@ -1026,6 +1026,25 @@ function destroySetupWindow() {
   if (setup !== null && !setup.isDestroyed()) setup.destroy();
 }
 
+/**
+ * First-launch path: no setup screen, no Continue click. The Mac's local
+ * server is the default, so persist it and boot it behind the app window.
+ * The window opens at once — the renderer retries its session lookup until
+ * the backend answers — so first paint never waits on Postgres/migrations.
+ * A genuine load failure still falls back to the setup window with the error.
+ */
+async function openLocalByDefault(userDataDir: string): Promise<void> {
+  const localUrl = localBackend.webUrl();
+  currentSetup = { mode: "new", serverUrl: localUrl };
+  await writeSetup(userDataDir, currentSetup).catch(() => undefined);
+  void localBackend.start().catch(() => undefined);
+  if (await openApp(localUrl)) {
+    commitPendingAppSwitch();
+    destroySetupWindow();
+  }
+  // openApp already showed the setup window with the failure when false.
+}
+
 /** Best-effort restore of setup.json after a failed save that already wrote disk. */
 async function rollbackSetupFile(userDataDir: string, previousSetup: DesktopSetup | null) {
   try {
@@ -1420,7 +1439,16 @@ app.whenReady().then(async () => {
   });
 
   if (target.kind === "setup") {
-    showSetupWindow();
+    // First launch defaults to the Mac's local server: provision it silently,
+    // boot it behind the app window, and never render the setup screen here.
+    // The setup window stays out of this path entirely. It remains reachable
+    // for harnesses (SAPPHIRE_FORCE_SETUP=1), for a saved setup that needs
+    // attention, and for switching servers via Change Sapphire Server… menu.
+    if (process.env.SAPPHIRE_FORCE_SETUP === "1" || existsSync(setupFilePath(userDataDir))) {
+      showSetupWindow();
+    } else {
+      await openLocalByDefault(userDataDir);
+    }
   } else if (target.source === "saved") {
     if (currentSetup?.mode === "new") {
       const managedUrl = managedLocalOpenUrl(target.url, localBackend.webUrl());

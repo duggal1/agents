@@ -17,8 +17,12 @@ import {
  *   dev default `["."]` must never reach it.
  * - Dev (`electron .`): `args: ["."]` with cwd at the package root.
  * - Every launch gets an isolated profile via SAPPHIRE_PERFORMANCE_USER_DATA,
- *   and stale harness overrides (WEB_URL, FORCE_SETUP) are removed so they
- *   cannot bypass setup or leak between runs.
+ *   and stale harness overrides (WEB_URL) are removed so they cannot leak
+ *   between runs.
+ * - First launch no longer shows the setup window: it provisions the local
+ *   backend and opens the app. Specs that exercise the setup window itself
+ *   run with SAPPHIRE_FORCE_SETUP=1 by default here; a spec covering the
+ *   automatic first run opts out with extraEnv { SAPPHIRE_FORCE_SETUP: "0" }.
  * - Renderer console errors/pageerrors and main-process stderr/stdout are
  *   collected for failure diagnosis; the setup UI log alone is not enough.
  */
@@ -41,9 +45,16 @@ export async function launchApp(
   const userData = await mkdtemp(path.join(tmpdir(), "sapphire-desktop-e2e-"));
   await options.prepareUserData?.(userData);
   const env: NodeJS.ProcessEnv = { ...process.env, SAPPHIRE_PERFORMANCE_USER_DATA: userData };
-  // A stale override from the developer's shell would bypass setup entirely.
+  // A stale URL override from the developer's shell would point the run at a
+  // foreign server. Setup forcing defaults on for bare launches (see above);
+  // URL launches and explicit opt-outs are left alone.
   delete env.SAPPHIRE_WEB_URL;
-  delete env.SAPPHIRE_FORCE_SETUP;
+  if (
+    options.extraEnv?.SAPPHIRE_FORCE_SETUP === undefined &&
+    options.extraEnv?.SAPPHIRE_WEB_URL === undefined
+  ) {
+    env.SAPPHIRE_FORCE_SETUP = "1";
+  }
   const launched = await electron.launch({
     ...(options.executablePath !== undefined && options.executablePath !== ""
       ? { executablePath: path.resolve(options.executablePath), args: [] as string[] }
