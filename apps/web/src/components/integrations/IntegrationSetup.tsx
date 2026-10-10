@@ -32,6 +32,8 @@ export function IntegrationSetup({
   const [selectedChoice, setChoice] = useState<Choice>(managedOnly ? "composio" : "direct");
   const choice = serverSetup ? selectedChoice : "direct";
   const [apiKey, setApiKey] = useState("");
+  const [envText, setEnvText] = useState("");
+  const [envSaved, setEnvSaved] = useState(false);
   const [clientId, setClientId] = useState("");
   const [projectId, setProjectId] = useState("");
   const [endpoint, setEndpoint] = useState("");
@@ -98,6 +100,20 @@ export function IntegrationSetup({
             },
       );
       setApiKey("");
+      setState(await rpc.integrationSetup.get());
+      onDone?.();
+    });
+  }
+
+  async function saveEnvImmediately(text: string) {
+    setEnvText(text);
+    setEnvSaved(false);
+    if (!/COMPOSIO_API_KEY\s*=/.test(text)) return;
+    await run(async () => {
+      await rpc.integrationSetup.importEnv({ envText: text });
+      setApiKey("");
+      setEnvText("");
+      setEnvSaved(true);
       setState(await rpc.integrationSetup.get());
       onDone?.();
     });
@@ -205,6 +221,27 @@ export function IntegrationSetup({
                   autoComplete="new-password"
                 />
               </label>
+              {choice === "composio" ? (
+                <details className="mt-3 text-sm text-muted-foreground">
+                  <summary className="cursor-pointer">
+                    <Trans>Paste .env instead — saves immediately</Trans>
+                  </summary>
+                  <textarea
+                    aria-label={t`Paste .env with COMPOSIO_API_KEY`}
+                    className="mt-2 min-h-20 w-full rounded-md border border-border bg-background p-2 font-mono text-xs"
+                    placeholder="COMPOSIO_API_KEY=..."
+                    value={envText}
+                    onChange={(event) => void saveEnvImmediately(event.target.value)}
+                    spellCheck={false}
+                    autoComplete="off"
+                  />
+                  {envSaved ? (
+                    <p className="mt-1 text-success">
+                      <Trans>Saved</Trans>
+                    </p>
+                  ) : null}
+                </details>
+              ) : null}
               <a
                 className="text-sm text-muted-foreground underline"
                 href={

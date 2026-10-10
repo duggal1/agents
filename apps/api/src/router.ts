@@ -56,6 +56,7 @@ import {
   displayBotWorkspacePath,
   enqueueTakeoverContinuation,
   expireComputerControl,
+  extractComposioApiKey,
   forgetBotSecret,
   getBotSecretMetadata,
   hasActiveComputerControl,
@@ -4060,6 +4061,27 @@ export function createRouter(deps: RouterDeps) {
           });
         }
         return { ok: true as const };
+      }),
+      importEnv: authed.integrationSetup.importEnv.handler(async ({ context, input }) => {
+        if (!context.actor.isDeploymentOwner) throw new ORPCError("FORBIDDEN");
+        if (!deps.integrationSettings) throw new ORPCError("NOT_IMPLEMENTED");
+        const apiKey = extractComposioApiKey(input.envText);
+        if (!apiKey) {
+          throw new ORPCError("BAD_REQUEST", {
+            message: "No COMPOSIO_API_KEY found in the pasted text",
+          });
+        }
+        try {
+          await deps.integrationSettings.save(
+            { provider: "composio", apiKey },
+            connectionContext(context.actor, "integrationSetup.importEnv", context.signal),
+          );
+        } catch {
+          throw new ORPCError("BAD_REQUEST", {
+            message: "Could not verify or save these credentials",
+          });
+        }
+        return { ok: true as const, provider: "composio" as const };
       }),
     },
     connections: {

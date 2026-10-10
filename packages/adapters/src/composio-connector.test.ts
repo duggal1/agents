@@ -1127,6 +1127,29 @@ describe("composio tool mapping", () => {
     }
   });
 
+  it("serves the 500+ work catalog when the live directory is unavailable", async () => {
+    composioSdkState.sessions.clear();
+    composioSdkState.directoryFails = true;
+    composioToolkitDirectory.invalidate();
+
+    try {
+      const connector = new ComposioConnector();
+      const catalog = await connector.catalog({
+        operationId: "composio-offline-catalog",
+        traceId: "composio-offline-catalog",
+        spaceId: "workspace",
+        userId: "user-1",
+        signal: new AbortController().signal,
+      });
+      expect(catalog.length).toBeGreaterThanOrEqual(500);
+      expect(catalog[0]).toEqual(expect.objectContaining({ slug: "APOLLO", connected: false }));
+      expect(catalog).toContainEqual(expect.objectContaining({ slug: "SLACK", connected: false }));
+    } finally {
+      composioSdkState.directoryFails = false;
+      composioToolkitDirectory.invalidate();
+    }
+  });
+
   it("merges live Composio slugs onto pending DB plugin rows", () => {
     const merged = mergeConnectedPlugins(
       [

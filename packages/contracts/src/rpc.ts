@@ -690,6 +690,10 @@ export const appContract = {
   integrationSetup: {
     get: oc.output(IntegrationSetupStateSchema),
     save: oc.input(IntegrationProviderConfigSchema).output(z.object({ ok: z.literal(true) })),
+    /** Paste a `.env` snippet; the server extracts COMPOSIO_API_KEY and saves it immediately. */
+    importEnv: oc
+      .input(z.object({ envText: z.string().min(1).max(65536) }))
+      .output(z.object({ ok: z.literal(true), provider: z.literal("composio") })),
   },
   connections: {
     catalog: oc

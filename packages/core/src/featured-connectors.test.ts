@@ -44,6 +44,15 @@ describe("featured connectors", () => {
     expect(featuredConnectorProvidersMatch("notion", "notion.so")).toBe(true);
   });
 
+  it("maps apollo and github catalog aliases", () => {
+    expect(matchFeaturedConnectorId("apollo")).toBe("apollo");
+    expect(matchFeaturedConnectorId("Apollo.io")).toBe("apollo");
+    expect(matchFeaturedConnectorId("APOLLO")).toBe("apollo");
+    expect(matchFeaturedConnectorId("github")).toBe("github");
+    expect(matchFeaturedConnectorId("GITHUB")).toBe("github");
+    expect(featuredConnectorProvidersMatch("apollo", "Apollo.io")).toBe(true);
+  });
+
   it("returns null for unknown catalog entries", () => {
     expect(matchFeaturedConnectorId("salesforce")).toBeNull();
     expect(matchFeaturedConnectorId("outlook")).toBeNull();
@@ -59,7 +68,7 @@ describe("featured connectors", () => {
 
   it("marks all featured tiles missing when the catalog is empty", () => {
     const tiles = buildFeaturedConnectorTiles([]);
-    expect(tiles).toHaveLength(5);
+    expect(tiles).toHaveLength(7);
     expect(tiles.every((tile) => !tile.item && !tile.missing)).toBe(true);
   });
 

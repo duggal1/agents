@@ -15,6 +15,7 @@ import {
   mergeCatalogWithConnected,
   type ToolkitDirectoryEntry,
 } from "./composio-catalog-cache.js";
+import { mergeWithWorkCatalog } from "./composio-work-catalog.js";
 import { DestinationEmulator } from "./destination-emulator.js";
 import { isVitestRuntime } from "./test-runtime.js";
 
@@ -402,7 +403,9 @@ export class ComposioConnector implements ComposioProvider {
   async catalog(context: AdapterContext, query?: string): Promise<ConnectorCatalogItem[]> {
     const [directory, connected] = await Promise.all([
       this.directory(),
-      this.listConnectedSlugs(context.userId),
+      // Browsing never requires a live key: without one the curated work
+      // catalog still lists 500+ integrations as unconnected.
+      this.listConnectedSlugs(context.userId).catch(() => []),
     ]);
     return filterCatalog(mergeCatalogWithConnected(directory, connected), query ?? "").map(
       (item) => ({ ...item, connectorId: "composio" }),
@@ -432,14 +435,22 @@ export class ComposioConnector implements ComposioProvider {
   }
 
   private async loadDirectory(): Promise<ToolkitDirectoryEntry[]> {
-    const session = await this.sessionFor("__rakazo_catalog__");
-    const toolkits = await collectPages((cursor) => session.toolkits({ limit: 50, cursor }));
-    return toolkits.map((toolkit) => ({
-      slug: toolkit.slug,
-      name: toolkit.name,
-      logo: toolkit.logo ?? null,
-      noAuth: Boolean(toolkit.isNoAuth),
-    }));
+    try {
+      const session = await this.sessionFor("__rakazo_catalog__");
+      const toolkits = await collectPages((cursor) => session.toolkits({ limit: 50, cursor }));
+      return mergeWithWorkCatalog(
+        toolkits.map((toolkit) => ({
+          slug: toolkit.slug,
+          name: toolkit.name,
+          logo: toolkit.logo ?? null,
+          noAuth: Boolean(toolkit.isNoAuth),
+        })),
+      );
+    } catch {
+      // Live directory unavailable (no key, offline, outage): the curated
+      // professional-work catalog still guarantees 500+ integrations.
+      return mergeWithWorkCatalog([]);
+    }
   }
 
   async listConnectedSlugs(userId: string): Promise<string[]> {

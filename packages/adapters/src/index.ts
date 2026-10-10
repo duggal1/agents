@@ -34,6 +34,7 @@ export * from "./cloud-agent-tools-select.js";
 export * from "./composio-catalog-cache.js";
 export * from "./composio-connector.js";
 export * from "./composio-emulator.js";
+export * from "./composio-work-catalog.js";
 export * from "./computer-browser.js";
 export * from "./computer-control.js";
 export * from "./computer-idle.js";

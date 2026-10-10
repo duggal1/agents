@@ -48,10 +48,13 @@ describe("ComposioEmulator", () => {
   it("serves and searches a deterministic catalog", async () => {
     const emulator = new ComposioEmulator();
 
-    await expect(emulator.catalog(context)).resolves.toHaveLength(6);
-    await expect(emulator.catalog(context, "git")).resolves.toEqual([
-      expect.objectContaining({ slug: "GITHUB", name: "GitHub", connected: false }),
-    ]);
+    const catalog = await emulator.catalog(context);
+    expect(catalog.length).toBeGreaterThanOrEqual(500);
+    expect(catalog[0]).toEqual(expect.objectContaining({ slug: "APOLLO", connected: false }));
+    const git = await emulator.catalog(context, "git");
+    expect(git).toEqual(
+      expect.arrayContaining([expect.objectContaining({ slug: "GITHUB", connected: false })]),
+    );
   });
 
   it("isolates connection state by user and supports revoke", async () => {

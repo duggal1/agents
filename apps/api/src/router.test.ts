@@ -1257,6 +1257,82 @@ describe("integration setup authorization", () => {
     expect(response.status).toBe(403);
     expect(save).not.toHaveBeenCalled();
   });
+
+  it("saves a pasted .env Composio key immediately for the deployment owner", async () => {
+    const save = vi.fn(async () => undefined);
+    const deps = {
+      prisma: {},
+      env: { webOrigin: "https://example.test" },
+      integrationSettings: { save },
+    } as unknown as RouterDeps;
+    const handler = new RPCHandler(createRouter(deps));
+    const actor = {
+      userId: "owner",
+      spaceId: "space",
+      email: "owner@rakazo.test",
+      isDeploymentOwner: true,
+    };
+    const { response } = await handler.handle(
+      new Request("https://example.test/rpc/integrationSetup/importEnv", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          json: { envText: "# prod\nCOMPOSIO_API_KEY=pasted-key-123\nOTHER=1" },
+        }),
+      }),
+      { prefix: "/rpc", context: { actor } },
+    );
+    expect(response.status).toBe(200);
+    expect(save).toHaveBeenCalledWith(
+      { provider: "composio", apiKey: "pasted-key-123" },
+      expect.anything(),
+    );
+  });
+
+  it("rejects pasted text without a Composio key and non-owner imports", async () => {
+    const save = vi.fn(async () => undefined);
+    const deps = {
+      prisma: {},
+      env: { webOrigin: "https://example.test" },
+      integrationSettings: { save },
+    } as unknown as RouterDeps;
+    const handler = new RPCHandler(createRouter(deps));
+    const owner = {
+      userId: "owner",
+      spaceId: "space",
+      email: "owner@rakazo.test",
+      isDeploymentOwner: true,
+    };
+    const noKey = await handler.handle(
+      new Request("https://example.test/rpc/integrationSetup/importEnv", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ json: { envText: "FOO=1" } }),
+      }),
+      { prefix: "/rpc", context: { actor: owner } },
+    );
+    expect(noKey.response.status).toBe(400);
+    const member = await handler.handle(
+      new Request("https://example.test/rpc/integrationSetup/importEnv", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ json: { envText: "COMPOSIO_API_KEY=k" } }),
+      }),
+      {
+        prefix: "/rpc",
+        context: {
+          actor: {
+            userId: "member",
+            spaceId: "space",
+            email: "member@rakazo.test",
+            isDeploymentOwner: false,
+          },
+        },
+      },
+    );
+    expect(member.response.status).toBe(403);
+    expect(save).not.toHaveBeenCalled();
+  });
 });
 
 describe("interrupted computer reservation release", () => {

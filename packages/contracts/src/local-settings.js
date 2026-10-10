@@ -17,6 +17,7 @@ const procedures = new Set([
   "models/setDefault",
   "integrationSetup/get",
   "integrationSetup/save",
+  "integrationSetup/importEnv",
 ]);
 
 /** @param {string} pathname */

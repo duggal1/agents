@@ -6,20 +6,17 @@ import type {
 } from "@sapphire/adapter-kit";
 import type { ComposioCatalogItem, ComposioProvider } from "./composio-connector.js";
 import { expandComposioMultiExecute, filterCatalog } from "./composio-connector.js";
+import { WORK_CATALOG } from "./composio-work-catalog.js";
 import {
   DEFAULT_RAKAZO_EMULATED_RELEASES,
   type EmulatedGithubRelease,
   RELEASE_WATCH_GITHUB_TOOL_NAMES,
 } from "./release-watch.js";
 
-const DEFAULT_CATALOG: ReadonlyArray<Omit<ComposioCatalogItem, "connected">> = [
-  { slug: "GMAIL", name: "Gmail", logo: null, noAuth: false },
-  { slug: "GOOGLECALENDAR", name: "Google Calendar", logo: null, noAuth: false },
-  { slug: "GOOGLEDRIVE", name: "Google Drive", logo: null, noAuth: false },
-  { slug: "SLACK", name: "Slack", logo: null, noAuth: false },
-  { slug: "GITHUB", name: "GitHub", logo: null, noAuth: false },
-  { slug: "NOTION", name: "Notion", logo: null, noAuth: false },
-];
+/** Offline catalog: the full curated professional-work set (500+). */
+const DEFAULT_CATALOG: ReadonlyArray<Omit<ComposioCatalogItem, "connected">> = WORK_CATALOG.map(
+  ({ slug, name, logo, noAuth }) => ({ slug, name, logo, noAuth }),
+);
 
 type MailMessage = {
   messageId: string;
