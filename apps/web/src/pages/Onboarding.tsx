@@ -7,6 +7,8 @@ import {
   DEFAULT_MODEL_CONTEXT_WINDOW,
   DEFAULT_MODEL_MAX_TOKENS,
   type IntegrationSetupState,
+  isLocalModelBaseUrl,
+  LOCAL_MODEL_BASE_URL,
   MAX_MODEL_CONTEXT_WINDOW,
   MAX_MODEL_MAX_TOKENS,
   OPENAI_COMPATIBLE_PROVIDER_ID,
@@ -142,6 +144,7 @@ export function OnboardingPage() {
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [codeCopied, copyOAuthCode] = useCopyText();
+  const [localModels, setLocalModels] = useState<string[]>([]);
 
   const {
     oauth,
@@ -200,6 +203,19 @@ export function OnboardingPage() {
       modelProbe.invalidate();
     };
   }, []);
+
+  // Detect on-device model servers only while the model step is on screen.
+  useEffect(() => {
+    if (step !== "model") return;
+    rpc.models
+      .probeOpenAiCompatible({ baseUrl: LOCAL_MODEL_BASE_URL })
+      .then((result) => {
+        setLocalModels(result.models);
+      })
+      .catch(() => {
+        // No local server running: the cloud providers below stay the path.
+      });
+  }, [step]);
 
   const providers = useMemo(() => {
     const seen = new Map<string, ModelCatalogEntry>();
@@ -287,12 +303,18 @@ export function OnboardingPage() {
     setApiKey("");
     setAccountId("");
     setGatewayId("");
-    setModelId(
-      nextProvider === OPENAI_COMPATIBLE_PROVIDER_ID
-        ? ""
-        : pickCatalogModelId(catalog, nextProvider, deploymentDefaultModelRef.current),
-    );
-    setBaseUrl("");
+    // If selecting local provider and we have local models, auto-select the first one
+    if (nextProvider === OPENAI_COMPATIBLE_PROVIDER_ID && localModels.length > 0) {
+      setBaseUrl("http://127.0.0.1:11434/v1");
+      setModelId(localModels[0] ?? "");
+    } else {
+      setModelId(
+        nextProvider === OPENAI_COMPATIBLE_PROVIDER_ID
+          ? ""
+          : pickCatalogModelId(catalog, nextProvider, deploymentDefaultModelRef.current),
+      );
+      setBaseUrl("");
+    }
     setReasoning(false);
     setThinkingLevel(null);
     setManualModelId(false);
@@ -303,6 +325,45 @@ export function OnboardingPage() {
     resetOpenAiCompatibleProbe();
     setError(null);
     setNotice(null);
+  }
+
+  /** Pick a detected on-device model: keyless loopback endpoint, no API key anywhere. */
+  function selectLocalModel(nextModelId: string) {
+    cancelOAuthAttempt();
+    setProvider(OPENAI_COMPATIBLE_PROVIDER_ID);
+    setApiKey("");
+    setAccountId("");
+    setGatewayId("");
+    setBaseUrl(LOCAL_MODEL_BASE_URL);
+    setModelId(nextModelId);
+    setManualModelId(false);
+    setReasoning(false);
+    setThinkingLevel(null);
+    setSupportsImages(false);
+    setMaxTokens(String(DEFAULT_MODEL_MAX_TOKENS));
+    setContextWindow(String(DEFAULT_MODEL_CONTEXT_WINDOW));
+    setMaxImagesPerPrompt("");
+    setError(null);
+    setNotice(null);
+    // Populate the discovered-models dropdown from the same endpoint.
+    void modelProbe.probe({
+      baseUrl: LOCAL_MODEL_BASE_URL,
+      apiKey: "",
+      request: rpc.models.probeOpenAiCompatible,
+      onSuccess: (models) => {
+        setModelId(models.includes(nextModelId) ? nextModelId : (models[0] ?? nextModelId));
+        setManualModelId(false);
+        setNotice(openAiCompatibleProbeSuccessMessage(models.length));
+      },
+      onError: () => {
+        // The mount probe already saw this endpoint; keep the picked id.
+        setModelId(nextModelId);
+        setManualModelId(false);
+      },
+    });
+    // Do not wait on the model probe here; selectLocalModel is already async
+    // (each invocation spins up its own microtask chain), and the caller only
+    // needs the visible UI to settle after the next paint cycle.
   }
 
   async function probeServerModels() {
@@ -466,6 +527,31 @@ export function OnboardingPage() {
             <h1 className="text-[32px] font-normal text-foreground">
               <Trans>Connect a model</Trans>
             </h1>
+            {localModels.length > 0 ? (
+              <div className="mt-8 block text-sm text-foreground">
+                <span className="font-normal">
+                  <Trans>Local models</Trans>
+                </span>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {localModels.map((id) => {
+                    const active = isOpenAiCompatible && !manualModelId && modelId === id;
+                    return (
+                      <Button
+                        key={id}
+                        type="button"
+                        variant={active ? "secondary" : "outline"}
+                        size="sm"
+                        className="rounded-full"
+                        aria-pressed={active}
+                        onClick={() => selectLocalModel(id)}
+                      >
+                        {id}
+                      </Button>
+                    );
+                  })}
+                </div>
+              </div>
+            ) : null}
             <div className="mt-8 block text-sm font-normal text-foreground">
               <span>
                 <Trans>Provider</Trans>
@@ -847,20 +933,23 @@ export function OnboardingPage() {
             ) : null}
             {acceptsKey ? (
               isOpenAiCompatible ? (
-                <details className="mt-4 text-sm text-muted-foreground">
-                  <summary className="w-fit cursor-pointer select-none">
-                    <Trans>API key</Trans>
-                  </summary>
-                  <Input
-                    aria-label={t`API key`}
-                    value={apiKey}
-                    onChange={(e) => updateApiKey(e.target.value)}
-                    placeholder={t`Optional`}
-                    type="password"
-                    autoComplete="new-password"
-                    className="mt-2"
-                  />
-                </details>
+                // Local model hosts authenticate nothing, so never ask for a key.
+                isLocalModelBaseUrl(baseUrl) ? null : (
+                  <details className="mt-4 text-sm text-muted-foreground">
+                    <summary className="w-fit cursor-pointer select-none">
+                      <Trans>API key</Trans>
+                    </summary>
+                    <Input
+                      aria-label={t`API key`}
+                      value={apiKey}
+                      onChange={(e) => updateApiKey(e.target.value)}
+                      placeholder={t`Optional`}
+                      type="password"
+                      autoComplete="new-password"
+                      className="mt-2"
+                    />
+                  </details>
+                )
               ) : (
                 <label
                   htmlFor={`${fieldId}-api-key`}

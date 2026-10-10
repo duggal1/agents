@@ -13,6 +13,8 @@ import {
   cloudflareGatewayRouting,
   DEFAULT_MODEL_CONTEXT_WINDOW,
   DEFAULT_MODEL_MAX_TOKENS,
+  isLocalModelBaseUrl,
+  LOCAL_MODEL_BASE_URL,
   MAX_MODEL_CONTEXT_WINDOW,
   MAX_MODEL_MAX_TOKENS,
   OPENAI_COMPATIBLE_PROVIDER_ID,
@@ -115,6 +117,7 @@ export function ModelSettingsOverlay({
   const refreshRevisionRef = useRef(0);
   const selectionRevisionRef = useRef(0);
   const selectedLabelRef = useRef<string | undefined>(undefined);
+  const [localModels, setLocalModels] = useState<string[]>([]);
 
   const {
     oauth,
@@ -210,6 +213,18 @@ export function ModelSettingsOverlay({
     };
   }, []);
 
+  // Detect on-device model servers so local connects can lead the provider list.
+  useEffect(() => {
+    rpc.models
+      .probeOpenAiCompatible({ baseUrl: LOCAL_MODEL_BASE_URL })
+      .then((result) => {
+        setLocalModels(result.models);
+      })
+      .catch(() => {
+        // No local server running: the cloud providers stay the path.
+      });
+  }, []);
+
   const groups = useMemo(() => {
     const grouped = new Map<string, ModelCatalogEntry[]>();
     for (const entry of catalog) {
@@ -255,9 +270,12 @@ export function ModelSettingsOverlay({
     return [...matched].sort(
       (a, b) =>
         score(a) - score(b) ||
-        Number(connectedProviderIds.has(b.id)) - Number(connectedProviderIds.has(a.id)),
+        Number(connectedProviderIds.has(b.id)) - Number(connectedProviderIds.has(a.id)) ||
+        // A reachable local endpoint leads the unconnected list: free, keyless, on this machine.
+        Number(localModels.length > 0 && b.id === OPENAI_COMPATIBLE_PROVIDER_ID) -
+          Number(localModels.length > 0 && a.id === OPENAI_COMPATIBLE_PROVIDER_ID),
     );
-  }, [groups, providerQuery, connectedProviderIds]);
+  }, [groups, providerQuery, connectedProviderIds, localModels.length]);
   // Browsing separates connected providers into their own section; searching
   // flattens back into one ranked list.
   const connectedGroups = useMemo(
@@ -941,20 +959,23 @@ export function ModelSettingsOverlay({
   // OpenAI-compatible connections keep an optional key behind a disclosure.
   const compatKeyBlock = isOpenAiCompatible ? (
     <div className="mt-5">
-      <details className="text-[13.5px] text-muted-foreground">
-        <summary className="w-fit cursor-pointer select-none">
-          <Trans>API key</Trans>
-        </summary>
-        <Input
-          aria-label={t`API key`}
-          value={apiKey}
-          onChange={(event) => updateApiKey(event.target.value)}
-          placeholder={credential?.hasKey ? t`Paste a replacement key` : t`Optional`}
-          type="password"
-          autoComplete="new-password"
-          className="mt-2 h-10 text-foreground"
-        />
-      </details>
+      {/* Local model hosts authenticate nothing, so never ask for a key. */}
+      {isLocalModelBaseUrl(effectiveBaseUrl) ? null : (
+        <details className="text-[13.5px] text-muted-foreground">
+          <summary className="w-fit cursor-pointer select-none">
+            <Trans>API key</Trans>
+          </summary>
+          <Input
+            aria-label={t`API key`}
+            value={apiKey}
+            onChange={(event) => updateApiKey(event.target.value)}
+            placeholder={credential?.hasKey ? t`Paste a replacement key` : t`Optional`}
+            type="password"
+            autoComplete="new-password"
+            className="mt-2 h-10 text-foreground"
+          />
+        </details>
+      )}
       <Button
         type="button"
         variant="secondary"

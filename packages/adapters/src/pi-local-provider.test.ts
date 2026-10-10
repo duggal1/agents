@@ -4,7 +4,7 @@ import {
   LOCAL_PROVIDER_ID,
   localBaseUrl,
   localProvider,
-  registerLocalProvider,
+  registerLocalProviderSync,
 } from "./pi-local-provider.js";
 
 const ENV_KEYS = [
@@ -107,11 +107,11 @@ describe("local model provider", () => {
 
   it("registers onto a Models collection only when configured", () => {
     setModels(undefined);
-    const bare = registerLocalProvider(builtinModels());
+    const bare = registerLocalProviderSync(builtinModels());
     expect(bare.getProviders().some((p) => p.id === LOCAL_PROVIDER_ID)).toBe(false);
 
     setModels("qwen3:4b");
-    const withLocal = registerLocalProvider(builtinModels());
+    const withLocal = registerLocalProviderSync(builtinModels());
     expect(withLocal.getModel(LOCAL_PROVIDER_ID, "qwen3:4b")).toBeDefined();
   });
 });

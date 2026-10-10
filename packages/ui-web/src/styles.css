@@ -701,12 +701,16 @@
   animation: term-shimmer calc(var(--term-cycle) * 2) linear infinite;
 }
 
+/* The sweep must always cover the whole label: with a 250%-wide image the
+   position has to stay inside 80%…20%. Outside that range part of the text
+   has no gradient under it and blinks out every cycle — the text must stay
+   put while only the highlight travels. */
 @keyframes term-shimmer {
   from {
-    background-position: 150% 0;
+    background-position: 80% 0;
   }
   to {
-    background-position: -50% 0;
+    background-position: 20% 0;
   }
 }
 

@@ -1,5 +1,10 @@
 .deepsec/
 node_modules
+# Sibling reference checkout for local-model research. Never commit it: it is
+# a separate repo that exists here only so agents can read its validated
+# local-inference drivers. Anchored to the root so third_party/openmausbot/
+# (the committed Apache-2.0 attribution copy referenced by NOTICE) is unaffected.
+/OpenMausBot/
 __pycache__/
 *.py[cod]
 .turbo
