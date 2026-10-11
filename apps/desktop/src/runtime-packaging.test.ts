@@ -100,11 +100,15 @@ describe("native runtime staging", () => {
   });
 
   it("stages the SQLite native binding the service bundles load", () => {
-    // The API/worker bundles inline better-sqlite3's JS but not its .node
-    // binary; without the staged copy boot fails with "Could not locate
-    // the bindings file".
-    expect(buildScript).toContain("better_sqlite3.node");
+    // better-sqlite3 is bundled --external and loaded from a staged package:
+    // v13+ goes through lib/binding.js (prebuilds/<platform>-<arch>.node),
+    // v12 through the `bindings` walk (build/Release). The packager stages
+    // one prebuild per architecture so both loaders resolve.
+    expect(buildScript).toContain('"--external"');
+    expect(buildScript).toContain('"better-sqlite3"');
     expect(buildScript).toContain("RUNTIME_NATIVE_ADDONS");
+    expect(buildScript).toContain("stagePackage");
+    expect(buildScript).toContain("prebuilds");
     expect(buildScript).toContain("build/Release/better_sqlite3.node");
   });
 

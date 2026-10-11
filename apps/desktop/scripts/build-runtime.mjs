@@ -69,11 +69,14 @@ const COMPUTER_CONTEXT_FILES = [
  * local run of the packaged services.
  */
 const RUNTIME_NATIVE_ADDONS = [
-  // better-sqlite3 resolves build/Release/better_sqlite3.node relative to
-  // its package root; the services share one copy at services/build/Release.
+  // better-sqlite3 v13+ is bundled --external and loaded from a real staged
+  // package: its binary lookup uses a build-time absolute path frozen into
+  // the bundle, so only an intact package layout (lib/ + prebuilds/) works.
+  // v12 loads via the `bindings` package (walks up from the requiring file),
+  // which that same staged package also satisfies.
   {
     package: "better-sqlite3",
-    files: [["build/Release/better_sqlite3.node", "build/Release/better_sqlite3.node"]],
+    stagePackage: true,
   },
 ];
 
@@ -132,6 +135,19 @@ async function findPackageDir(name) {
     }
   }
   throw new Error(`Could not locate the ${name} package in node_modules.`);
+}
+
+/**
+ * Resolves a native-addon package the services actually load: the workspace db
+ * package's own install, so version bumps apply without a store scan that can
+ * return a stale copy (e.g. better-sqlite3 v12 alongside v13).
+ */
+async function stagedNativePackageDir(name) {
+  const direct = await realpath(path.join(REPO_ROOT, "packages/db/node_modules", name)).catch(
+    () => null,
+  );
+  if (direct && (await exists(path.join(direct, "package.json")))) return direct;
+  return findPackageDir(name);
 }
 
 /** Resolves the package.json path the same way, for callers that want a file. */
@@ -203,6 +219,11 @@ async function bundleService(service, outDir) {
     // as a package so a universal build can carry both architectures.
     "--external",
     "koffi",
+    // better-sqlite3 v13+ resolves its prebuilt binary relative to its own
+    // package directory (a build-time absolute path is frozen into the
+    // bundle), so it must load from a real staged package, never inlined.
+    "--external",
+    "better-sqlite3",
   ]);
   return path.join(dir, "index.js");
 }
@@ -223,12 +244,49 @@ async function copyRuntimeAssets(outDir, arches) {
     }
   }
   // Native addons resolve relative to a package root that no longer exists
-  // inside the bundle, so stage the binary where the lookup probes: the
-  // `bindings` package walks up from the requiring file, and both service
-  // bundles sit one level under services/, making services/build the shared
-  // root it finds first.
+  // inside the bundle, so the full package is staged intact under
+  // services/node_modules: the loader's frozen package-relative lookup then
+  // resolves inside the staged copy. better-sqlite3 v13+ goes through
+  // lib/binding.js (prebuilds/<platform>-<arch>.node, one per staged arch);
+  // v12 goes through the `bindings` walk (build/Release/better_sqlite3.node).
   for (const addon of RUNTIME_NATIVE_ADDONS) {
-    const packageRoot = await findPackageDir(addon.package);
+    if (!addon.stagePackage) continue;
+    const packageRoot =
+      addon.package === "better-sqlite3"
+        ? await stagedNativePackageDir(addon.package)
+        : await findPackageDir(addon.package);
+    const destination = path.join(outDir, "node_modules", addon.package);
+    await rm(destination, { recursive: true, force: true });
+    await mkdir(path.dirname(destination), { recursive: true });
+    // package.json + lib/ + the staged architectures' binaries only: never
+    // the full build tree (obj.target, intermediate objects).
+    await mkdir(destination, { recursive: true });
+    await cp(path.join(packageRoot, "package.json"), path.join(destination, "package.json"));
+    await cp(path.join(packageRoot, "lib"), path.join(destination, "lib"), { recursive: true });
+    if (await exists(path.join(packageRoot, "prebuilds"))) {
+      await mkdir(path.join(destination, "prebuilds"), { recursive: true });
+      for (const arch of arches) {
+        const name = `darwin-${arch}.node`;
+        const source = path.join(packageRoot, "prebuilds", name);
+        if (await exists(source)) {
+          await cp(source, path.join(destination, "prebuilds", name));
+          continue;
+        }
+        throw new Error(`Runtime is missing better-sqlite3/prebuilds/${name}; reinstall dependencies.`);
+      }
+    } else {
+      // v12 fallback: single build/Release binary shared by all arches.
+      const source = path.join(packageRoot, "build/Release/better_sqlite3.node");
+      if (!(await exists(source))) {
+        throw new Error("Runtime is missing better-sqlite3/build/Release/better_sqlite3.node; reinstall dependencies.");
+      }
+      await mkdir(path.join(destination, "build/Release"), { recursive: true });
+      await cp(source, path.join(destination, "build/Release/better_sqlite3.node"));
+    }
+    continue;
+  }
+  for (const addon of RUNTIME_NATIVE_ADDONS) {
+    if (addon.stagePackage || !addon.files) continue;
     for (const [from, to] of addon.files) {
       const source = path.join(packageRoot, from);
       if (!(await exists(source))) {
@@ -467,7 +525,6 @@ async function verifyLayout(manifest, arches) {
     [OUT_DIR, "runtime-manifest.json"],
     [SERVICES_DIR, "data/patch.json"],
     [SERVICES_DIR, "package.json"],
-    [SERVICES_DIR, "build/Release/better_sqlite3.node"],
     [SERVICES_DIR, "node_modules/koffi/package.json"],
     [SERVICES_DIR, "node_modules/mdn-data/css/at-rules.json"],
     [SERVICES_DIR, "supervisor/index.js"],
@@ -489,6 +546,22 @@ async function verifyLayout(manifest, arches) {
   for (const [root, relative] of required) {
     if (!(await exists(path.join(root, relative)))) {
       throw new Error(`Runtime is missing ${relative}; packaging is incomplete.`);
+    }
+  }
+  // better-sqlite3 is bundled --external and loads from the staged package in
+  // services/node_modules: v13+ needs lib/ plus one prebuild per arch, v12
+  // needs the single build/Release binary.
+  const stagedBs3 = path.join(SERVICES_DIR, "node_modules", "better-sqlite3");
+  if (!(await exists(path.join(stagedBs3, "package.json")))) {
+    throw new Error("Runtime is missing node_modules/better-sqlite3; packaging is incomplete.");
+  }
+  for (const arch of arches) {
+    const prebuild = path.join(stagedBs3, "prebuilds", `darwin-${arch}.node`);
+    const legacy = path.join(stagedBs3, "build", "Release", "better_sqlite3.node");
+    if (!(await exists(prebuild)) && !(await exists(legacy))) {
+      throw new Error(
+        `Runtime is missing better-sqlite3 for darwin-${arch}; packaging is incomplete.`,
+      );
     }
   }
   // The supervisor bundle carries a hashed native asset beside index.js; pin

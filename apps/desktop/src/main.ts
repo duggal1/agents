@@ -11,8 +11,8 @@ import {
   ipcMain,
   Menu,
   net,
-  safeStorage,
   type Session,
+  safeStorage,
   session,
   shell,
 } from "electron";
@@ -25,7 +25,6 @@ import { openBrowserAuth } from "./browser-auth.js";
 import { resolveDockerBinary, runDocker } from "./docker-cli.js";
 import { LocalBackend } from "./local-backend.js";
 import { LocalDockerSupervisor } from "./local-docker-supervisor.js";
-import { requestLocalSettings } from "./local-settings.js";
 import { runtimeResourceDir } from "./local-runtime.js";
 import {
   clearE2BKey,
@@ -37,6 +36,7 @@ import {
   storeE2BKey,
   writeLocalRuntimeSettings,
 } from "./local-runtime-settings.js";
+import { requestLocalSettings } from "./local-settings.js";
 import { oauthCallbackFrom } from "./oauth-callback.js";
 import {
   bundledRendererCandidates,
@@ -50,7 +50,6 @@ import {
   isRakazoHealth,
   managedLocalOpenUrl,
   normalizeServerUrl,
-  parseSetupInput,
   probeFailureMessage,
   readProbeJson,
   resolveStartupTarget,
@@ -58,20 +57,14 @@ import {
   servesBundledRenderer,
   sessionPartitionForServerUrl,
 } from "./setup-config.js";
-import { clearSetup, readSetup, setupFilePath, writeSetup } from "./setup-store.js";
+import { readSetup, writeSetup } from "./setup-store.js";
 import { shouldOpenInAppPopup } from "./window-open.js";
-import {
-  browserWindowOptions,
-  developmentIconFile,
-  setupWindowOptions,
-  warmWindowTtlMs,
-} from "./window-options.js";
+import { browserWindowOptions, developmentIconFile, warmWindowTtlMs } from "./window-options.js";
 
 const PERFORMANCE_USER_DATA = process.env.SAPPHIRE_PERFORMANCE_USER_DATA;
 const PROBE_TIMEOUT_MS = 8_000;
 let mainWindow: BrowserWindow | null = null;
 const appWindowTargets = new WeakMap<BrowserWindow, string>();
-let setupWindow: BrowserWindow | null = null;
 let settingsWindow: BrowserWindow | null = null;
 let openingSettings = false;
 let settingsCleanup: Promise<void> = Promise.resolve();
@@ -79,11 +72,7 @@ let settingsTarget: { origin: string; token: string } | null = null;
 const bundledRendererInstallations = new Set<string>();
 let currentSetup: DesktopSetup | null = null;
 let currentTargetUrl: string | null = null;
-let setupError: string | null = null;
-let setupSaveInProgress = false;
 let openAppPromise: Promise<boolean> | null = null;
-/** Prior app window kept until setup is persisted (or the switch is abandoned). */
-let pendingPreviousWindow: BrowserWindow | null = null;
 let quitting = false;
 let warmWindowTimer: NodeJS.Timeout | undefined;
 // Number of short-lived hidden probe windows currently alive. On Windows/Linux,
@@ -109,7 +98,7 @@ const desktopUpdater = new DesktopUpdateController(
   },
 );
 let launchUpdateCheckScheduled = false;
-/** Native PostgreSQL + API + worker supervised by the main process for mode `new`. */
+/** SQLite-backed API + worker supervised by the main process for mode `new`. */
 let localBackend: LocalBackend;
 /** Optional Docker fallback supervisor; null unless fallback is enabled. Main process only. */
 let dockerSupervisor: LocalDockerSupervisor | null = null;
@@ -353,12 +342,12 @@ function createWindow(url: string, partition: string | null) {
 async function probeDocument(url: string): Promise<string | null> {
   // Test/dev harnesses may load data: or file: documents; only probe real servers.
   if (!url.startsWith("http://") && !url.startsWith("https://")) return null;
-  // Packaged local mode serves the document from the bundled renderer through
-  // the session protocol handler, while net.fetch below bypasses session
-  // handlers and hits the API directly — which has no "/" route and
-  // legitimately answers 404. Probing it would reject every healthy local
+  // The managed local backend serves the document itself, while net.fetch below
+  // bypasses session handlers and hits the API directly — which has no "/"
+  // route and legitimately answers 404 (and refuses connections until the
+  // database finishes migrating). Probing it would reject every healthy local
   // backend, so skip it: loadAppUrl verifies the real window load instead.
-  if (app.isPackaged && servesBundledRenderer(url, currentSetup?.mode === "new")) return null;
+  if (servesBundledRenderer(url, currentSetup?.mode === "new")) return null;
   try {
     const response = await net.fetch(url, {
       method: "GET",
@@ -586,56 +575,17 @@ function oauthPopupWindowOptions() {
   };
 }
 
-function createSetupWindow() {
-  const icon = developmentIcon();
-  const win = new BrowserWindow({
-    ...setupWindowOptions(process.platform),
-    ...(icon ? { icon } : {}),
-    webPreferences: {
-      preload: path.join(import.meta.dirname, "setup-preload.cjs"),
-      nodeIntegration: false,
-      contextIsolation: true,
-      sandbox: true,
-      // A long pull runs while this window sits behind others; throttled timers would freeze it.
-      backgroundThrottling: false,
-    },
-  });
-  setupWindow = win;
-  win.webContents.setWindowOpenHandler(() => ({ action: "deny" }));
-  win.once("closed", () => {
-    if (setupWindow === win) setupWindow = null;
-    // Closing setup without saving restores a connected session (Change Server cancel).
-    restoreAppWindowAfterSetup();
-  });
-  void win.loadFile(path.join(import.meta.dirname, "setup.html"));
-  markOnce("rk:main:setup-window-created");
-  return win;
-}
-
-/** Hide the app while setup is open; do not clear the saved target until a new one opens. */
-function showSetupWindow(error: string | null = null) {
-  setupError = error;
-
-  let win: BrowserWindow;
-  if (setupWindow !== null && !setupWindow.isDestroyed()) {
-    if (error !== null) setupWindow.reload();
-    win = setupWindow;
-  } else {
-    win = createSetupWindow();
+/**
+ * Reports a startup failure without a second window or a silent exit. The app
+ * is a single-window local shell, so the OS dialog is the whole recovery UI.
+ */
+function showOpenFailure(detail: string) {
+  try {
+    dialog.showErrorBox("Could not open Sapphire", detail);
+  } catch {
+    // A headless environment has nowhere to draw the dialog; the log still records it.
+    console.error("Sapphire startup failed:", detail);
   }
-  if (mainWindow !== null && !mainWindow.isDestroyed()) mainWindow.hide();
-  win.show();
-  win.focus();
-  return win;
-}
-
-function restoreAppWindowAfterSetup() {
-  if (quitting) return;
-  if (setupWindow !== null && !setupWindow.isDestroyed()) return;
-  if (mainWindow === null || mainWindow.isDestroyed() || currentTargetUrl === null) return;
-  clearTimeout(warmWindowTimer);
-  mainWindow.show();
-  mainWindow.focus();
 }
 
 async function showLocalSettings() {
@@ -721,12 +671,6 @@ function installApplicationMenu() {
       void showLocalSettings();
     },
   };
-  const changeServer: Electron.MenuItemConstructorOptions = {
-    id: "change-rakazo-server",
-    label: "Change Sapphire Server…",
-    accelerator: "CmdOrCtrl+Shift+K",
-    click: () => showSetupWindow(),
-  };
   const stopStack: Electron.MenuItemConstructorOptions = {
     id: "stop-local-stack",
     label: "Stop Local Services",
@@ -744,7 +688,6 @@ function installApplicationMenu() {
               { role: "about" },
               { type: "separator" },
               localSettings,
-              changeServer,
               stopStack,
               { type: "separator" },
               { role: "hide" },
@@ -760,13 +703,7 @@ function installApplicationMenu() {
       : [
           {
             label: "File",
-            submenu: [
-              localSettings,
-              changeServer,
-              stopStack,
-              { type: "separator" },
-              { role: "quit" },
-            ],
+            submenu: [localSettings, stopStack, { type: "separator" }, { role: "quit" }],
           },
           { role: "editMenu" },
           { role: "windowMenu" },
@@ -839,12 +776,6 @@ async function resolveSandboxServiceEnv(
 async function stopDockerSupervisor(): Promise<void> {
   await dockerSupervisor?.stop().catch(() => undefined);
   dockerSupervisor = null;
-}
-
-/** Setup IPC must only answer the setup window, never a connected Sapphire server. */
-function fromSetupWindow(event: Electron.IpcMainInvokeEvent) {  return (
-    setupWindow !== null && !setupWindow.isDestroyed() && event.sender === setupWindow.webContents
-  );
 }
 
 /**
@@ -932,6 +863,11 @@ function openFailureDetail(error: unknown): string {
   return probeFailureMessage(error);
 }
 
+/**
+ * Opens `targetUrl` in the single app window. There is no server chooser: the
+ * Mac's own backend is the only target, so a failure is reported in a native
+ * dialog instead of a second window.
+ */
 async function openAppOnce(targetUrl: string) {
   const target = await resolveSessionForTarget(targetUrl);
   const previous = mainWindow;
@@ -951,133 +887,35 @@ async function openAppOnce(targetUrl: string) {
     win = created.win;
     await created.loaded;
     currentTargetUrl = targetUrl;
-    setupError = null;
-    // Keep the previous window until the caller commits (after setup.json is written).
-    pendingPreviousWindow =
-      previous !== null && !previous.isDestroyed() && previous !== win ? previous : null;
-    if (pendingPreviousWindow !== null) pendingPreviousWindow.hide();
+    // Retire the window this one replaced only once the new one is usable.
+    if (previous !== null && !previous.isDestroyed() && previous !== win) previous.destroy();
     return true;
   } catch (error) {
-    pendingPreviousWindow = null;
-    // Keep the previous app window so Cancel / close can restore it.
+    // Drop the failed window before reporting so the shell never shows a
+    // half-loaded document behind the message.
     if (previous !== null && !previous.isDestroyed()) mainWindow = previous;
-    // Show the setup window BEFORE destroying the failed one: on Windows/Linux,
-    // destroying the last window fires "window-all-closed" -> app.quit() before
-    // showSetupWindow() runs, so the app silently exits instead of showing this error.
-    showSetupWindow(`Could not open that server. ${openFailureDetail(error)}`);
     if (win !== null && !win.isDestroyed()) win.destroy();
+    showOpenFailure(openFailureDetail(error));
     return false;
   }
 }
 
-/** Drop the previous app window after the new server is opened and persisted. */
-function commitPendingAppSwitch() {
-  const previous = pendingPreviousWindow;
-  pendingPreviousWindow = null;
-  if (previous !== null && !previous.isDestroyed() && previous !== mainWindow) previous.destroy();
-}
-
 /**
- * Undo an open that could not be persisted. When a prior session exists, restore
- * it. On first run keep the connected window so the user can retry save.
- */
-function abandonPendingAppSwitch(
-  previousSetup: DesktopSetup | null,
-  previousUrl: string | null,
-): "restored" | "kept" {
-  const previous = pendingPreviousWindow;
-  pendingPreviousWindow = null;
-  if (previous !== null && !previous.isDestroyed()) {
-    const failed = mainWindow;
-    if (failed !== null && !failed.isDestroyed() && failed !== previous) failed.destroy();
-    mainWindow = previous;
-    currentSetup = previousSetup;
-    currentTargetUrl = previousUrl;
-    // If setup was already closed (e.g. during a slow write), make the restored
-    // session visible — otherwise macOS can be left with no shown window.
-    if (setupWindow === null || setupWindow.isDestroyed()) {
-      clearTimeout(warmWindowTimer);
-      previous.show();
-      previous.focus();
-    }
-    return "restored";
-  }
-  return "kept";
-}
-
-/** Watch for a renderer crash until setup is persisted (or the switch is abandoned). */
-function watchRendererUntilCommitted(win: BrowserWindow) {
-  let crashed = false;
-  const onGone = () => {
-    crashed = true;
-  };
-  win.webContents.once("render-process-gone", onGone);
-  return {
-    crashed: () => crashed || (!win.isDestroyed() && win.webContents.isCrashed()),
-    dispose: () => {
-      if (!win.isDestroyed()) win.webContents.removeListener("render-process-gone", onGone);
-    },
-  };
-}
-
-function destroySetupWindow() {
-  const setup = setupWindow;
-  setupWindow = null;
-  if (setup !== null && !setup.isDestroyed()) setup.destroy();
-}
-
-/**
- * First-launch path: no setup screen, no Continue click. The Mac's local
- * server is the default, so persist it and boot it behind the app window.
- * The window opens at once — the renderer retries its session lookup until
- * the backend answers — so first paint never waits on Postgres/migrations.
- * A genuine load failure still falls back to the setup window with the error.
+ * First-launch path: no chooser, no Continue click. The Mac's local server is
+ * the default, so persist it and boot it first. The window opens only once the
+ * backend answers — the renderer must never sit on a retry screen during a
+ * normal boot. A failed boot reports a native dialog instead of a window.
  */
 async function openLocalByDefault(userDataDir: string): Promise<void> {
+  const state = await localBackend.start().catch(() => null);
   const localUrl = localBackend.webUrl();
   currentSetup = { mode: "new", serverUrl: localUrl };
   await writeSetup(userDataDir, currentSetup).catch(() => undefined);
-  void localBackend.start().catch(() => undefined);
-  if (await openApp(localUrl)) {
-    commitPendingAppSwitch();
-    destroySetupWindow();
+  if (state?.phase === "ready") {
+    await openApp(localUrl);
+    return;
   }
-  // openApp already showed the setup window with the failure when false.
-}
-
-/** Best-effort restore of setup.json after a failed save that already wrote disk. */
-async function rollbackSetupFile(userDataDir: string, previousSetup: DesktopSetup | null) {
-  try {
-    if (previousSetup !== null) await writeSetup(userDataDir, previousSetup);
-    else await clearSetup(userDataDir);
-  } catch {
-    // Disk rollback is best-effort; callers already restored in-memory state when possible.
-  }
-}
-
-/**
- * After a renderer crash around save: restore prior setup when possible, otherwise
- * drop the crashed first-run window so setup remains the only recovery surface.
- */
-async function recoverFromCrashedSave(
-  userDataDir: string,
-  previousSetup: DesktopSetup | null,
-  previousUrl: string | null,
-): Promise<string> {
-  const outcome = abandonPendingAppSwitch(previousSetup, previousUrl);
-  await rollbackSetupFile(userDataDir, previousSetup);
-  if (outcome === "kept") {
-    if (mainWindow !== null && !mainWindow.isDestroyed()) mainWindow.destroy();
-    mainWindow = null;
-    currentSetup = previousSetup;
-    currentTargetUrl = previousUrl;
-  }
-  const message =
-    previousSetup !== null
-      ? "Could not open that server. Renderer stopped. The previous instance was restored for the next launch."
-      : "Could not open that server. Renderer stopped.";
-  showSetupWindow(message);
-  return message;
+  showOpenFailure(state?.message ?? "The local app services did not start. Retry.");
 }
 
 function safeOrigin(targetUrl: string) {
@@ -1106,17 +944,14 @@ app.whenReady().then(async () => {
     resolveSandboxServiceEnv: (context) =>
       resolveSandboxServiceEnv(userDataDir, context.appDataDir),
     afterServicesStop: () => stopDockerSupervisor(),
-    onState: (state) => {
-      if (setupWindow !== null && !setupWindow.isDestroyed()) {
-        setupWindow.webContents.send("desktop.setup.stack.changed", state);
-      }
-    },
   });
   currentSetup = await readSetup(userDataDir);
+  // An explicit SAPPHIRE_WEB_URL still wins over saved configuration so test
+  // and performance harnesses can point the shell anywhere without touching a
+  // user's real setup. Everything else resolves to the Mac's own backend.
   const target = resolveStartupTarget({
     envUrl: process.env.SAPPHIRE_WEB_URL,
     saved: currentSetup,
-    forceSetup: process.env.SAPPHIRE_FORCE_SETUP === "1",
   });
   if (process.env.SAPPHIRE_PERFORMANCE_CLEAR_CACHE === "1") {
     const cacheSessions = new Set<Session>([session.defaultSession]);
@@ -1254,140 +1089,10 @@ app.whenReady().then(async () => {
     if (state.phase !== "ready" || state.message !== null) quitting = false;
     return state;
   });
-  ipcMain.handle("desktop.setup.state", (event) => {
-    if (!fromSetupWindow(event)) return null;
-    return {
-      defaultLocalUrl: localBackend.webUrl(),
-      saved: currentSetup,
-      error: setupError ?? undefined,
-    };
-  });
-
-  ipcMain.handle("desktop.setup.test", async (event, url: unknown) => {
-    if (!fromSetupWindow(event)) return { ok: false, error: "Setup is not active." };
-    if (typeof url !== "string") return { ok: false, error: "Enter a server address." };
-    return probeServer(url);
-  });
-
-  ipcMain.handle("desktop.setup.save", async (event, payload: unknown) => {
-    if (!fromSetupWindow(event)) return { ok: false, error: "Setup is not active." };
-    if (setupSaveInProgress)
-      return { ok: false, error: "A connection attempt is already running." };
-    setupSaveInProgress = true;
-    const previousSetup = currentSetup;
-    const previousUrl = currentTargetUrl;
-    try {
-      const setup = parseSetupInput(payload);
-      if (setup === null) {
-        return {
-          ok: false,
-          error:
-            "Enter a valid server address. Public servers require HTTPS; a new local instance must use localhost.",
-        };
-      }
-
-      // Only open the exact origin served by the managed native backend.
-      let openSetup = setup;
-      if (setup.mode === "new") {
-        const managedUrl = managedLocalOpenUrl(setup.serverUrl, localBackend.webUrl());
-        if (managedUrl === null || !(await localBackend.matchesDesired())) {
-          return {
-            ok: false,
-            error: "The app-managed Sapphire services are not ready. Retry setup.",
-          };
-        }
-        openSetup = { mode: "new", serverUrl: managedUrl };
-      }
-
-      const reachability = await probeServer(openSetup.serverUrl);
-      if (!reachability.ok) return { ok: false, error: reachability.error };
-
-      // Open before persisting so a failed renderer load keeps the last working setup.
-      currentSetup = openSetup;
-      const opened = await openApp(openSetup.serverUrl);
-      if (!opened) {
-        currentSetup = previousSetup;
-        return {
-          ok: false,
-          error: "Could not open that server. The previous instance was left unchanged.",
-        };
-      }
-
-      const appWindow = mainWindow;
-      const rendererWatch =
-        appWindow !== null && !appWindow.isDestroyed()
-          ? watchRendererUntilCommitted(appWindow)
-          : null;
-      try {
-        await writeSetup(userDataDir, openSetup);
-        if (rendererWatch?.crashed()) {
-          const message = await recoverFromCrashedSave(userDataDir, previousSetup, previousUrl);
-          return { ok: false, error: message };
-        }
-        // Commit while the crash listener is still armed.
-        commitPendingAppSwitch();
-        if (rendererWatch?.crashed()) {
-          const message = await recoverFromCrashedSave(userDataDir, previousSetup, previousUrl);
-          return { ok: false, error: message };
-        }
-        destroySetupWindow();
-        // Final check after setup closes — a crash in this gap still rolls back.
-        if (rendererWatch?.crashed()) {
-          const message = await recoverFromCrashedSave(userDataDir, previousSetup, previousUrl);
-          return { ok: false, error: message };
-        }
-        return { ok: true };
-      } catch {
-        const outcome = abandonPendingAppSwitch(previousSetup, previousUrl);
-        return {
-          ok: false,
-          error:
-            outcome === "restored"
-              ? "Could not save setup. The previous instance was restored."
-              : "Connected, but could not save setup for the next launch. Try Continue again.",
-        };
-      } finally {
-        rendererWatch?.dispose();
-      }
-    } finally {
-      setupSaveInProgress = false;
-    }
-  });
-
-  ipcMain.handle("desktop.setup.quit", (event) => {
-    if (fromSetupWindow(event)) app.quit();
-  });
-  ipcMain.handle("desktop.setup.stack.state", (event) =>
-    fromSetupWindow(event) ? localBackend.state() : null,
-  );
-  ipcMain.handle("desktop.setup.stack.start", (event, options: unknown) => {
-    if (!fromSetupWindow(event)) return null;
-    // Respond right away; the setup window follows `stack.changed` to a terminal phase.
-    // Options are narrowed inside the backend: only `{ fresh?: boolean }` has any effect.
-    void localBackend.start(options);
-    return localBackend.state();
-  });
-  ipcMain.handle("desktop.setup.stack.stop", (event) => {
-    if (!fromSetupWindow(event)) return null;
-    return localBackend.stop();
-  });
   // E2B key and Docker-fallback posture (T5). All secret reads/writes stay in
   // the main process; IPC returns booleans and ok/error shapes, never the key.
   // A key or policy change takes effect through a controlled backend restart
   // at the next safe task boundary (see LocalRuntimeController.restart).
-  ipcMain.handle("desktop.setup.runtime.status", (event) => {
-    if (!fromSetupWindow(event)) return null;
-    return localRuntimeStatus(userDataDir, safeStorage);
-  });
-  ipcMain.handle("desktop.setup.runtime.setKey", async (event, key: unknown) => {
-    if (!fromSetupWindow(event)) return { ok: false, error: "Setup is not active." };
-    try {
-      await storeE2BKey(userDataDir, safeStorage, key);
-      return { ok: true };
-    } catch (error) {
-      return { ok: false, error: error instanceof Error ? error.message : "Could not save the key." };
-    }
-  });
   ipcMain.handle("desktop.runtime.status", (event) => {
     if (!fromRuntimeWindow(event)) return null;
     return localRuntimeStatus(userDataDir, safeStorage);
@@ -1398,7 +1103,10 @@ app.whenReady().then(async () => {
       await storeE2BKey(userDataDir, safeStorage, key);
       return { ok: true };
     } catch (error) {
-      return { ok: false, error: error instanceof Error ? error.message : "Could not save the key." };
+      return {
+        ok: false,
+        error: error instanceof Error ? error.message : "Could not save the key.",
+      };
     }
   });
   ipcMain.handle("desktop.runtime.clearKey", async (event) => {
@@ -1419,67 +1127,44 @@ app.whenReady().then(async () => {
 
   // Register before startup awaits so macOS dock clicks during probe/open are handled.
   app.on("activate", () => {
-    if (setupWindow !== null && !setupWindow.isDestroyed()) {
-      setupWindow.show();
-      setupWindow.focus();
-      return;
-    }
     if (mainWindow !== null && !mainWindow.isDestroyed()) {
       clearTimeout(warmWindowTimer);
       mainWindow.show();
       mainWindow.focus();
       return;
     }
-    if (openAppPromise !== null) return;
-    if (currentTargetUrl === null) showSetupWindow(setupError);
-    else
-      void openApp(currentTargetUrl).then((opened) => {
-        if (opened) commitPendingAppSwitch();
-      });
+    if (openAppPromise !== null || currentTargetUrl === null) return;
+    void openApp(currentTargetUrl);
   });
 
   if (target.kind === "setup") {
-    // First launch defaults to the Mac's local server: provision it silently,
-    // boot it behind the app window, and never render the setup screen here.
-    // The setup window stays out of this path entirely. It remains reachable
-    // for harnesses (SAPPHIRE_FORCE_SETUP=1), for a saved setup that needs
-    // attention, and for switching servers via Change Sapphire Server… menu.
-    if (process.env.SAPPHIRE_FORCE_SETUP === "1" || existsSync(setupFilePath(userDataDir))) {
-      showSetupWindow();
-    } else {
-      await openLocalByDefault(userDataDir);
-    }
+    // First launch defaults to the Mac's local server: provision it silently
+    // and boot it behind the app window. There is no server chooser.
+    await openLocalByDefault(userDataDir);
   } else if (target.source === "saved") {
     if (currentSetup?.mode === "new") {
+      // The saved local instance is the app-managed backend. Boot it first when
+      // it is missing or outdated, then open the main window directly once it
+      // answers. A slow cold start waits behind the dock icon — it is never a
+      // reason to show a chooser or a retry screen.
+      if (!(await localBackend.matchesDesired())) {
+        const state = await localBackend.start().catch(() => null);
+        if (state?.phase !== "ready") {
+          showOpenFailure(state?.message ?? "The local app services did not start. Retry.");
+          return;
+        }
+      }
       const managedUrl = managedLocalOpenUrl(target.url, localBackend.webUrl());
-      if (managedUrl !== null && (await localBackend.matchesDesired())) {
-        if (await openApp(managedUrl)) {
-          commitPendingAppSwitch();
-          destroySetupWindow();
-        }
-      } else {
-        // Missing or outdated native backend: run the one-time data migration
-        // when needed, then boot PostgreSQL, API, and worker before any app or
-        // computer traffic is allowed. The setup window follows the progress.
-        void localBackend.start();
-        showSetupWindow();
-      }
+      await openApp(managedUrl ?? localBackend.webUrl());
     } else {
+      // A saved remote instance (env or hand-edited setup). An unreachable one
+      // reports a native error rather than reopening a chooser.
       const reachability = await probeServer(target.url);
-      if (reachability.ok) {
-        if (await openApp(target.url)) {
-          commitPendingAppSwitch();
-          destroySetupWindow();
-        }
-      } else {
-        showSetupWindow(`Could not reconnect to the saved server. ${reachability.error}`);
-      }
+      if (reachability.ok) await openApp(target.url);
+      else showOpenFailure(`Could not reconnect to the saved server. ${reachability.error}`);
     }
   } else {
-    if (await openApp(target.url)) {
-      commitPendingAppSwitch();
-      destroySetupWindow();
-    }
+    await openApp(target.url);
   }
 });
 
@@ -1495,7 +1180,7 @@ app.on("before-quit", (event) => {
   quitting = true;
   clearTimeout(warmWindowTimer);
   // Graceful shutdown order: stop API and worker first, then the database, so
-  // in-flight requests drain and PostgreSQL can recover on the next start.
+  // in-flight requests drain and the SQLite file is left consistent.
   if (currentSetup?.mode === "new" && !backendStopRequested) {
     backendStopRequested = true;
     event.preventDefault();
@@ -1509,7 +1194,7 @@ app.on("before-quit", (event) => {
         app.quit();
       });
   } else {
-    // No local backend to drain: only cut short an in-flight migration attempt.
+    // No local backend to drain: only cut short an in-flight start attempt.
     localBackend?.abort();
   }
 });

@@ -190,26 +190,35 @@ function SessionUnavailable({ refetch }: { refetch: () => Promise<void> }) {
     };
   }, [attempt, retryKey]);
 
+  // A backend that is still booting fails the first lookups, so the error
+  // text and retry stay hidden until ~3s of continuous failure. Before that
+  // the loader alone shows — no scary screen during a normal boot.
+  const confirmed = attempt >= 2;
+
   return (
     <div className="grid h-full place-items-center bg-background px-6 text-center">
       <div className="flex flex-col items-center">
         <LoadingState label={t`Reconnecting`} />
-        <p className="mt-3 text-[13.5px] text-muted-foreground/80">
-          <Trans>Can&apos;t reach the server.</Trans>
-        </p>
-        <div className="mt-4">
-          <Button
-            variant="secondary"
-            className="rounded-full"
-            onClick={() => {
-              retryImmediately.current = true;
-              setAttempt(0);
-              setRetryKey((key) => key + 1);
-            }}
-          >
-            <Trans>Retry now</Trans>
-          </Button>
-        </div>
+        {confirmed && (
+          <>
+            <p className="mt-3 text-[13.5px] text-muted-foreground/80">
+              <Trans>Can&apos;t reach the server.</Trans>
+            </p>
+            <div className="mt-4">
+              <Button
+                variant="secondary"
+                className="rounded-full"
+                onClick={() => {
+                  retryImmediately.current = true;
+                  setAttempt(0);
+                  setRetryKey((key) => key + 1);
+                }}
+              >
+                <Trans>Retry now</Trans>
+              </Button>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
